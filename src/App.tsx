@@ -114,36 +114,6 @@ const playerStats: PlayerStats = {
   level: 87,
 }
 
-// ===== UTILIDADES =====
-const getRarityColors = (rarity: string) => {
-  switch (rarity) {
-    case "LEGENDARY":
-      return {
-        bg: "bg-yellow-50",
-        border: "border-yellow-200",
-        text: "text-yellow-800",
-      }
-    case "EPIC":
-      return {
-        bg: "bg-purple-50",
-        border: "border-purple-200",
-        text: "text-purple-800",
-      }
-    case "RARE":
-      return {
-        bg: "bg-blue-50",
-        border: "border-blue-200",
-        text: "text-blue-800",
-      }
-    default:
-      return {
-        bg: "bg-gray-50",
-        border: "border-gray-200",
-        text: "text-gray-800",
-      }
-  }
-}
-
 // ===== COMPONENTE PRINCIPAL =====
 export default function Page() {
   return (
