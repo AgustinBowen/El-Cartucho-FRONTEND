@@ -11,12 +11,6 @@ type Producto = {
   stock: number
   categoria: string
 }
-
-type PlayerStats = {
-  souls: number
-  level: number
-}
-
 // ===== DATOS MOCK =====
 const mockProductos: Producto[] = [
   {
@@ -109,10 +103,6 @@ const mockProductos: Producto[] = [
   })),
 ]
 
-const playerStats: PlayerStats = {
-  souls: 156789,
-  level: 87,
-}
 
 // ===== COMPONENTE PRINCIPAL =====
 export default function Page() {
@@ -123,22 +113,6 @@ export default function Page() {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-semibold text-gray-900 mb-4">Tienda</h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">Encuentra los mejores objetos para tu aventura</p>
-        </div>
-
-        {/* Player Stats */}
-        <div className="flex flex-wrap justify-center gap-8 text-sm mb-12">
-          <div className="text-center">
-            <div className="text-2xl font-medium text-gray-900">{playerStats.souls.toLocaleString()}</div>
-            <div className="text-gray-500">Almas</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-medium text-gray-900">{playerStats.level}</div>
-            <div className="text-gray-500">Nivel</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-medium text-gray-900">99</div>
-            <div className="text-gray-500">Humanidad</div>
-          </div>
         </div>
 
         {/* Products Grid */}
