@@ -17,6 +17,8 @@ export default function Home() {
 
     fetchProductos()
   }, [])
+  
+  console.log('API URL:', import.meta.env.VITE_API_URL)
 
   return (
     <div className="min-h-screen bg-white">
