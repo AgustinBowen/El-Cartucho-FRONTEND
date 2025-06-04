@@ -5,7 +5,6 @@ import path from "path"
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd()) // ✅ carga las variables .env correctamente
 
   return {
     plugins: [react(), tailwindcss()],
@@ -14,14 +13,5 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    server: {
-      proxy: {
-        '/ed': {
-          target: env.VITE_API_URL, // ✅ usar process.env o env
-          changeOrigin: true,
-          secure: false
-        }
-      }
-    }
   }
 })

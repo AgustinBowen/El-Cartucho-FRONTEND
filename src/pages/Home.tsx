@@ -9,7 +9,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchProductos = async () => {
-      const response = await fetch('/ed/producto/listar')
+      const response = await fetch(import.meta.env.VITE_API_URL+'/ed/producto/listar')
       const json = await response.json()
       const productos: Producto[] = json.data
       setProductos(productos)
