@@ -11,4 +11,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      '/ed': {
+        target: 'https://el-cartucho-git-dev-victor-s-projects-2bfad959.vercel.app',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  }
 })
