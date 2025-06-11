@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useCart } from "../context/CartContext"
-import { ShoppingCart, Heart, Eye, Zap } from "lucide-react"
+import { ShoppingCart, Zap } from "lucide-react"
 import { useState, useEffect } from "react"
 
 type CardProps = {
@@ -17,7 +17,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
   const { addToCart } = useCart()
   const [theme, setTheme] = useState("light")
   const [isLoading, setIsLoading] = useState(false)
-  const [isWishlisted, setIsWishlisted] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
@@ -50,10 +49,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
     })
 
     setIsLoading(false)
-  }
-
-  const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted)
   }
 
   const isXbox = theme === "light"

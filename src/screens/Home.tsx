@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Gamepad2, Zap, Shield, Truck, Award } from "lucide-react"
+import { Gamepad2, Shield, Truck, Award } from "lucide-react"
 
 export const Home: React.FC = () => {
   const [theme, setTheme] = useState("light")
