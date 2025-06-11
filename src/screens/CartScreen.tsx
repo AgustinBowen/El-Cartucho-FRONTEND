@@ -4,7 +4,6 @@ import { useState } from "react";
 export const CartScreen = () => {
   const { cartItems, updateQuantity, total } = useCart();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
     const handleConfirmPurchase = async () => {
@@ -59,7 +58,7 @@ export const CartScreen = () => {
                   type="number"
                   min={1}
                   value={item.quantity}
-                  onChange={e => updateQuantity(item.producto_id.toString(), Number(e.target.value))}
+                  onChange={e => updateQuantity(item.producto_id, Number(e.target.value))}
                   className="border ml-2 p-1 w-16"
                 />
               </label>
