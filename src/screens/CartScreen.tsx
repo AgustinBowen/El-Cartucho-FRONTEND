@@ -4,6 +4,7 @@ import { useState } from "react";
 export const CartScreen = () => {
   const { cartItems, updateQuantity, total } = useCart();
   const [loading, setLoading] = useState(false);
+  const [success] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
     const handleConfirmPurchase = async () => {
