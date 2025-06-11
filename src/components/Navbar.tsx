@@ -1,162 +1,272 @@
-import { useState, useEffect } from 'react';
-import { useCart } from "../context/CartContext";
-import { useNavigate } from "react-router-dom";
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { useCart } from "../context/CartContext"
+import { useNavigate, Link, useLocation } from "react-router-dom"
+import { ShoppingCart, Menu, X, Sun, Moon, Search, User, Heart } from "lucide-react"
 
 function Navbar() {
-  const { cartItems } = useCart(); 
-  const navigate = useNavigate();
+  const { cartItems } = useCart()
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
-  const [theme, setTheme] = useState('light');
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState("light")
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  // Detectar scroll para cambiar el navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   // Leer el theme guardado al iniciar
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem("theme")
     if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      setTheme(savedTheme)
+      document.documentElement.setAttribute("data-theme", savedTheme)
     } else {
-      // Primera vez → tomá preferencia del sistema
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme = prefersDark ? 'dark' : 'light';
-      setTheme(initialTheme);
-      document.documentElement.setAttribute('data-theme', initialTheme);
-      localStorage.setItem('theme', initialTheme);
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+      const initialTheme = prefersDark ? "dark" : "light"
+      setTheme(initialTheme)
+      document.documentElement.setAttribute("data-theme", initialTheme)
+      localStorage.setItem("theme", initialTheme)
     }
-  }, []);
+  }, [])
 
-  // Cada vez que cambia theme → actualizar localStorage + data-theme
   useEffect(() => {
-    localStorage.setItem('theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    localStorage.setItem("theme", theme)
+    document.documentElement.setAttribute("data-theme", theme)
+  }, [theme])
 
   const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
+    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"))
+  }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchTerm.trim()) {
+      navigate(`/catalogo?search=${encodeURIComponent(searchTerm)}`)
+      setSearchOpen(false)
+      setMenuOpen(false)
+    } else {
+      setSearchOpen(false)
+    }
+  }
+
+  const isXbox = theme === "light"
+  const consoleName = isXbox ? "Xbox 360" : "PlayStation 2"
+
+  const navItems = [
+    { name: "Inicio", path: "/" },
+    { name: "Catálogo", path: "/catalogo" },
+    { name: "Ofertas", path: "/ofertas" },
+    { name: "Novedades", path: "/novedades" },
+  ]
 
   return (
-    <nav className="bg-[var(--color-background)] border-b border-[var(--color-border)]">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        {/* Logo */}
-        <div className="flex items-center space-x-3">
-          <img
-            src="https://flowbite.com/docs/images/logo.svg"
-            className="h-8"
-            alt="Flowbite Logo"
-          />
-          <span className="self-center text-2xl font-semibold whitespace-nowrap text-[var(--color-foreground)]">
-            Flowbite
-          </span>
-        </div>
-
-        {/* Right side: Theme toggle + Hamburger */}
-        <div className="flex md:order-2 items-center gap-2">
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center text-[var(--color-foreground)] rounded-full border-2 border-[var(--color-border)] hover:bg-[var(--color-accent)] transition-colors p-2"
-            title="Cambiar tema"
-          >
-            {theme === 'light' ? (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M13 0h-2v4h2V0ZM0 11v2h4v-2H0Zm24 0v2h-4v-2h4ZM13 24h-2v-4h2v4ZM8 6h8v2H8V6ZM6 8h2v8H6V8Zm2 10v-2h8v2H8Zm10-2h-2V8h2v8Zm2-14h2v2h-2V2Zm0 2v2h-2V4h2Zm2 18h-2v-2h2v2Zm-2-2h-2v-2h2v2ZM4 2H2v2h2v2h2V4H4V2ZM2 22h2v-2h2v-2H4v2H2v2Z" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 2h8v2h-2v2h-2V4H6V2ZM4 6V4h2v2H4Zm0 10H2V6h2v10Zm2 2H4v-2h2v2Zm2 2H6v-2h2v2Zm10 0v2H8v-2h10Zm2-2v2h-2v-2h2Zm-2-4h2v4h2v-8h-2v2h-2v2Zm-6 0v2h6v-2h-6Zm-2-2h2v2h-2v-2Zm0 0V6H8v6h2Z" />
-              </svg>
-            )}
-          </button>
-
-          <button
-            onClick={() => navigate('/comprar')}
-            className="w-10 h-10 flex items-center justify-center text-[var(--color-foreground)] rounded-full border-2 border-[var(--color-border)] hover:bg-[var(--color-accent)] transition-colors p-2 relative"
-            title="Carrito de compras"
-          >
-            <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path
-                d="M2 2h4v4h16v11H4V4H2V2zm4 13h14V8H6v7zm0 4h3v3H6v-3zm14 0h-3v3h3v-3z"
-                fill="currentColor"
-              />
-            </svg>
-            {cartCount > 0 && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
-                {cartCount}
-              </span>
-            )}
-          </button>
-
-          
-
-          {/* Hamburger button */}
-          <button
-            type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-[var(--color-foreground)] rounded-lg md:hidden hover:bg-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-border)]"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-controls="navbar-menu"
-            aria-expanded={menuOpen}
-          >
-            <span className="sr-only">Open main menu</span>
-            <svg
-              className="w-5 h-5"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 17 14"
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? `backdrop-blur-md ${
+              isXbox
+                ? "bg-[var(--color-background)]/90 border-b border-[var(--color-border)]"
+                : "bg-[var(--color-background)]/90 border-b border-[var(--color-border)] ps2-glow"
+            }`
+          : "bg-transparent"
+      }`}
+    >
+      <div className="max-w-screen-xl mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${
+                isXbox ? "bg-[#107C10] xbox-glow" : "bg-[#4a7bc8] ps2-glow"
+              }`}
             >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M1 1h15M1 7h15M1 13h15"
-              />
-            </svg>
-          </button>
+              <span className="text-white font-bold text-lg">EC</span>
+            </div>
+            <span className="game-title text-xl font-bold text-[var(--color-primary)] hidden sm:block">
+              El Cartucho
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                  location.pathname === item.path
+                    ? `text-[var(--color-primary)] ${isXbox ? "bg-green-50" : "bg-blue-50 dark:bg-blue-900/20"}`
+                    : "text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]"
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Right side actions */}
+          <div className="flex items-center space-x-2">
+            {/* Search */}
+            <div className="relative">
+              {searchOpen ? (
+                <form onSubmit={handleSearch} className="flex items-center">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Buscar juegos..."
+                    className="w-48 px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSearchOpen(false)}
+                    className="ml-2 p-2 text-[var(--color-foreground)] hover:text-[var(--color-primary)]"
+                  >
+                    <X size={18} />
+                  </button>
+                </form>
+              ) : (
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300"
+                  title="Buscar"
+                >
+                  <Search size={20} />
+                </button>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+              title={`Cambiar a ${theme === "light" ? "PlayStation 2" : "Xbox 360"}`}
+            >
+              {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
+
+            {/* Wishlist */}
+            <button
+              onClick={() => {
+                // TODO: Implement wishlist functionality
+                console.log("Wishlist clicked")
+              }}
+              className="p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+              title="Lista de deseos"
+            >
+              <Heart size={20} />
+            </button>
+
+            {/* Cart */}
+            <button
+              onClick={() => navigate("/comprar")}
+              className="relative p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+              title="Carrito de compras"
+            >
+              <ShoppingCart size={20} />
+              {cartCount > 0 && (
+                <span
+                  className={`absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center text-xs text-white rounded-full animate-pulse ${
+                    isXbox ? "bg-[#107C10]" : "bg-[#4a7bc8]"
+                  }`}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* User */}
+            <button
+              onClick={() => {
+                // TODO: Implement user account functionality
+                console.log("User account clicked")
+              }}
+              className="p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+              title="Mi cuenta"
+            >
+              <User size={20} />
+            </button>
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="md:hidden p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300"
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
 
-        {/* Navigation Menu */}
-        <div
-          className={`items-center justify-between w-full md:flex md:w-auto md:order-1 ${
-            menuOpen ? 'block' : 'hidden'
-          }`}
-          id="navbar-menu"
-        >
-          <ul className="flex flex-col p-4 md:p-0 mt-4 font-medium border border-[var(--color-border)] rounded-lg bg-[var(--color-muted)]
-          md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-[var(--color-background)]">
-            <li>
-              <a
-                href="/"
-                className="block py-2 px-3 text-[var(--color-primary)] bg-[var(--color-accent)] rounded-sm md:bg-transparent md:p-0 hover:bg-[var(--color-accent)] hover:text-[var(--color-primary)]"
-                aria-current="page"
-              >
-                Home
-              </a>
-            </li>
-            <li>
-              <a
-                href="/catalogo"
-                className="block py-2 px-3 text-[var(--color-foreground)] rounded-sm hover:bg-[var(--color-accent)] md:hover:bg-transparent md:hover:text-[var(--color-primary)] md:p-0"
-              >
-                Catalogo
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-[var(--color-foreground)] rounded-sm hover:bg-[var(--color-accent)] md:hover:bg-transparent md:hover:text-[var(--color-primary)] md:p-0"
-              >
-                Services
-              </a>
-            </li>
-          </ul>
-        </div>
+        {/* Mobile Navigation */}
+        {menuOpen && (
+          <div className="md:hidden animate-fade-in-up">
+            {/* Background overlay */}
+            <div
+              className={`absolute left-0 right-0 mt-4 mx-4 rounded-xl border border-[var(--color-border)] backdrop-blur-md ${
+                isXbox
+                  ? "bg-[var(--color-background)]/95 shadow-lg"
+                  : "bg-[var(--color-background)]/95 shadow-lg ps2-glow"
+              }`}
+            >
+              <div className="p-4 space-y-2">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMenuOpen(false)}
+                    className={`block px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
+                      location.pathname === item.path
+                        ? `text-[var(--color-primary)] ${isXbox ? "bg-green-50" : "bg-blue-50 dark:bg-blue-900/20"}`
+                        : "text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]"
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+
+                {/* Mobile Search */}
+                <div className="pt-2 border-t border-[var(--color-border)]">
+                  <form onSubmit={handleSearch} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Buscar juegos..."
+                      className="flex-1 px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                    />
+                    <button
+                      type="submit"
+                      className={`px-4 py-2 rounded-lg text-white font-medium ${
+                        isXbox ? "bg-[#107C10] hover:bg-[#0c5f0c]" : "bg-[#4a7bc8] hover:bg-[#3a5ba8]"
+                      } transition-colors`}
+                    >
+                      <Search size={16} />
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
-  );
+  )
 }
 
-export default Navbar;
+export default Navbar
