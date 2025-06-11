@@ -126,7 +126,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             {isLoading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <ShoppingCart size={16} />
+              <ShoppingCart size={14} />
             )}
           </button>
         </div>
@@ -148,7 +148,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             {discount > 0 && <span className="text-xs text-gray-500 line-through">${originalPrice}</span>}
             <div className="flex items-center space-x-2">
               <span className="text-xl font-bold text-[var(--color-primary)]">${price}</span>
-              {discount > 0 && <Zap size={16} className="text-yellow-500" />}
+              {discount > 0 && <Zap size={14} className="text-yellow-500" />}
             </div>
           </div>
 
@@ -164,7 +164,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
               </div>
             ) : (
               <div className="flex items-center space-x-1">
-                <ShoppingCart size={16} />
+                <ShoppingCart size={14} />
                 <span>Agregar</span>
               </div>
             )}

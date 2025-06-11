@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { ShoppingCart, ChevronRight, Gamepad2, Zap, Shield, Truck, Award } from "lucide-react"
+import { Gamepad2, Zap, Shield, Truck, Award } from "lucide-react"
 
 export const Home: React.FC = () => {
   const [theme, setTheme] = useState("light")
@@ -34,12 +34,11 @@ export const Home: React.FC = () => {
   }, [])
 
   const isXbox = theme === "light"
-  const consoleName = isXbox ? "Xbox 360" : "PlayStation 2"
 
   const heroSlides = [
     {
       title: "Los Mejores Juegos",
-      subtitle: `Descubre el catálogo más completo de ${consoleName}`,
+      subtitle: `Revive tu infancia con los clásicos.`,
       image: isXbox
         ? "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800&h=600&fit=crop"
         : "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=600&fit=crop",
@@ -51,7 +50,7 @@ export const Home: React.FC = () => {
     },
     {
       title: "Envío Gratis",
-      subtitle: "En compras mayores a $50 - Entrega en 24-48 horas",
+      subtitle: "A toda la Argentina en compras mayores a $100.000,00",
       image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&h=600&fit=crop",
     },
   ]
@@ -60,15 +59,15 @@ export const Home: React.FC = () => {
     {
       icon: <Gamepad2 size={32} />,
       title: "Catálogo Extenso",
-      description: "Más de 1000 títulos disponibles para tu consola favorita.",
+      description: "Gran variedad de juegos para todas las consolas y géneros.",
       color: isXbox
         ? "bg-green-100 text-green-600"
         : "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
     },
     {
       icon: <Truck size={32} />,
-      title: "Envío Rápido",
-      description: "Recibe tus juegos en menos de 48 horas en cualquier parte del país.",
+      title: "Envíos a Domicilio",
+      description: "Recibe tus juegos en la puerta de tu casa.",
       color: isXbox
         ? "bg-blue-100 text-blue-600"
         : "bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
@@ -84,7 +83,7 @@ export const Home: React.FC = () => {
     {
       icon: <Award size={32} />,
       title: "Calidad Premium",
-      description: "Solo vendemos juegos originales y en perfecto estado.",
+      description: "Solo vendemos juegos originales y en buen estado.",
       color: isXbox
         ? "bg-purple-100 text-purple-600"
         : "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400",
@@ -120,11 +119,11 @@ export const Home: React.FC = () => {
                   </h1>
                   <p className="text-white/90 text-xl mb-8 leading-relaxed">{slide.subtitle}</p>
                   <div className="flex flex-wrap gap-4">
-                    <Link to="/catalogo" className="btn-primary">
+                    <Link to="/catalogo" className="btn-primary flex text-center items-center">
                       <Gamepad2 size={20} className="mr-2" />
                       Explorar Catálogo
                     </Link>
-                    <Link to="/ofertas" className="btn-secondary">
+                    <Link to="/ofertas" className="btn-secondary flex text-center items-center">
                       <Zap size={20} className="mr-2" />
                       Ver Ofertas
                     </Link>
@@ -148,31 +147,6 @@ export const Home: React.FC = () => {
               }`}
             />
           ))}
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-[var(--color-muted)]">
-        <div className="max-w-screen-xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { number: "1000+", label: "Juegos Disponibles" },
-              { number: "50K+", label: "Clientes Felices" },
-              { number: "24h", label: "Envío Express" },
-              { number: "99%", label: "Satisfacción" },
-            ].map((stat, index) => (
-              <div key={index} className="text-center animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div
-                  className={`text-3xl md:text-4xl font-bold text-[var(--color-primary)] mb-2 ${
-                    isXbox ? "xbox-glow" : "ps2-glow"
-                  }`}
-                >
-                  {stat.number}
-                </div>
-                <div className="text-[var(--color-foreground)] font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -208,76 +182,7 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* Featured Games Section */}
-      <section className="py-20 bg-[var(--color-muted)]">
-        <div className="max-w-screen-xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-12">
-            <div>
-              <h2 className="game-title text-3xl md:text-4xl text-[var(--color-primary)] mb-2">Juegos Destacados</h2>
-              <p className="text-[var(--color-foreground)]/70">Los títulos más populares de {consoleName}</p>
-            </div>
-            <Link to="/catalogo" className="btn-secondary group">
-              Ver todos
-              <ChevronRight size={20} className="ml-1 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Halo 3",
-                price: 29.99,
-                image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop",
-              },
-              {
-                title: "Gears of War",
-                price: 24.99,
-                image: "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400&h=300&fit=crop",
-              },
-              {
-                title: "Forza Motorsport",
-                price: 34.99,
-                image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=300&fit=crop",
-              },
-            ].map((game, index) => (
-              <div
-                key={index}
-                className="card overflow-hidden group animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={game.image || "/placeholder.svg"}
-                    alt={game.title}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 right-3">
-                    <span
-                      className={`px-2 py-1 text-xs font-bold text-white rounded-full ${
-                        isXbox ? "bg-green-500" : "bg-blue-500"
-                      }`}
-                    >
-                      POPULAR
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="game-title text-xl font-bold mb-2">{game.title}</h3>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-[var(--color-primary)]">${game.price}</span>
-                    <button className="btn-primary text-sm px-4 py-2">
-                      <ShoppingCart size={16} className="mr-1" />
-                      Agregar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+         
       {/* CTA Section */}
       <section
         className={`py-20 relative overflow-hidden ${
@@ -295,11 +200,11 @@ export const Home: React.FC = () => {
             inolvidables.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/catalogo" className="btn-primary bg-white text-gray-900 hover:bg-gray-100">
+            <Link to="/catalogo" className="btn-primary bg-white text-gray-900 hover:bg-gray-100 flex text-center items-center">
               <Gamepad2 size={20} className="mr-2" />
               Explorar Catálogo
             </Link>
-            <Link to="/ofertas" className="btn-secondary border-white text-white hover:bg-white hover:text-gray-900">
+            <Link to="/ofertas" className="btn-secondary border-white text-white hover:bg-white hover:text-gray-900 flex text-center items-center">
               <Zap size={20} className="mr-2" />
               Ver Ofertas Especiales
             </Link>
