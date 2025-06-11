@@ -10,11 +10,10 @@ type CardProps = {
   imgSrc: string
   imgAlt: string
   title: string
-  description: string
   price: number
 }
 
-export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt, title, description, price }) => {
+export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt, title, price }) => {
   const { addToCart } = useCart()
   const [theme, setTheme] = useState("light")
   const [isLoading, setIsLoading] = useState(false)
@@ -76,27 +75,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
           onLoad={() => setImageLoaded(true)}
         />
 
-        {/* Overlay Actions */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <div className="flex space-x-2">
-            <button
-              className="p-2 bg-white/90 rounded-full text-gray-800 hover:bg-white transition-all duration-300 transform hover:scale-110"
-              title="Vista rápida"
-            >
-              <Eye size={16} />
-            </button>
-            <button
-              onClick={toggleWishlist}
-              className={`p-2 rounded-full transition-all duration-300 transform hover:scale-110 ${
-                isWishlisted ? "bg-red-500 text-white" : "bg-white/90 text-gray-800 hover:bg-white"
-              }`}
-              title={isWishlisted ? "Quitar de favoritos" : "Agregar a favoritos"}
-            >
-              <Heart size={16} className={isWishlisted ? "fill-current" : ""} />
-            </button>
-          </div>
-        </div>
-
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col space-y-1">
           {discount > 0 && (
@@ -138,9 +116,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
         <h3 className="game-title text-lg font-semibold mb-2 text-[var(--color-foreground)] line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors duration-300">
           {title}
         </h3>
-
-        {/* Description */}
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-grow line-clamp-2">{description}</p>
 
         {/* Price and Action */}
         <div className="flex items-center justify-between">

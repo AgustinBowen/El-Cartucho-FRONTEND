@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom"
 import type { Producto } from "../types/Producto"
 import { CardComponent } from "../components/Card"
 import { SkeletonCard } from "../components/SkeletonCard"
-import { Search, Grid3X3, List, SlidersHorizontal, Gamepad2, ChevronDown } from "lucide-react"
+import { Grid3X3, List, SlidersHorizontal, Gamepad2, ChevronDown } from "lucide-react"
 
 export const Catalog: React.FC = () => {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -87,8 +87,7 @@ export const Catalog: React.FC = () => {
     })
 
   const isXbox = theme === "light"
-  const consoleName = isXbox ? "Xbox 360" : "PlayStation 2"
-
+  
   if (error) {
     return (
       <div className="min-h-screen bg-[var(--color-background)] pt-16 flex items-center justify-center">
@@ -118,10 +117,10 @@ export const Catalog: React.FC = () => {
       >
         <div className="max-w-screen-xl mx-auto animate-fade-in-up">
           <div className="flex items-center mb-4">
-            <Gamepad2 className="mr-3 text-white" size={40} />
+            <Gamepad2 className="mr-3 text-white" size={100} />
             <div>
-              <h1 className="game-title text-4xl md:text-5xl text-white mb-2">Catálogo {consoleName}</h1>
-              <p className="text-white/90 text-lg">Descubre los mejores títulos para tu consola favorita</p>
+              <h1 className="game-title text-4xl md:text-5xl text-white mb-2">Catálogo</h1>
+              <p className="text-white/90 text-lg">Reviví la época dorada del gaming con nuestra colección de productos retro. Juegos clásicos y nuevos, consolas legendarias, accesorios y merchandising de títulos icónicos como GTA: San Andreas, God of War, Halo 3 y Red Dead Redemption.</p>
             </div>
           </div>
         </div>
@@ -133,9 +132,6 @@ export const Catalog: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-4 items-center">
             {/* Search */}
             <div className="relative flex-grow">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search size={20} className="text-gray-400" />
-              </div>
               <input
                 type="text"
                 placeholder="Buscar juegos..."
@@ -187,7 +183,7 @@ export const Catalog: React.FC = () => {
             </div>
 
             {/* Filters Toggle */}
-            <button onClick={() => setShowFilters(!showFilters)} className="btn-secondary">
+            <button onClick={() => setShowFilters(!showFilters)} className="btn-secondary flex text-center items-center">
               <SlidersHorizontal size={20} className="mr-2" />
               Filtros
             </button>
@@ -296,7 +292,6 @@ export const Catalog: React.FC = () => {
                   imgSrc={producto.imagen}
                   imgAlt={producto.nombre}
                   title={producto.nombre}
-                  description={`Juego original para ${consoleName}`}
                   producto_id={producto.id}
                   price={producto.precio}
                 />

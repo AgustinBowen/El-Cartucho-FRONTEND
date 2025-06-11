@@ -2,7 +2,7 @@
 
 import { useCart } from "../context/CartContext"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, Heart, Gift } from "lucide-react"
+import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus } from "lucide-react"
 import { Link } from "react-router-dom"
 
 export const CartScreen = () => {
@@ -10,9 +10,6 @@ export const CartScreen = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [theme, setTheme] = useState("light")
-  const [promoCode, setPromoCode] = useState("")
-  const [promoApplied, setPromoApplied] = useState(false)
-  const [showPromoInput, setShowPromoInput] = useState(false)
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light"
@@ -77,19 +74,6 @@ export const CartScreen = () => {
     removeFromCart(productId)
   }
 
-  const applyPromoCode = () => {
-    if (promoCode.toLowerCase() === "gaming10") {
-      setPromoApplied(true)
-      setShowPromoInput(false)
-    } else {
-      // Show error for invalid code
-      alert("Código promocional inválido. Intenta con 'GAMING10'")
-    }
-  }
-
-  const discount = promoApplied ? total * 0.1 : 0
-  const finalTotal = total - discount
-
   return (
     <div className="min-h-screen bg-[var(--color-background)] pt-16">
       {/* Header */}
@@ -132,7 +116,6 @@ export const CartScreen = () => {
               ¿No sabes qué comprar? ¡Cientos de juegos increíbles te esperan!
             </p>
             <Link to="/catalogo" className="btn-primary">
-              <ShoppingCart size={20} className="mr-2" />
               Explorar catálogo
             </Link>
           </div>
@@ -211,63 +194,12 @@ export const CartScreen = () => {
                 </div>
               ))}
 
-              {/* Wishlist Suggestion */}
-              <div className="card p-4 border-dashed animate-fade-in-up">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Heart size={20} className="text-red-500 mr-2" />
-                    <span className="text-sm">¿Quieres guardar algo para después?</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      // TODO: Implement wishlist functionality
-                      console.log("View wishlist clicked")
-                    }}
-                    className="text-sm text-[var(--color-primary)] hover:underline"
-                  >
-                    Ver lista de deseos
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="card p-6 sticky top-24 animate-fade-in-up">
                 <h3 className="text-xl font-bold mb-6">Resumen del pedido</h3>
-
-                {/* Promo Code */}
-                <div className="mb-6">
-                  {!showPromoInput ? (
-                    <button
-                      onClick={() => setShowPromoInput(true)}
-                      className="flex items-center text-[var(--color-primary)] hover:underline"
-                    >
-                      <Gift size={16} className="mr-2" />
-                      ¿Tienes un código promocional?
-                    </button>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={promoCode}
-                          onChange={(e) => setPromoCode(e.target.value)}
-                          placeholder="Código promocional"
-                          className="input flex-1"
-                        />
-                        <button onClick={applyPromoCode} className="btn-secondary px-4">
-                          Aplicar
-                        </button>
-                      </div>
-                      {promoApplied && (
-                        <div className="text-sm text-green-600 dark:text-green-400">
-                          ✓ Código aplicado: 10% de descuento
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
 
                 {/* Price Breakdown */}
                 <div className="space-y-3 mb-6">
@@ -276,24 +208,11 @@ export const CartScreen = () => {
                     <span>${total.toFixed(2)}</span>
                   </div>
 
-                  {promoApplied && (
-                    <div className="flex justify-between text-green-600 dark:text-green-400">
-                      <span>Descuento (GAMING10)</span>
-                      <span>-${discount.toFixed(2)}</span>
-                    </div>
-                  )}
-
                   <div className="flex justify-between">
                     <span>Envío</span>
                     <span className="text-green-600 dark:text-green-400">Gratis</span>
                   </div>
 
-                  <div className="border-t border-[var(--color-border)] pt-3">
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span className="text-[var(--color-primary)]">${finalTotal.toFixed(2)}</span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Checkout Button */}
@@ -332,7 +251,7 @@ export const CartScreen = () => {
                     <div className="w-4 h-4 bg-green-500 rounded-full mr-2 flex items-center justify-center">
                       <span className="text-white text-xs">✓</span>
                     </div>
-                    Pago 100% seguro con encriptación SSL
+                    Pago 100% seguro con Mercado Pago
                   </div>
                 </div>
               </div>

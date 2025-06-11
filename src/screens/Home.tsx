@@ -119,13 +119,9 @@ export const Home: React.FC = () => {
                   </h1>
                   <p className="text-white/90 text-xl mb-8 leading-relaxed">{slide.subtitle}</p>
                   <div className="flex flex-wrap gap-4">
-                    <Link to="/catalogo" className="btn-primary flex text-center items-center">
+                    <Link to="/catalogo" className="btn-secondary flex text-center items-center">
                       <Gamepad2 size={20} className="mr-2" />
                       Explorar Catálogo
-                    </Link>
-                    <Link to="/ofertas" className="btn-secondary flex text-center items-center">
-                      <Zap size={20} className="mr-2" />
-                      Ver Ofertas
                     </Link>
                   </div>
                 </div>
@@ -200,13 +196,9 @@ export const Home: React.FC = () => {
             inolvidables.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/catalogo" className="btn-primary bg-white text-gray-900 hover:bg-gray-100 flex text-center items-center">
+            <Link to="/catalogo" className="btn-secondary bg-white text-gray-900 hover:bg-gray-100 flex text-center items-center">
               <Gamepad2 size={20} className="mr-2" />
               Explorar Catálogo
-            </Link>
-            <Link to="/ofertas" className="btn-secondary border-white text-white hover:bg-white hover:text-gray-900 flex text-center items-center">
-              <Zap size={20} className="mr-2" />
-              Ver Ofertas Especiales
             </Link>
           </div>
         </div>
