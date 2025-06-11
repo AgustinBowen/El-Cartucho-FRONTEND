@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useCart } from "../context/CartContext"
 import { useNavigate, Link, useLocation } from "react-router-dom"
-import { ShoppingCart, Menu, X, Sun, Moon, Search, User, Heart } from "lucide-react"
+import { ShoppingCart, Menu, X, Sun, Moon, Search, User } from "lucide-react"
 
 function Navbar() {
   const { cartItems } = useCart()
@@ -65,13 +65,10 @@ function Navbar() {
   }
 
   const isXbox = theme === "light"
-  const consoleName = isXbox ? "Xbox 360" : "PlayStation 2"
 
   const navItems = [
     { name: "Inicio", path: "/" },
     { name: "Catálogo", path: "/catalogo" },
-    { name: "Ofertas", path: "/ofertas" },
-    { name: "Novedades", path: "/novedades" },
   ]
 
   return (
@@ -122,7 +119,7 @@ function Navbar() {
           {/* Right side actions */}
           <div className="flex items-center space-x-2">
             {/* Search */}
-            <div className="relative">
+            <div className="hidden md:flex relative" >
               {searchOpen ? (
                 <form onSubmit={handleSearch} className="flex items-center">
                   <input
@@ -159,18 +156,6 @@ function Navbar() {
               title={`Cambiar a ${theme === "light" ? "PlayStation 2" : "Xbox 360"}`}
             >
               {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
-            </button>
-
-            {/* Wishlist */}
-            <button
-              onClick={() => {
-                // TODO: Implement wishlist functionality
-                console.log("Wishlist clicked")
-              }}
-              className="p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
-              title="Lista de deseos"
-            >
-              <Heart size={20} />
             </button>
 
             {/* Cart */}
