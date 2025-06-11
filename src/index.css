@@ -3,27 +3,45 @@
 
 /** 1. EXTENDER TEMA */
 @theme {
-	--color-background: #f9fafb;
-	--color-foreground: #1f2937;
-	--color-primary: #10b981;
-	--color-secondary: #3b82f6;
+	/* PlayStation 1 theme */
+	--color-background: #d9d9d9; /* Gris claro tipo carcasa PS1 */
+	--color-foreground: #2e2e2e; /* Gris oscuro */
+	--color-primary: #7da6f7; /* Azul pálido */
+	--color-secondary: #c75c5c; /* Rojo apagado */
+
+	--color-muted: #bfbfbf; /* Gris para bordes/sombras */
+	--color-accent: #d9d9d9; /* Azul de acento más claro */
+	--color-border: #a0a0a0; /* Bordes */
+	--color-link: #4f7de8; /* Links */
+
+	--color-button: #777777; /* Botón gris PS1 */
+	--color-highlight: #8ca8d6; /* Bordes destacados / hover */
 
 	--font-inter: 'Inter', sans-serif;
 }
 
 /** 2. SOBREESCRIBIR LAS VARIABLES DE COLORES PARA CADA TEMA */
 @layer base {
-	/* Tema Dark */
+	/* Tema Dark - SEGA */
 	:root[data-theme='dark'] {
-		--color-background: #111827;
-		--color-foreground: #e5e7eb;
-		--color-primary: #f43f5e;
-		--color-secondary: #fbbf24;
+		--color-background: #0a0a10; /* Gris-azul muy oscuro, casi negro */
+		--color-foreground: #e5e5e5; /* Gris claro para texto */
+		--color-primary: #ff003c; /* Rojo SEGA */
+		--color-secondary: #ffd700; /* Dorado SEGA */
+
+		--color-muted: #14141e; /* Gris azulado profundo */
+		--color-accent: #2e3b8f; /* Azul SEGA más contenido */
+		--color-border: #2e2e40; /* Bordes azulados suaves */
+		--color-link: #3b9eff; /* Links azules SEGA style */
+
+		--color-button: #D6001C; /* Rojo SEGA (botón) */
+		--color-highlight: #FFD700; /* Dorado SEGA para hover / borde */
 	}
 }
+
 
 /** 3. APLICAR UTILIDADES GLOBALES AL HTML, BODY */
 html,
 body {
-	@apply bg-background text-foreground font-inter;
+	@apply bg-[var(--color-background)] text-[var(--color-foreground)] font-inter;
 }
