@@ -1,20 +1,33 @@
-import React from "react";
+// CardComponent.tsx
+import { useCart } from "../context/CartContext";
 
 type CardProps = {
+  producto_id: number; // nuevo!
   imgSrc: string;
   imgAlt: string;
   title: string;
   description: string;
-  link?: string;
+  price: number;
 };
 
 export const CardComponent: React.FC<CardProps> = ({
+  producto_id,
   imgSrc,
   imgAlt,
   title,
   description,
-  link,
+  price
 }) => {
+  const { addToCart } = useCart();
+
+  const handleAdd = () => {
+    addToCart({
+      producto_id,
+      title,
+      price
+    });
+  };
+
   return (
     <div className="flex flex-row lg:flex-col max-w-sm lg:max-w-md bg-primary border border-muted rounded-2xl shadow-md overflow-hidden">
       <img
@@ -29,14 +42,12 @@ export const CardComponent: React.FC<CardProps> = ({
         <p className="font-normal text-primary dark:text-gray-400 mb-4">
           {description}
         </p>
-        {link && (
-          <a
-            href={link}
-            className="mt-auto inline-block bg-secondary hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-center"
-          >
-            Comprar
-          </a>
-        )}
+        <button
+          onClick={handleAdd}
+          className="mt-auto inline-block bg-secondary hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-center"
+        >
+          Agregar al carrito
+        </button>
       </div>
     </div>
   );

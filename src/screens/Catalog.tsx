@@ -39,7 +39,8 @@ export const Catalog: React.FC = () => {
           imgAlt={producto.nombre}
           title={producto.nombre}
           description={`Precio: $${producto.precio}`}
-          link={`/producto/${producto.id}`}
+          producto_id={producto.id} // Asegúrate de que el id sea un número
+          price={producto.precio}
         />
       ))}
     </div>

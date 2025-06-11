@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useCart } from "../context/CartContext";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const { cartItems } = useCart(); 
+  const navigate = useNavigate();
+
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
   const [theme, setTheme] = useState('light');
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -63,6 +70,26 @@ function Navbar() {
               </svg>
             )}
           </button>
+
+          <button
+            onClick={() => navigate('/comprar')}
+            className="w-10 h-10 flex items-center justify-center text-[var(--color-foreground)] rounded-full border-2 border-[var(--color-border)] hover:bg-[var(--color-accent)] transition-colors p-2 relative"
+            title="Carrito de compras"
+          >
+            <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path
+                d="M2 2h4v4h16v11H4V4H2V2zm4 13h14V8H6v7zm0 4h3v3H6v-3zm14 0h-3v3h3v-3z"
+                fill="currentColor"
+              />
+            </svg>
+            {cartCount > 0 && (
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
+                {cartCount}
+              </span>
+            )}
+          </button>
+
+          
 
           {/* Hamburger button */}
           <button
