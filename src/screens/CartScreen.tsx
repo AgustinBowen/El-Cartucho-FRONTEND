@@ -4,7 +4,6 @@ import { useState } from "react";
 export const CartScreen = () => {
   const { cartItems, updateQuantity, total } = useCart();
   const [loading, setLoading] = useState(false);
-  const [success] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
     const handleConfirmPurchase = async () => {
@@ -77,7 +76,6 @@ export const CartScreen = () => {
             {loading ? "Enviando pedido..." : "Confirmar compra"}
           </button>
 
-          {success && <p className="text-green-600 mt-2">¡Pedido enviado correctamente!</p>}
           {error && <p className="text-red-600 mt-2">Error: {error}</p>}
         </div>
       )}
