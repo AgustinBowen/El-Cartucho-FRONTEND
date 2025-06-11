@@ -14,7 +14,7 @@ function App() {
 					<Route path="/" element={<Home />} />
 					<Route path="/catalogo" element={<Catalog />} />
 					<Route path="/comprar" element={<CartScreen />} />
-					<Route path="/success*" element={<div>Se realizo el pago correctamente</div>} />
+					<Route path="/pago/success*" element={<div>Se realizo el pago correctamente</div>} />
 				</Routes>
 			</CartProvider>
 		</Router>
