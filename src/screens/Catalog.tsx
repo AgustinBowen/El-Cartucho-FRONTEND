@@ -87,7 +87,7 @@ export const Catalog: React.FC = () => {
     })
 
   const isXbox = theme === "light"
-  
+
   if (error) {
     return (
       <div className="min-h-screen bg-[var(--color-background)] pt-16 flex items-center justify-center">
@@ -159,7 +159,7 @@ export const Catalog: React.FC = () => {
             </div>
 
             {/* View Mode */}
-            <div className="flex rounded-lg border border-[var(--color-border)] overflow-hidden">
+            <div className="rounded-lg border border-[var(--color-border)] overflow-hidden hidden md:flex ">
               <button
                 onClick={() => setViewMode("grid")}
                 className={`p-2 transition-colors ${
