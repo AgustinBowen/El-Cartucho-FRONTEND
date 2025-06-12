@@ -15,7 +15,7 @@ type CardProps = {
 }
 
 // Modificar la función CardComponent para incluir un diseño horizontal en móviles
-export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt, title, description, price }) => {
+export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt, title, price }) => {
   const { addToCart } = useCart()
   const [theme, setTheme] = useState("light")
   const [isLoading, setIsLoading] = useState(false)
@@ -96,7 +96,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             <h3 className="game-title text-sm font-semibold mb-1 text-[var(--color-foreground)] line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors duration-300">
               {title}
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{description}</p>
           </div>
 
           <div className="flex items-center justify-between mt-auto">
@@ -197,9 +196,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
           <h3 className="game-title text-lg font-semibold mb-2 text-[var(--color-foreground)] line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors duration-300">
             {title}
           </h3>
-
-          {/* Description */}
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-grow line-clamp-2">{description}</p>
 
           {/* Price and Action */}
           <div className="flex items-center justify-between">
