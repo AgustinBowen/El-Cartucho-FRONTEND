@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useCart } from "../context/CartContext"
-import { ShoppingCart, Zap } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import { useState, useEffect } from "react"
 
 type CardProps = {
@@ -51,10 +51,8 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
 
     setIsLoading(false)
   }
-
+  
   const isXbox = theme === "light"
-  const originalPrice = Math.floor(price * 1.2)
-  const discount = Math.floor(((originalPrice - price) / originalPrice) * 100)
 
   // Diseño para móviles (horizontal) y desktop (vertical)
   return (
@@ -74,14 +72,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             onLoad={() => setImageLoaded(true)}
           />
 
-          {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col space-y-1">
-            {discount > 0 && (
-              <span className="px-1 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full animate-pulse">
-                -{discount}%
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Contenido a la derecha */}
@@ -94,7 +84,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
 
           <div className="flex items-center justify-between mt-auto">
             <div className="flex flex-col">
-              {discount > 0 && <span className="text-xs text-gray-500 line-through">${originalPrice}</span>}
               <span className="text-xs font-bold text-[var(--color-primary)]">${price}</span>
             </div>
 
@@ -150,17 +139,15 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
         {/* Content */}
         <div className="p-4 flex flex-col flex-grow">
           {/* Title */}
-          <h3 className="game-title text-lg font-semibold mb-2 text-[var(--color-foreground)] line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors duration-300">
+          <h3 className="truncate game-title text-lg font-semibold mb-2 text-[var(--color-foreground)] line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors duration-300">
             {title}
           </h3>
 
           {/* Price and Action */}
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
-              {discount > 0 && <span className="text-xs text-gray-500 line-through">${originalPrice}</span>}
               <div className="flex items-center space-x-2">
                 <span className="text-xl font-bold text-[var(--color-primary)]">${price}</span>
-                {discount > 0 && <Zap size={16} className="text-yellow-500" />}
               </div>
             </div>
 
