@@ -20,7 +20,7 @@ export const Catalog: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [meta, setMeta] = useState<any>(null)
-  const [links, setLinks] = useState<any>(null)
+  const [setLinks] = useState<any>(null)
 
 
   const [searchParams] = useSearchParams()
