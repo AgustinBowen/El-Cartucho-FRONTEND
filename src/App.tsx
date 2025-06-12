@@ -1,18 +1,28 @@
-import './App.css'
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import { Home } from './screens/Home';
+import { SuccessScreen } from './screens/SuccessScreen';
+import { ErrorScreen } from './screens/ErrorScreen';
+import { Catalog } from './screens/Catalog';
+import { CartScreen } from './screens/CartScreen';
+import { CartProvider } from "./context/CartContext";
+
 
 function App() {
-  return (
-    <>
-      <img
-        src="/images/imagen.png"
-        className="w-64 h-64 sm:w-80 sm:h-80 lg:w-[450px] lg:h-[450px] rounded-lg shadow-2xl object-cover mb-10"
-        alt="imagen en construcción"
-      />
-      <p className='text-white font-medium'>by bikuta & architin777</p>
-    </>
-  )
+	return (
+		<Router>
+			<CartProvider>
+				<Navbar />  {/* Ahora SI adentro del Router */}
+				<Routes>
+					<Route path="/" element={<Home />} />
+					<Route path="/catalogo" element={<Catalog />} />
+					<Route path="/comprar" element={<CartScreen />} />
+					<Route path="/pago/success*" element={<SuccessScreen />} />
+					<Route path="/*" element={<ErrorScreen />} />
+				</Routes>
+			</CartProvider>
+		</Router>
+	);
 }
 
-export default App
-
-
+export default App;
