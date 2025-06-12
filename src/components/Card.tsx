@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useCart } from "../context/CartContext"
-import { ShoppingCart, Heart, Eye, Zap } from "lucide-react"
+import { ShoppingCart, Zap } from "lucide-react"
 import { useState, useEffect } from "react"
 
 type CardProps = {
@@ -18,7 +18,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
   const { addToCart } = useCart()
   const [theme, setTheme] = useState("light")
   const [isLoading, setIsLoading] = useState(false)
-  const [isWishlisted, setIsWishlisted] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
@@ -51,10 +50,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
     })
 
     setIsLoading(false)
-  }
-
-  const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted)
   }
 
   const isXbox = theme === "light"
@@ -132,43 +127,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             alt={imgAlt}
             onLoad={() => setImageLoaded(true)}
           />
-
-          {/* Overlay Actions */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-            <div className="flex space-x-2">
-              <button
-                className="p-2 bg-white/90 rounded-full text-gray-800 hover:bg-white transition-all duration-300 transform hover:scale-110"
-                title="Vista rápida"
-              >
-                <Eye size={16} />
-              </button>
-              <button
-                onClick={toggleWishlist}
-                className={`p-2 rounded-full transition-all duration-300 transform hover:scale-110 ${
-                  isWishlisted ? "bg-red-500 text-white" : "bg-white/90 text-gray-800 hover:bg-white"
-                }`}
-                title={isWishlisted ? "Quitar de favoritos" : "Agregar a favoritos"}
-              >
-                <Heart size={16} className={isWishlisted ? "fill-current" : ""} />
-              </button>
-            </div>
-          </div>
-
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col space-y-1">
-            {discount > 0 && (
-              <span className="px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full animate-pulse">
-                -{discount}%
-              </span>
-            )}
-            <span
-              className={`px-2 py-1 text-xs font-bold text-white rounded-full ${
-                isXbox ? "bg-[#107C10]" : "bg-[#4a7bc8]"
-              }`}
-            >
-              NUEVO
-            </span>
-          </div>
 
           {/* Quick Add Button */}
           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">

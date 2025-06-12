@@ -20,7 +20,6 @@ export const Catalog: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [meta, setMeta] = useState<any>(null)
-  const [setLinks] = useState<any>(null)
 
 
   const [searchParams] = useSearchParams()
@@ -60,7 +59,6 @@ export const Catalog: React.FC = () => {
         const data = await response.json()
         setProductos(data.data)
         setMeta(data.meta)
-        setLinks(data.links)
         setCurrentPage(data.meta.current_page)
       } catch (err: any) {
         setError(err.message)
