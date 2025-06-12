@@ -18,6 +18,10 @@ export const Catalog: React.FC = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
   const [showFilters, setShowFilters] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [meta, setMeta] = useState<any>(null)
+  const [links, setLinks] = useState<any>(null)
+
 
   const [searchParams] = useSearchParams()
 
@@ -45,16 +49,19 @@ export const Catalog: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    const fetchProductos = async () => {
+    const fetchProductos = async (page = 1) => {
       try {
         setLoading(true)
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/producto/listar`)
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/producto/listar?page=${page}`)
         if (!response.ok) {
           throw new Error("Error al obtener productos")
         }
 
         const data = await response.json()
         setProductos(data.data)
+        setMeta(data.meta)
+        setLinks(data.links)
+        setCurrentPage(data.meta.current_page)
       } catch (err: any) {
         setError(err.message)
       } finally {
@@ -62,8 +69,9 @@ export const Catalog: React.FC = () => {
       }
     }
 
-    fetchProductos()
-  }, [])
+
+    fetchProductos(currentPage)
+  }, [currentPage])
 
   const filteredAndSortedProducts = productos
     .filter((producto) => {
@@ -120,7 +128,7 @@ export const Catalog: React.FC = () => {
             <Gamepad2 className="mr-3 text-white" size={100} />
             <div>
               <h1 className="game-title text-4xl md:text-5xl text-white mb-2">Catálogo</h1>
-              <p className="text-white/90 text-lg">Reviví la época dorada del gaming con nuestra colección de productos retro. Juegos clásicos y nuevos, consolas legendarias, accesorios y merchandising de títulos icónicos como GTA: San Andreas, God of War, Halo 3 y Red Dead Redemption.</p>
+              <p className="text-white/90 text-lg">Consolas legendarias, juegos eternos. Memory Card no incluida.</p>
             </div>
           </div>
         </div>
@@ -241,9 +249,6 @@ export const Catalog: React.FC = () => {
             )}
           </p>
 
-          {!loading && filteredAndSortedProducts.length > 0 && (
-            <div className="text-sm text-[var(--color-foreground)]/50">Última actualización: hace 2 minutos</div>
-          )}
         </div>
 
         {/* Products Grid/List */}
@@ -299,6 +304,37 @@ export const Catalog: React.FC = () => {
             ))}
           </div>
         )}
+
+        {/* Pagination */}
+        {meta && meta.last_page > 1 && (
+          <div className="flex justify-center items-center mt-8 space-x-2">
+            {meta.links.map((link: any, index: number) => {
+              if (link.label === "&laquo; Anterior" || link.label === "Siguiente &raquo;") {
+                return (
+                  <button
+                    key={index}
+                    disabled={!link.url}
+                    onClick={() => link.url && setCurrentPage(new URL(link.url).searchParams.get("page") as unknown as number)}
+                    className={`btn-secondary px-3 py-1 ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    {link.label.includes("Anterior") ? "<" : ">"}
+                  </button>
+                )
+              } else {
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentPage(Number(link.label))}
+                    className={`btn-secondary px-3 py-1 ${link.active ? "bg-[var(--color-primary)] text-white" : ""}`}
+                  >
+                    {link.label}
+                  </button>
+                )
+              }
+            })}
+          </div>
+        )}
+
       </div>
     </div>
   )
