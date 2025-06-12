@@ -62,29 +62,13 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
         {!imageLoaded && <div className="absolute inset-0 shimmer"></div>}
 
         <img
-          className={`w-full h-48 object-cover transition-all duration-500 group-hover:scale-110 ${
+          className={`w-full h-48 object-cover transition-all ease-in-out duration-500 ${
             imageLoaded ? "opacity-100" : "opacity-0"
           }`}
           src={imgSrc || "/placeholder.svg"}
           alt={imgAlt}
           onLoad={() => setImageLoaded(true)}
         />
-
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col space-y-1">
-          {discount > 0 && (
-            <span className="px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full animate-pulse">
-              -{discount}%
-            </span>
-          )}
-          <span
-            className={`px-2 py-1 text-xs font-bold text-white rounded-full ${
-              isXbox ? "bg-[#107C10]" : "bg-[#4a7bc8]"
-            }`}
-          >
-            NUEVO
-          </span>
-        </div>
 
         {/* Quick Add Button */}
         <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
@@ -125,7 +109,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
           <button
             onClick={handleAdd}
             disabled={isLoading}
-            className={`btn-primary text-sm px-4 py-2 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+            className={`btn-primary cursor-pointer text-sm px-4 py-2 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">
