@@ -101,7 +101,8 @@ function Navbar() {
                 className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${isXbox ? "bg-[#107C10] xbox-glow" : "bg-[#4a7bc8] ps2-glow"
                   }`}
               >
-                <span className="text-white font-bold text-lg">EC</span>
+                <img src="/images/navbar.webp" alt="Icon" className="w-7 h-7" />
+
               </div>
               <span className="game-title text-xl font-bold text-[var(--color-primary)] hidden sm:block">
                 El Cartucho
