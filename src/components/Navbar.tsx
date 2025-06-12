@@ -115,7 +115,7 @@ function Navbar() {
                   key={item.path}
                   to={item.path}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${location.pathname === item.path
-                      ? `text-[var(--color-primary)] ${isXbox ? "bg-green-50" : "bg-blue-50 dark:bg-blue-900/20"}`
+                      ? `text-[var(--color-secondary)] ${isXbox ? "bg-green-50" : "bg-blue-50 dark:bg-blue-900/20"}`
                       : "text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]"
                     }`}
                 >
