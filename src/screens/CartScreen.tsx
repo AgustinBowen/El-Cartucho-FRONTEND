@@ -28,7 +28,6 @@ export const CartScreen = () => {
   }, [])
 
   const isXbox = theme === "light"
-  const consoleName = isXbox ? "Xbox 360" : "PlayStation 2"
 
   const handleConfirmPurchase = async () => {
     setLoading(true)
@@ -152,7 +151,6 @@ export const CartScreen = () => {
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h3 className="font-bold text-lg">{item.title}</h3>
-                          <p className="text-sm text-[var(--color-foreground)]/70">Juego para {consoleName}</p>
                         </div>
                         <button
                           onClick={() => handleRemoveItem(item.producto_id)}
