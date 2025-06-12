@@ -84,7 +84,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
 
           <div className="flex items-center justify-between mt-auto">
             <div className="flex flex-col">
-              <span className="text-xs font-bold text-[var(--color-primary)]">${price}</span>
+              <span className="text-sm font-bold text-[var(--color-primary)]">${price}</span>
             </div>
 
             <button
