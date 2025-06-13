@@ -1,13 +1,15 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { Gamepad2, Shield, Truck, Award } from "lucide-react"
 
 export const Home: React.FC = () => {
   const [theme, setTheme] = useState("light")
-  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false)
+  const [showVideo, setShowVideo] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light"
@@ -25,35 +27,42 @@ export const Home: React.FC = () => {
     return () => observer.disconnect()
   }, [])
 
-  // Auto-slide para el hero
+  // Optimización: Cargar video solo cuando esté visible y conexión lo permita
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3)
-    }, 5000)
-    return () => clearInterval(timer)
+    const loadVideo = () => {
+      // Verificar si la conexión es buena (opcional)
+      const connection = (navigator as any).connection
+      const isSlowConnection = connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g')
+
+      if (!isSlowConnection) {
+        setShowVideo(true)
+
+        // Precargar el video
+        if (videoRef.current) {
+          videoRef.current.load()
+        }
+      }
+    }
+
+    // Cargar video después de un pequeño delay para no bloquear el render inicial
+    const timer = setTimeout(loadVideo, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   const isXbox = theme === "light"
 
-  const heroSlides = [
-    {
-      title: "Los Mejores Juegos",
-      subtitle: `Revive tu infancia con los clásicos.`,
-      image: isXbox
-        ? "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800&h=600&fit=crop"
-        : "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=600&fit=crop",
-    },
-    {
-      title: "Ofertas Increíbles",
-      subtitle: "Hasta 50% de descuento en títulos seleccionados",
-      image: "https://images.unsplash.com/photo-1556438064-2d7646166914?w=800&h=600&fit=crop",
-    },
-    {
-      title: "Envío Gratis",
-      subtitle: "A toda la Argentina en compras mayores a $100.000,00",
-      image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&h=600&fit=crop",
-    },
-  ]
+  const handleVideoLoad = () => {
+    setIsVideoLoaded(true)
+    if (videoRef.current) {
+      videoRef.current.play().catch(console.error)
+    }
+  }
+
+  const handleVideoError = () => {
+    console.warn('Video failed to load, showing fallback image')
+    setIsVideoLoaded(false)
+    setShowVideo(false)
+  }
 
   const features = [
     {
@@ -91,59 +100,63 @@ export const Home: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] pt-16">
-      {/* Hero Section with Carousel */}
+    <div className="min-h-screen bg-[var(--color-background)] pt-16 ">
+      {/* Hero Section with Video */}
       <section className="relative h-[70vh] overflow-hidden">
-        {heroSlides.map((slide, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-all duration-1000 ${
-              index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"
-            }`}
+        {/* Video Background */}
+        {showVideo && (
+          <video
+            ref={videoRef}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${isVideoLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            onLoadedData={handleVideoLoad}
+            onError={handleVideoError}
+            style={{ filter: 'brightness(0.7)' }}
           >
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${slide.image})` }}>
-              <div
-                className={`absolute inset-0 ${
-                  isXbox
-                    ? "bg-gradient-to-r from-green-900/80 to-green-700/60"
-                    : "bg-gradient-to-r from-blue-900/80 to-blue-700/60"
-                }`}
-              ></div>
-            </div>
+            <source
+              src="https://res.cloudinary.com/dud5m1ltq/video/upload/q_auto,f_auto/herovideo_zwekfy.mp4"
+              type="video/mp4"
+            />
+          </video>
 
-            <div className="relative z-10 h-full flex items-center">
-              <div className="max-w-screen-xl mx-auto px-4 w-full">
-                <div className="max-w-2xl animate-fade-in-up">
-                  <h1 className="game-title text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-tight">
-                    {slide.title}
-                  </h1>
-                  <p className="text-white/90 text-xl mb-8 leading-relaxed">{slide.subtitle}</p>
-                  <div className="flex flex-wrap gap-4">
-                    <Link to="/catalogo" className="btn-secondary flex text-center items-center">
-                      <Gamepad2 size={20} className="mr-2" />
-                      Explorar Catálogo
-                    </Link>
-                  </div>
-                </div>
+        )}
+
+
+
+        {/* Gradient Overlay */}
+        <div
+          className={`absolute inset-0 ${isXbox
+            ? "bg-gradient-to-r from-green-900/80 to-green-700/60"
+            : "bg-gradient-to-r from-blue-900/70 to-blue-700/0"
+            }`}
+        />
+
+        {/* Content */}
+        <div className="relative z-10 h-full flex items-center">
+          <div className="max-w-screen-xl mx-auto px-4 w-full">
+            <div className="max-w-2xl animate-fade-in-up">
+              <h1 className="game-title text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-tight">
+                Los Mejores Juegos
+              </h1>
+              <p className="text-white/90 text-xl mb-8 leading-relaxed">
+                Revive tu infancia con los clásicos y descubre nuevas aventuras.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link to="/juegos" className="btn-secondary flex text-center items-center">
+                  <Gamepad2 size={20} className="mr-2" />
+                  Explorar Catálogo
+                </Link>
               </div>
             </div>
           </div>
-        ))}
-
-        {/* Slide Indicators */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-          {heroSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentSlide
-                  ? `${isXbox ? "bg-green-400" : "bg-blue-400"} scale-125`
-                  : "bg-white/50 hover:bg-white/75"
-              }`}
-            />
-          ))}
         </div>
+
+
       </section>
 
       {/* Features Section */}
@@ -178,12 +191,11 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
-         
+
       {/* CTA Section */}
       <section
-        className={`py-20 relative overflow-hidden ${
-          isXbox ? "bg-gradient-to-br from-green-600 to-green-800" : "bg-gradient-to-br from-blue-600 to-blue-800"
-        }`}
+        className={`py-20 relative overflow-hidden ${isXbox ? "bg-gradient-to-br from-green-600 to-green-800" : "bg-gradient-to-br from-blue-600 to-blue-800"
+          }`}
       >
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=60 height=60 viewBox=0 0 60 60 xmlns=http://www.w3.org/2000/svg%3E%3Cg fill=none fillRule=evenodd%3E%3Cg fill=%23ffffff fillOpacity=0.1%3E%3Ccircle cx=30 cy=30 r=4/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
@@ -196,7 +208,7 @@ export const Home: React.FC = () => {
             inolvidables.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/catalogo" className="btn-secondary bg-white text-gray-900 hover:bg-gray-100 flex text-center items-center">
+            <Link to="/juegos" className="btn-secondary bg-white text-gray-900 hover:bg-gray-100 flex text-center items-center">
               <Gamepad2 size={20} className="mr-2" />
               Explorar Catálogo
             </Link>

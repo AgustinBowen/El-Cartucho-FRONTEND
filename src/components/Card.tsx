@@ -109,7 +109,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
           {!imageLoaded && <div className="absolute inset-0 shimmer"></div>}
 
           <img
-            className={`w-full h-48 object-cover transition-all duration-500 group-hover:scale-110 ${
+            className={`w-full h-48 object-cover transition-all duration-500 ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             src={imgSrc || "/placeholder.svg"}

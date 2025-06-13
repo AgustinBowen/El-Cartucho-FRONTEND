@@ -98,7 +98,7 @@ function Navbar() {
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3 group">
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${isXbox ? "bg-[#107C10] xbox-glow" : "bg-[#4a7bc8] ps2-glow"
+                className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 ${isXbox ? "bg-[#107C10] xbox-glow " : "bg-[#4a7bc8] ps2-glow"
                   }`}
               >
                 <img src="/images/navbar.webp" alt="Icon" className="w-7 h-7" />
@@ -116,7 +116,7 @@ function Navbar() {
                   key={item.path}
                   to={item.path}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${location.pathname === item.path
-                      ? `text-[var(--color-secondary)] ${isXbox ? "bg-green-50" : "bg-blue-50 dark:bg-blue-900/20"}`
+                      ? `text-[#f0f0f0] ${isXbox ? "bg-[#107c10]" : "bg-blue-50 dark:bg-blue-900/20"}`
                       : "text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]"
                     }`}
                 >
@@ -223,7 +223,7 @@ function Navbar() {
                       to={item.path}
                       onClick={() => setMenuOpen(false)}
                       className={`block px-4 py-3 rounded-lg font-medium transition-all duration-300 ${location.pathname === item.path
-                          ? `text-[var(--color-primary)] ${isXbox ? "bg-green-50" : "bg-blue-50 dark:bg-blue-900/20"}`
+                          ? `text-[#f0f0f0] ${isXbox ? "bg-[#107c10]" : "bg-blue-50 dark:bg-blue-900/20"}`
                           : "text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]"
                         }`}
                     >
