@@ -101,7 +101,7 @@ function Navbar() {
                 className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 ${isXbox ? "bg-[#107C10] xbox-glow " : "bg-[#4a7bc8] ps2-glow"
                   }`}
               >
-                <img src="/images/navbar.webp" alt="Icon" className="w-7 h-7" />
+                <img src="/images/navbar.webp" alt="Icon" className="w-6 h-6" />
 
               </div>
               <span className="game-title text-xl font-bold text-[var(--color-primary)] hidden sm:block">
