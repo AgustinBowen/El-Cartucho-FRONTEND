@@ -198,6 +198,7 @@ function Navbar() {
 
               {/* Mobile menu button */}
               <button
+                aria-label="Abrir menú"
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="md:hidden p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300"
               >
