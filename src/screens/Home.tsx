@@ -147,7 +147,7 @@ export const Home: React.FC = () => {
                 Revive tu infancia con los clásicos y descubre nuevas aventuras.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link to="/juegos" className="btn-secondary flex text-center items-center">
+                <Link to="/catalogo" className="btn-secondary flex text-center items-center">
                   <Gamepad2 size={20} className="mr-2" />
                   Explorar Catálogo
                 </Link>
