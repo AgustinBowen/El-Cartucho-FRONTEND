@@ -4,6 +4,8 @@ import type React from "react"
 import { useCart } from "../context/CartContext"
 import { ShoppingCart } from "lucide-react"
 import { useState, useEffect } from "react"
+import { formatearPrecio } from "../utils/formatearPrecio"
+import { useNavigate } from "react-router-dom"
 
 type CardProps = {
   producto_id: number
@@ -13,9 +15,9 @@ type CardProps = {
   price: number
 }
 
-// Modificar la función CardComponent para incluir un diseño horizontal en móviles
 export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt, title, price }) => {
   const { addToCart } = useCart()
+  const navigate = useNavigate()
   const [theme, setTheme] = useState("light")
   const [isLoading, setIsLoading] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -36,7 +38,8 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
     return () => observer.disconnect()
   }, [])
 
-  const handleAdd = async () => {
+  const handleAdd = async (e: React.MouseEvent) => {
+    e.stopPropagation() // Evitar que se ejecute el click del card
     setIsLoading(true)
 
     // Simular una pequeña demora para mostrar el estado de carga
@@ -51,12 +54,19 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
 
     setIsLoading(false)
   }
+
+  const handleCardClick = () => {
+    navigate(`/producto/${producto_id}`)
+  }
   
   const isXbox = theme === "light"
 
   // Diseño para móviles (horizontal) y desktop (vertical)
   return (
-    <div className="group card h-full flex flex-col overflow-hidden animate-fade-in-scale">
+    <div 
+      className="group card h-full flex flex-col overflow-hidden animate-fade-in-scale cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+      onClick={handleCardClick}
+    >
       {/* Diseño para móviles (horizontal) */}
       <div className="md:hidden flex flex-row h-full">
         {/* Imagen a la izquierda */}
@@ -71,7 +81,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             alt={imgAlt}
             onLoad={() => setImageLoaded(true)}
           />
-
         </div>
 
         {/* Contenido a la derecha */}
@@ -84,7 +93,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
 
           <div className="flex items-center justify-between mt-auto">
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-[var(--color-primary)]">${price}</span>
+              <span className="text-sm font-bold text-[var(--color-primary)]">{formatearPrecio(price)}</span>
             </div>
 
             <button
@@ -147,7 +156,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold text-[var(--color-primary)]">${price}</span>
+                <span className="text-xl font-bold text-[var(--color-primary)]">{formatearPrecio(price)}</span>
               </div>
             </div>
 

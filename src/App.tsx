@@ -6,6 +6,7 @@ import { ErrorScreen } from './screens/ErrorScreen';
 import { Catalog } from './screens/Catalog';
 import { CartScreen } from './screens/CartScreen';
 import { CartProvider } from "./context/CartContext";
+import { ProductDetail } from './screens/ProductDetailScreen';
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
 					<Route path="/comprar" element={<CartScreen />} />
 					<Route path="/pago/success*" element={<SuccessScreen />} />
 					<Route path="/*" element={<ErrorScreen />} />
+					<Route path="/producto/[id]" element={<ProductDetail />} />
 				</Routes>
 			</CartProvider>
 		</Router>
