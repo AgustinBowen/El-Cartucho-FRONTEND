@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom"
 import type { Producto } from "../types/Producto"
 import { CardComponent } from "../components/Card"
 import { SkeletonCard } from "../components/SkeletonCard"
-import { Grid3X3, List, SlidersHorizontal, Gamepad2, ChevronDown } from "lucide-react"
+import { SlidersHorizontal, Gamepad2, ChevronDown } from "lucide-react"
 
 export const Catalog: React.FC = () => {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -15,7 +15,6 @@ export const Catalog: React.FC = () => {
   const [theme, setTheme] = useState("light")
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("name")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -163,30 +162,7 @@ export const Catalog: React.FC = () => {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
               />
             </div>
-
-            {/* View Mode */}
-            <div className="rounded-lg border border-[var(--color-border)] overflow-hidden hidden md:flex ">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 transition-colors ${
-                  viewMode === "grid"
-                    ? `${isXbox ? "bg-green-500" : "bg-blue-500"} text-white`
-                    : "bg-[var(--color-accent)] text-[var(--color-foreground)] hover:bg-[var(--color-muted)]"
-                }`}
-              >
-                <Grid3X3 size={20} />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 transition-colors ${
-                  viewMode === "list"
-                    ? `${isXbox ? "bg-green-500" : "bg-blue-500"} text-white`
-                    : "bg-[var(--color-accent)] text-[var(--color-foreground)] hover:bg-[var(--color-muted)]"
-                }`}
-              >
-                <List size={20} />
-              </button>
-            </div>
+            
 
             {/* Filters Toggle */}
             <button onClick={() => setShowFilters(!showFilters)} className="btn-secondary flex text-center items-center">
@@ -253,7 +229,7 @@ export const Catalog: React.FC = () => {
         {loading ? (
           <div
             className={`grid ${
-              viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
+              "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             } gap-6`}
           >
             {[...Array(8)].map((_, index) => (
@@ -286,7 +262,7 @@ export const Catalog: React.FC = () => {
         ) : (
           <div
             className={`grid gap-6 animate-fade-in-up ${
-              viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
+               "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             }`}
           >
             {filteredAndSortedProducts.map((producto, index) => (

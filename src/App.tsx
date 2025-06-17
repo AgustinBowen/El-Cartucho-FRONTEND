@@ -6,6 +6,7 @@ import { ErrorScreen } from './screens/ErrorScreen';
 import { Catalog } from './screens/Catalog';
 import { CartScreen } from './screens/CartScreen';
 import { CartProvider } from "./context/CartContext";
+import { ProductDetail } from "./screens/ProductDetail"
 
 function App() {
 	return (
@@ -16,6 +17,7 @@ function App() {
 					<Route path="/" element={<Home />} />
 					<Route path="/catalogo" element={<Catalog />} />
 					<Route path="/comprar" element={<CartScreen />} />
+					<Route path="/producto/:id" element={<ProductDetail />} />
 					<Route path="/pago/success*" element={<SuccessScreen />} />
 					<Route path="/*" element={<ErrorScreen />} />
 				</Routes>

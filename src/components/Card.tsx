@@ -161,21 +161,14 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             </div>
 
             <button
-              onClick={handleAdd}
+              onClick={handleCardClick}
               disabled={isLoading}
-              className={`btn-primary text-sm px-4 py-2 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`btn-primary text-sm px-4 py-2`}
             >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>...</span>
-                </div>
-              ) : (
                 <div className="flex items-center space-x-1">
                   <ShoppingCart size={16} />
-                  <span>Agregar</span>
+                  <span>Comprar</span>
                 </div>
-              )}
             </button>
           </div>
         </div>
