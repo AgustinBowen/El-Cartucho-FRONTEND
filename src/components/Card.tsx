@@ -3,7 +3,7 @@
 import type React from "react"
 import { useCart } from "../context/CartContext"
 import { ShoppingCart } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState} from "react"
 import { formatearPrecio } from "../utils/formatearPrecio"
 import { useNavigate } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"

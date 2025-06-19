@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useCart } from "../context/CartContext"
 import { useTheme } from "../context/ThemeContext"
 import { useNavigate, Link, useLocation } from "react-router-dom"
