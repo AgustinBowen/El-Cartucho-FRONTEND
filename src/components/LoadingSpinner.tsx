@@ -1,7 +1,6 @@
 "use client"
-
+import { useTheme } from "@/context/ThemeContext"
 import type React from "react"
-import { useEffect, useState } from "react"
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg"
@@ -9,25 +8,7 @@ interface LoadingSpinnerProps {
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = "md", text = "Cargando..." }) => {
-  const [theme, setTheme] = useState("light")
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light"
-    setTheme(savedTheme)
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "data-theme") {
-          setTheme(document.documentElement.getAttribute("data-theme") || "light")
-        }
-      })
-    })
-
-    observer.observe(document.documentElement, { attributes: true })
-    return () => observer.disconnect()
-  }, [])
-
-  const isXbox = theme === "light"
+  const { isXbox } = useTheme();
 
   const sizeClasses = {
     sm: "w-6 h-6",
@@ -55,9 +36,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = "md", tex
 
         {/* Inner ring */}
         <div
-          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${
-            size === "sm" ? "w-3 h-3" : size === "md" ? "w-6 h-6" : "w-8 h-8"
-          } border-2 border-transparent rounded-full animate-spin`}
+          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${size === "sm" ? "w-3 h-3" : size === "md" ? "w-6 h-6" : "w-8 h-8"
+            } border-2 border-transparent rounded-full animate-spin`}
           style={{
             borderTopColor: isXbox ? "#3A96DD" : "#006FCD",
             animationDuration: "0.7s",

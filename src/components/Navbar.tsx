@@ -1,58 +1,34 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useCart } from "../context/CartContext"
+import { useTheme } from "../context/ThemeContext"
 import { useNavigate, Link, useLocation } from "react-router-dom"
 import { ShoppingCart, Menu, X, Sun, Moon, Search, User } from "lucide-react"
 import { OffcanvasCart } from "./OffcanvasCart"
 
 function Navbar() {
   const { cartItems } = useCart()
+  const { theme, setTheme, isXbox } = useTheme() // Usar ThemeContext
   const navigate = useNavigate()
   const location = useLocation()
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
-  const [theme, setTheme] = useState("light")
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [isScrolled, setIsScrolled] = useState(false)
-
-  // Detectar scroll para cambiar el navbar
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  // Leer el theme guardado al iniciar
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme")
-    if (savedTheme) {
-      setTheme(savedTheme)
-      document.documentElement.setAttribute("data-theme", savedTheme)
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-      const initialTheme = prefersDark ? "dark" : "light"
-      setTheme(initialTheme)
-      document.documentElement.setAttribute("data-theme", initialTheme)
-      localStorage.setItem("theme", initialTheme)
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem("theme", theme)
-    document.documentElement.setAttribute("data-theme", theme)
-  }, [theme])
 
   const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"))
+    // Desactivar transiciones durante el cambio de tema
+    document.documentElement.classList.add('no-transitions')
+    setTheme(theme === "light" ? "dark" : "light")
+    // Re-activar transiciones después del cambio
+    setTimeout(() => {
+      document.documentElement.classList.remove('no-transitions')
+    }, 0)
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -74,9 +50,6 @@ function Navbar() {
     setCartOpen(false)
   }
 
-
-  const isXbox = theme === "light"
-
   const navItems = [
     { name: "Inicio", path: "/" },
     { name: "Catálogo", path: "/catalogo" },
@@ -84,15 +57,10 @@ function Navbar() {
 
   return (
     <>
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-            ? `backdrop-blur-md ${isXbox
-              ? "bg-[var(--color-background)]/90 border-b border-[var(--color-border)]"
-              : "bg-[var(--color-background)]/90 border-b border-[var(--color-border)] ps2-glow"
-            }`
-            : "bg-transparent"
-          }`}
-      >
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-md ${isXbox
+          ? "bg-[var(--color-background)]/90 border-b border-[var(--color-border)]"
+          : "bg-[var(--color-background)]/90 border-b border-[var(--color-border)] ps2-glow"
+        }`}>
         <div className="max-w-screen-xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -102,7 +70,6 @@ function Navbar() {
                   }`}
               >
                 <img src="/images/navbar.webp" alt="Icon" className="w-7 h-7" />
-
               </div>
               <span className="game-title text-xl font-bold text-[var(--color-primary)] hidden sm:block">
                 El Cartucho
@@ -116,8 +83,8 @@ function Navbar() {
                   key={item.path}
                   to={item.path}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${location.pathname === item.path
-                      ? `text-[#f0f0f0] ${isXbox ? "bg-[#107c10]" : "bg-blue-50 dark:bg-blue-900/20"}`
-                      : "text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]"
+                    ? `text-[#f0f0f0] ${isXbox ? "bg-[#107c10]" : "bg-blue-50 dark:bg-blue-900/20"}`
+                    : "text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]"
                     }`}
                 >
                   {item.name}
@@ -128,7 +95,7 @@ function Navbar() {
             {/* Right side actions */}
             <div className="flex items-center space-x-2">
               {/* Search */}
-              <div className="hidden md:flex relative" >
+              <div className="hidden md:flex relative">
                 {searchOpen ? (
                   <form onSubmit={handleSearch} className="flex items-center">
                     <input
@@ -187,7 +154,6 @@ function Navbar() {
               {/* User */}
               <button
                 onClick={() => {
-                  // TODO: Implement user account functionality
                   console.log("User account clicked")
                 }}
                 className="p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
@@ -213,8 +179,8 @@ function Navbar() {
               {/* Background overlay */}
               <div
                 className={`absolute left-0 right-0 mt-4 mx-4 rounded-xl border border-[var(--color-border)] backdrop-blur-md ${isXbox
-                    ? "bg-[var(--color-background)]/95 shadow-lg"
-                    : "bg-[var(--color-background)]/95 shadow-lg ps2-glow"
+                  ? "bg-[var(--color-background)]/95 shadow-lg"
+                  : "bg-[var(--color-background)]/95 shadow-lg ps2-glow"
                   }`}
               >
                 <div className="p-4 space-y-2">
@@ -224,8 +190,8 @@ function Navbar() {
                       to={item.path}
                       onClick={() => setMenuOpen(false)}
                       className={`block px-4 py-3 rounded-lg font-medium transition-all duration-300 ${location.pathname === item.path
-                          ? `text-[#f0f0f0] ${isXbox ? "bg-[#107c10]" : "bg-blue-50 dark:bg-blue-900/20"}`
-                          : "text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]"
+                        ? `text-[#f0f0f0] ${isXbox ? "bg-[#107c10]" : "bg-blue-50 dark:bg-blue-900/20"}`
+                        : "text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)]"
                         }`}
                     >
                       {item.name}

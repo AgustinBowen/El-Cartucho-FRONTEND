@@ -1,33 +1,16 @@
 "use client"
 
 import { useCart } from "../context/CartContext"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus } from "lucide-react"
 import { Link } from "react-router-dom"
+import { useTheme } from "@/context/ThemeContext"
 
 export const CartScreen = () => {
   const { cartItems, updateQuantity, removeFromCart, total } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [theme, setTheme] = useState("light")
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light"
-    setTheme(savedTheme)
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "data-theme") {
-          setTheme(document.documentElement.getAttribute("data-theme") || "light")
-        }
-      })
-    })
-
-    observer.observe(document.documentElement, { attributes: true })
-    return () => observer.disconnect()
-  }, [])
-
-  const isXbox = theme === "light"
+  const { isXbox } = useTheme();
 
   const handleConfirmPurchase = async () => {
     setLoading(true)
@@ -77,9 +60,8 @@ export const CartScreen = () => {
     <div className="min-h-screen bg-[var(--color-background)] pt-16">
       {/* Header */}
       <div
-        className={`w-full py-12 px-4 ${
-          isXbox ? "bg-gradient-to-br from-green-500 to-green-700" : "bg-gradient-to-br from-blue-500 to-blue-700"
-        }`}
+        className={`w-full py-12 px-4 ${isXbox ? "bg-gradient-to-br from-green-500 to-green-700" : "bg-gradient-to-br from-blue-500 to-blue-700"
+          }`}
       >
         <div className="max-w-screen-xl mx-auto animate-fade-in-up">
           <div className="flex items-center mb-4">
@@ -104,9 +86,8 @@ export const CartScreen = () => {
         {cartItems.length === 0 ? (
           <div className="text-center py-16 animate-fade-in-scale">
             <div
-              className={`w-32 h-32 rounded-full ${
-                isXbox ? "bg-gray-100" : "bg-gray-800"
-              } flex items-center justify-center mb-8 mx-auto`}
+              className={`w-32 h-32 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"
+                } flex items-center justify-center mb-8 mx-auto`}
             >
               <ShoppingCart size={64} className="text-gray-400" />
             </div>
@@ -234,9 +215,8 @@ export const CartScreen = () => {
 
                 {error && (
                   <div
-                    className={`mt-4 p-3 rounded-lg ${
-                      isXbox ? "bg-red-100 text-red-700" : "bg-red-900/20 text-red-400"
-                    }`}
+                    className={`mt-4 p-3 rounded-lg ${isXbox ? "bg-red-100 text-red-700" : "bg-red-900/20 text-red-400"
+                      }`}
                   >
                     <p className="text-sm font-medium">Error al procesar el pago</p>
                     <p className="text-sm">{error}</p>

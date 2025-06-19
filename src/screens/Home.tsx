@@ -4,28 +4,13 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { Gamepad2, Shield, Truck, Award } from "lucide-react"
+import { useTheme } from '../context/ThemeContext';
 
 export const Home: React.FC = () => {
-  const [theme, setTheme] = useState("light")
+  const { isXbox } = useTheme();
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
   const [showVideo, setShowVideo] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light"
-    setTheme(savedTheme)
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "data-theme") {
-          setTheme(document.documentElement.getAttribute("data-theme") || "light")
-        }
-      })
-    })
-
-    observer.observe(document.documentElement, { attributes: true })
-    return () => observer.disconnect()
-  }, [])
 
   // Optimización: Cargar video solo cuando esté visible y conexión lo permita
   useEffect(() => {
@@ -49,7 +34,6 @@ export const Home: React.FC = () => {
     return () => clearTimeout(timer)
   }, [])
 
-  const isXbox = theme === "light"
 
   const handleVideoLoad = () => {
     setIsVideoLoaded(true)
@@ -102,7 +86,7 @@ export const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-[var(--color-background)] pt-16 ">
       {/* Hero Section with Video */}
-      <section className="relative h-[70vh] overflow-hidden">
+      <section className="relative h-[70vh] overflow-hidden" >
         {/* Video Background */}
         {showVideo && (
           <video
@@ -137,7 +121,7 @@ export const Home: React.FC = () => {
         />
 
         {/* Content */}
-        <div className="relative z-10 h-full flex items-center">
+        <div className="relative z-10 h-full flex items-center" >
           <div className="max-w-screen-xl mx-auto px-4 w-full">
             <div className="max-w-2xl animate-fade-in-up">
               <h1 className="game-title text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-tight">
@@ -160,7 +144,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20">
+      <section className="py-20" >
         <div className="max-w-screen-xl mx-auto px-4">
           <div className="text-center mb-16 animate-fade-in-up">
             <h2 className="game-title text-4xl md:text-5xl text-[var(--color-primary)] mb-6">

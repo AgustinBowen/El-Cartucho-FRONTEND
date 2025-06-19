@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useCart } from "../context/CartContext"
 import { useNavigate } from "react-router-dom"
 import { ShoppingCart, X, Plus, Minus, Trash2, CreditCard } from "lucide-react"
+import { useTheme } from "../context/ThemeContext"
 
 interface OffcanvasCartProps {
   isOpen: boolean
@@ -14,23 +15,7 @@ interface OffcanvasCartProps {
 export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose }) => {
   const { cartItems, updateQuantity, removeFromCart, total } = useCart()
   const navigate = useNavigate()
-  const [theme, setTheme] = useState("light")
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light"
-    setTheme(savedTheme)
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "data-theme") {
-          setTheme(document.documentElement.getAttribute("data-theme") || "light")
-        }
-      })
-    })
-
-    observer.observe(document.documentElement, { attributes: true })
-    return () => observer.disconnect()
-  }, [])
+  const { isXbox } = useTheme();
 
   // Bloquear scroll del body cuando el offcanvas está abierto
   const [isMobile, setIsMobile] = useState(false)
@@ -62,8 +47,6 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
     }
   }, [isOpen, isMobile])
 
-  const isXbox = theme === "light"
-
   const handleQuantityChange = (productId: number, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromCart(productId)
@@ -81,22 +64,36 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
     removeFromCart(productId)
   }
 
+  // Handle backdrop click
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+
   if (!isOpen) return null
 
   return (
     <>
+      {/* Backdrop with blur */}
+      <div
+        className={`fixed inset-0 z-[60] transition-all duration-300 ease-in-out ${
+          isOpen 
+            ? 'backdrop-blur-sm bg-black/30 dark:bg-black/50' 
+            : 'backdrop-blur-0 bg-transparent pointer-events-none'
+        }`}
+        onClick={handleBackdropClick}
+      />
 
       {/* Offcanvas */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-[var(--color-background)] shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        } ${isXbox ? "" : "ps2-glow"}`}
+        className={`fixed top-0 right-0 h-full w-full max-w-md bg-[var(--color-background)] shadow-2xl z-[70] transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
+          } ${isXbox ? "" : "ps2-glow"}`}
       >
         {/* Header */}
         <div
-          className={`p-6 border-b border-[var(--color-border)] ${
-            isXbox ? "bg-gradient-to-r from-green-50 to-green-100" : "bg-gradient-to-r from-blue-900/10 to-blue-800/10"
-          }`}
+          className={`p-6 border-b border-[var(--color-border)] ${isXbox ? "bg-gradient-to-r from-green-50 to-green-100" : "bg-gradient-to-r from-blue-900/10 to-blue-800/10"
+            }`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -124,9 +121,8 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
             /* Empty Cart */
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
               <div
-                className={`w-20 h-20 rounded-full ${
-                  isXbox ? "bg-gray-100" : "bg-gray-800"
-                } flex items-center justify-center mb-4`}
+                className={`w-20 h-20 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"
+                  } flex items-center justify-center mb-4`}
               >
                 <ShoppingCart size={40} className="text-gray-400" />
               </div>
@@ -136,9 +132,8 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
               </p>
               <button
                 onClick={onClose}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-                } text-white`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
+                  } text-white`}
               >
                 Continuar comprando
               </button>
@@ -233,9 +228,8 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                 <div className="space-y-6">
                   <button
                     onClick={handleCheckout}
-                    className={`w-full py-3 px-4 rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 ${
-                      isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-                    }`}
+                    className={`w-full py-3 px-4 rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 ${isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
+                      }`}
                   >
                     <div className="flex items-center justify-center">
                       <CreditCard size={20} className="mr-2" />

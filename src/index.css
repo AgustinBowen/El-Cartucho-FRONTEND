@@ -1,53 +1,42 @@
 @import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Russo+One&display=swap');
 @import "tailwindcss";
 
-/** 1. EXTENDER TEMA */
 @theme {
-  /* Xbox 360 theme (light) */
   --color-background: #fafafa;
   --color-foreground: #1a1a1a;
   --color-primary: #107c10;
   --color-secondary: #3a96dd;
-
   --color-muted: #f5f5f5;
   --color-accent: #ffffff;
   --color-border: #e5e5e5;
   --color-link: #107c10;
-
   --color-button: #f0f0f0;
   --color-highlight: #3a96dd;
   --color-success: #16a34a;
   --color-warning: #f59e0b;
   --color-error: #dc2626;
-
   --font-inter: "Exo 2", sans-serif;
-
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
-/** 2. SOBREESCRIBIR LAS VARIABLES DE COLORES PARA CADA TEMA */
 @layer base {
-  /* PlayStation 2 theme (dark) */
   :root[data-theme="dark"] {
     --color-background: #0a0a0f;
     --color-foreground: #f0f0f0;
     --color-primary: #4a7bc8;
     --color-secondary: #006fcd;
-
     --color-muted: #1a1a24;
     --color-accent: #252530;
     --color-border: #4c4c74;
     --color-link: #6c9ff0;
-
     --color-button: #3c6eb4;
     --color-highlight: #00aeef;
     --color-success: #22c55e;
     --color-warning: #fbbf24;
     --color-error: #ef4444;
-
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
@@ -55,18 +44,24 @@
   }
 }
 
-/** 3. APLICAR UTILIDADES GLOBALES */
 html {
   scroll-behavior: smooth;
+}
+
+html.no-theme {
+  visibility: hidden;
 }
 
 html,
 body {
   @apply bg-[var(--color-background)] text-[var(--color-foreground)] font-inter antialiased;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
-/* Scrollbar personalizado */
+.no-transitions {
+  transition: none !important;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -83,12 +78,12 @@ body {
   @apply bg-[var(--color-primary)];
 }
 
-/* Animaciones personalizadas */
 @keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -100,6 +95,7 @@ body {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -107,10 +103,12 @@ body {
 }
 
 @keyframes pulse-glow {
+
   0%,
   100% {
     box-shadow: 0 0 5px var(--color-primary);
   }
+
   50% {
     box-shadow: 0 0 20px var(--color-primary), 0 0 30px var(--color-primary);
   }
@@ -120,12 +118,12 @@ body {
   0% {
     background-position: -200px 0;
   }
+
   100% {
     background-position: calc(200px + 100%) 0;
   }
 }
 
-/* Clases de utilidad */
 .animate-fade-in-up {
   animation: fadeInUp 0.6s ease-out;
 }
@@ -144,15 +142,13 @@ body {
   animation: shimmer 1.5s infinite;
 }
 
-/* Estilos para títulos de juego */
 .game-title {
   @apply font-[var(--font-gaming)] font-bold;
   font-display: swap;
 }
 
-/* Botones mejorados */
 .btn-primary {
-  @apply relative overflow-hidden bg-[var(--color-primary)] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95;
+  @apply relative overflow-hidden bg-[var(--color-primary)] text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 transform hover:scale-105 active:scale-95;
   box-shadow: var(--shadow-md);
 }
 
@@ -162,7 +158,7 @@ body {
 
 .btn-primary:before {
   content: "";
-  @apply absolute inset-0 bg-white opacity-0 transition-opacity duration-300;
+  @apply absolute inset-0 bg-white opacity-0 transition-opacity duration-200;
 }
 
 .btn-primary:hover:before {
@@ -170,7 +166,7 @@ body {
 }
 
 .btn-secondary {
-  @apply relative overflow-hidden bg-[var(--color-accent)] text-[var(--color-foreground)] font-semibold py-3 px-6 rounded-xl border border-[var(--color-border)] transition-all duration-300 transform hover:scale-105 active:scale-95;
+  @apply relative overflow-hidden bg-[var(--color-accent)] text-[var(--color-foreground)] font-semibold py-3 px-6 rounded-xl border border-[var(--color-border)] transition-colors duration-200 transform hover:scale-105 active:scale-95;
   box-shadow: var(--shadow-sm);
 }
 
@@ -179,9 +175,8 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-/* Tarjetas mejoradas */
 .card {
-  @apply bg-[var(--color-accent)] rounded-2xl border border-[var(--color-border)] transition-all duration-300;
+  @apply bg-[var(--color-accent)] rounded-2xl border border-[var(--color-border)] transition-all duration-200;
   box-shadow: var(--shadow-sm);
 }
 
@@ -191,9 +186,8 @@ body {
   transform: translateY(-4px);
 }
 
-/* Inputs mejorados */
 .input {
-  @apply w-full px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-accent)] text-[var(--color-foreground)] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent;
+  @apply w-full px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-accent)] text-[var(--color-foreground)] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent;
 }
 
 .input:focus {
@@ -204,12 +198,10 @@ body {
   box-shadow: 0 0 0 3px rgb(74 123 200 / 0.1);
 }
 
-/* Skeleton loaders */
 .skeleton {
   @apply bg-[var(--color-muted)] rounded animate-pulse;
 }
 
-/* Efectos especiales para consolas */
 .xbox-glow {
   box-shadow: 0 0 20px rgba(16, 124, 16, 0.3);
 }
@@ -218,20 +210,16 @@ body {
   box-shadow: 0 0 20px rgba(74, 123, 200, 0.3);
 }
 
-/* Transiciones suaves para elementos */
 * {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow,
-    transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  transition-duration: 200ms;
 }
 
-/* Focus visible mejorado */
 .focus-visible {
   @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-background)];
 }
 
-/* Mejoras de accesibilidad */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -244,12 +232,11 @@ body {
   border: 0;
 }
 
-/* Estados de carga */
 .loading-dots {
   @apply inline-flex space-x-1;
 }
 
-.loading-dots > div {
+.loading-dots>div {
   @apply w-2 h-2 bg-current rounded-full animate-pulse;
   animation-delay: calc(var(--i) * 0.1s);
 }

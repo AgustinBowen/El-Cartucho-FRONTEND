@@ -6,6 +6,7 @@ import { ShoppingCart } from "lucide-react"
 import { useState, useEffect } from "react"
 import { formatearPrecio } from "../utils/formatearPrecio"
 import { useNavigate } from "react-router-dom"
+import { useTheme } from "@/context/ThemeContext"
 
 type CardProps = {
   producto_id: number
@@ -18,25 +19,9 @@ type CardProps = {
 export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt, title, price }) => {
   const { addToCart } = useCart()
   const navigate = useNavigate()
-  const [theme, setTheme] = useState("light")
+  const { isXbox } = useTheme();
   const [isLoading, setIsLoading] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light"
-    setTheme(savedTheme)
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "data-theme") {
-          setTheme(document.documentElement.getAttribute("data-theme") || "light")
-        }
-      })
-    })
-
-    observer.observe(document.documentElement, { attributes: true })
-    return () => observer.disconnect()
-  }, [])
 
   const handleAdd = async (e: React.MouseEvent) => {
     e.stopPropagation() // Evitar que se ejecute el click del card
@@ -58,8 +43,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
   const handleCardClick = () => {
     navigate(`/producto/${producto_id}`)
   }
-  
-  const isXbox = theme === "light"
+
 
   // Diseño para móviles (horizontal) y desktop (vertical)
   return (
