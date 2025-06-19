@@ -23,6 +23,22 @@ export const Catalog: React.FC = () => {
 
   const [searchParams] = useSearchParams()
 
+  // Efecto para controlar el scroll del body cuando se abren los filtros móviles
+  useEffect(() => {
+    if (showMobileFilters) {
+      // Bloquear scroll del body
+      document.body.style.overflow = 'hidden'
+    } else {
+      // Restaurar scroll del body
+      document.body.style.overflow = 'unset'
+    }
+
+    // Cleanup: restaurar el scroll cuando el componente se desmonte
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showMobileFilters])
+
   useEffect(() => {
     const searchFromUrl = searchParams.get("search")
     if (searchFromUrl) {
@@ -80,6 +96,10 @@ export const Catalog: React.FC = () => {
     setSortBy("name")
   }
 
+  const closeMobileFilters = () => {
+    setShowMobileFilters(false)
+  }
+
   // Componente de filtros reutilizable
   const FiltersContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className={`${isMobile ? "p-6" : "p-4"} space-y-6`}>
@@ -87,7 +107,7 @@ export const Catalog: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">Filtros</h2>
           <button
-            onClick={() => setShowMobileFilters(false)}
+            onClick={closeMobileFilters}
             className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors"
           >
             <X size={24} />
@@ -163,7 +183,7 @@ export const Catalog: React.FC = () => {
         </button>
         {isMobile && (
           <button
-            onClick={() => setShowMobileFilters(false)}
+            onClick={closeMobileFilters}
             className="w-full btn-primary"
           >
             Aplicar filtros
@@ -355,7 +375,7 @@ export const Catalog: React.FC = () => {
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowMobileFilters(false)}
+            onClick={closeMobileFilters}
           ></div>
           
           {/* Modal content */}
