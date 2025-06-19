@@ -23,6 +23,8 @@ export const Catalog: React.FC = () => {
 
   const [searchParams] = useSearchParams()
 
+
+
   // Efecto para controlar el scroll del body cuando se abren los filtros móviles
   useEffect(() => {
     if (showMobileFilters) {
@@ -216,11 +218,10 @@ export const Catalog: React.FC = () => {
     <div className="min-h-screen bg-[var(--color-background)] pt-16">
       {/* Header */}
       <div
-        className={`w-full py-12 px-4 ${
-          isXbox ? "bg-gradient-to-br from-green-500 to-green-700" : "bg-gradient-to-br from-blue-500 to-blue-700"
-        }`}
+        className={`w-full py-12 px-4 bg-[var(--color-background)] ${isXbox ? "bg-gradient-to-br from-green-500 to-green-700" : "bg-gradient-to-br from-blue-500 to-blue-700"
+          }`}
       >
-        <div className="max-w-screen-xl mx-auto animate-fade-in-up">
+        <div className="max-w-screen-xl mx-auto animate-fade-in-up relative z-20">
           <div className="flex items-center mb-4">
             {isXbox ? (
               <img className="w-32 h-32" src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/yoshi_hzevum.gif" alt="Yoshi" />
@@ -236,29 +237,29 @@ export const Catalog: React.FC = () => {
       </div>
 
       {/* Contenedor principal */}
-      <div 
+      <div
         className="max-w-screen mx-auto px-4 py-8 relative"
         style={{
-          backgroundImage: `url('${isXbox 
-            ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750304016/segarallyjump_pnebvb.webp" 
+          backgroundImage: `url('${isXbox
+            ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750304016/segarallyjump_pnebvb.webp"
             : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
-          }')`,
+            }')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         }}
       >
         {/* Overlay */}
-        <div 
-          className="absolute inset-0 bg-[var(--color-background)]" 
-          style={{ opacity: 0.85 }}
+        <div
+          className="absolute inset-0 bg-[var(--color-background)]"
+          style={{ opacity: isXbox ? 0.60 : 0.93 }}
         ></div>
-        
+
         {/* Contenido principal */}
         <div className="relative z-10">
           {/* Botón de filtros móvil */}
           <div className="lg:hidden mb-6 animate-fade-in-up">
-            <button 
+            <button
               onClick={() => setShowMobileFilters(true)}
               className="btn-secondary flex items-center w-full justify-center"
             >
@@ -302,9 +303,8 @@ export const Catalog: React.FC = () => {
               ) : filteredAndSortedProducts.length === 0 ? (
                 <div className="text-center py-16 animate-fade-in-scale">
                   <div
-                    className={`w-24 h-24 rounded-full ${
-                      isXbox ? "bg-gray-100" : "bg-gray-800"
-                    } flex items-center justify-center mb-6 mx-auto`}
+                    className={`w-24 h-24 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"
+                      } flex items-center justify-center mb-6 mx-auto`}
                   >
                     <Gamepad2 size={48} className="text-gray-400" />
                   </div>
@@ -370,20 +370,22 @@ export const Catalog: React.FC = () => {
       </div>
 
       {/* Modal de filtros móvil */}
-      {showMobileFilters && (
-        <div className="fixed inset-0 z-[60] lg:hidden">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={closeMobileFilters}
-          ></div>
-          
-          {/* Modal content */}
-          <div className="relative h-full bg-[var(--color-background)] animate-fade-in-up overflow-y-auto">
-            <FiltersContent isMobile={true} />
+      {
+        showMobileFilters && (
+          <div className="fixed inset-0 z-[60] lg:hidden">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={closeMobileFilters}
+            ></div>
+
+            {/* Modal content */}
+            <div className="relative h-full bg-[var(--color-background)] animate-fade-in-up overflow-y-auto">
+              <FiltersContent isMobile={true} />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }

@@ -180,15 +180,17 @@ export const ProductDetail: React.FC = () => {
   const images = getImages()
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] pt-16 relative before:absolute before:inset-0 before:bg-[var(--color-background)] before:opacity-85 before:z-10" style={{
-      backgroundImage: `url('${isXbox
-        ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750307999/Daytona-USA-MAin-GIF_jmlfcy.gif"
-        : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750306013/3td_ip4a6r.gif"
-        }')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-    }}>
+    <div className={`min-h-screen bg-[var(--color-background)] pt-16 relative before:absolute before:inset-0 before:bg-[var(--color-background)] before:z-10 ${isXbox ? "before:opacity-20" : "before:opacity-85"
+      }`}
+      style={{
+        backgroundImage: `url('${isXbox
+          ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750316271/icegif-1062_cojpk2.gif"
+          : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750306013/3td_ip4a6r.gif"
+          }')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}>
       <div className="relative z-20">
         {/* Breadcrumb */}
         <div className="max-w-screen-xl mx-auto px-4 py-4">
