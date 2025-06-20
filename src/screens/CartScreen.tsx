@@ -1,8 +1,10 @@
 "use client"
 
+import type React from "react"
+
 import { useCart } from "../context/CartContext"
 import { useState } from "react"
-import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus } from "lucide-react"
+import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, MapPin, Mail, Loader2 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
 
@@ -10,9 +12,41 @@ export const CartScreen = () => {
   const { cartItems, updateQuantity, removeFromCart, total } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { isXbox } = useTheme();
+  const { isXbox } = useTheme()
+
+  // Nuevos estados para envío y email
+  const [codigoPostal, setCodigoPostal] = useState("")
+  const [costoEnvio, setCostoEnvio] = useState<number | null>(null)
+  const [validandoCP, setValidandoCP] = useState(false)
+  const [errorCP, setErrorCP] = useState<string | null>(null)
+  const [email, setEmail] = useState("")
+  const [emailError, setEmailError] = useState<string | null>(null)
 
   const handleConfirmPurchase = async () => {
+    // Validar que se haya ingresado email
+    if (!email.trim()) {
+      setEmailError("El email es requerido")
+      return
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setEmailError("Ingresa un email válido")
+      return
+    }
+
+    // Validar que se haya validado el código postal
+    if (!codigoPostal.trim()) {
+      setErrorCP("Debes ingresar un código postal")
+      return
+    }
+
+    if (costoEnvio === null) {
+      setErrorCP("Debes validar el código postal")
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -28,6 +62,9 @@ export const CartScreen = () => {
             producto_id: item.producto_id,
             cantidad: item.quantity,
           })),
+          email: email,
+          codigo_postal: codigoPostal,
+          costo_envio: costoEnvio,
         }),
       })
 
@@ -44,6 +81,39 @@ export const CartScreen = () => {
     }
   }
 
+  const validarCodigoPostal = async () => {
+    if (!codigoPostal.trim()) {
+      setErrorCP("Ingresa un código postal")
+      return
+    }
+
+    setValidandoCP(true)
+    setErrorCP(null)
+    setCostoEnvio(null)
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/pedido/costo/${codigoPostal}`)
+
+      if (response.status === 418) {
+        const errorData = await response.json()
+        setErrorCP(errorData.message || "El código postal ingresado no es válido.")
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error("Error al validar código postal")
+      }
+
+      const data = await response.json()
+      setCostoEnvio(data.costo_envio)
+      setErrorCP(null)
+    } catch (err) {
+      setErrorCP("Error al validar el código postal. Intenta nuevamente.")
+    } finally {
+      setValidandoCP(false)
+    }
+  }
+
   const handleQuantityChange = (productId: number, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromCart(productId)
@@ -56,12 +126,34 @@ export const CartScreen = () => {
     removeFromCart(productId)
   }
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+    if (emailError) {
+      setEmailError(null)
+    }
+  }
+
+  const handleCodigoPostalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCodigoPostal(e.target.value)
+    if (errorCP) {
+      setErrorCP(null)
+    }
+    // Reset costo de envío cuando cambia el CP
+    if (costoEnvio !== null) {
+      setCostoEnvio(null)
+    }
+  }
+
+  // Calcular total con envío
+  const totalConEnvio = costoEnvio !== null ? total + costoEnvio : total
+
   return (
     <div className="min-h-screen bg-[var(--color-background)] pt-16">
       {/* Header */}
       <div
-        className={`w-full py-12 px-4 ${isXbox ? "bg-gradient-to-br from-green-500 to-green-700" : "bg-gradient-to-br from-blue-500 to-blue-700"
-          }`}
+        className={`w-full py-12 px-4 ${
+          isXbox ? "bg-gradient-to-br from-green-500 to-green-700" : "bg-gradient-to-br from-blue-500 to-blue-700"
+        }`}
       >
         <div className="max-w-screen-xl mx-auto animate-fade-in-up">
           <div className="flex items-center mb-4">
@@ -86,8 +178,9 @@ export const CartScreen = () => {
         {cartItems.length === 0 ? (
           <div className="text-center py-16 animate-fade-in-scale">
             <div
-              className={`w-32 h-32 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"
-                } flex items-center justify-center mb-8 mx-auto`}
+              className={`w-32 h-32 rounded-full ${
+                isXbox ? "bg-gray-100" : "bg-gray-800"
+              } flex items-center justify-center mb-8 mx-auto`}
             >
               <ShoppingCart size={64} className="text-gray-400" />
             </div>
@@ -172,16 +265,72 @@ export const CartScreen = () => {
                   </div>
                 </div>
               ))}
-
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="card p-6 sticky top-24 animate-fade-in-up">
-                <h3 className="text-xl font-bold mb-6">Resumen del pedido</h3>
+              <div className="card p-6 sticky top-24 animate-fade-in-up space-y-6">
+                <h3 className="text-xl font-bold">Resumen del pedido</h3>
+
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">
+                    <Mail size={16} className="inline mr-2" />
+                    Email de contacto
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    placeholder="tu@email.com"
+                    className={`input ${emailError ? "border-red-500" : ""}`}
+                  />
+                  {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
+                </div>
+
+                {/* Shipping Section */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium">
+                    <MapPin size={16} className="inline mr-2" />
+                    Código Postal
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={codigoPostal}
+                      onChange={handleCodigoPostalChange}
+                      placeholder="1234"
+                      className={`input flex-1 ${errorCP ? "border-red-500" : ""}`}
+                      maxLength={4}
+                    />
+                    <button
+                      onClick={validarCodigoPostal}
+                      disabled={validandoCP || !codigoPostal.trim()}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        validandoCP || !codigoPostal.trim()
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : isXbox
+                            ? "bg-green-500 hover:bg-green-600 text-white"
+                            : "bg-blue-500 hover:bg-blue-600 text-white"
+                      }`}
+                    >
+                      {validandoCP ? <Loader2 size={16} className="animate-spin" /> : "Calcular Envío"}
+                    </button>
+                  </div>
+
+                  {errorCP && <p className="text-red-500 text-sm">{errorCP}</p>}
+
+                  {costoEnvio !== null && (
+                    <div className="p-3 bg-green-50 dark:bg-green-200/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <p className="text-white-700 dark:text-green-400 text-sm font-medium">
+                        Costo de envío: ${costoEnvio.toFixed(2)}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Price Breakdown */}
-                <div className="space-y-3 mb-6">
+                <div className="space-y-3 pt-4 border-t border-[var(--color-border)]">
                   <div className="flex justify-between">
                     <span>Subtotal ({cartItems.length} productos)</span>
                     <span>${total.toFixed(2)}</span>
@@ -189,16 +338,28 @@ export const CartScreen = () => {
 
                   <div className="flex justify-between">
                     <span>Envío</span>
-                    <span className="text-green-600 dark:text-green-400">Gratis</span>
+                    <span>
+                      {costoEnvio !== null ? (
+                        `$${costoEnvio.toFixed(2)}`
+                      ) : (
+                        <span className="text-gray-500">A calcular</span>
+                      )}
+                    </span>
                   </div>
 
+                  <div className="flex justify-between text-lg font-bold pt-2 border-t border-[var(--color-border)]">
+                    <span>Total</span>
+                    <span className="text-[var(--color-primary)]">${totalConEnvio.toFixed(2)}</span>
+                  </div>
                 </div>
 
                 {/* Checkout Button */}
                 <button
                   onClick={handleConfirmPurchase}
-                  disabled={loading}
-                  className={`w-full btn-primary ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
+                  disabled={loading || !email.trim() || costoEnvio === null}
+                  className={`w-full btn-primary ${
+                    loading || !email.trim() || costoEnvio === null ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
@@ -215,8 +376,7 @@ export const CartScreen = () => {
 
                 {error && (
                   <div
-                    className={`mt-4 p-3 rounded-lg ${isXbox ? "bg-red-100 text-red-700" : "bg-red-900/20 text-red-400"
-                      }`}
+                    className={`p-3 rounded-lg ${isXbox ? "bg-red-100 text-red-700" : "bg-red-900/20 text-red-400"}`}
                   >
                     <p className="text-sm font-medium">Error al procesar el pago</p>
                     <p className="text-sm">{error}</p>
@@ -224,7 +384,7 @@ export const CartScreen = () => {
                 )}
 
                 {/* Security Info */}
-                <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
+                <div className="pt-4 border-t border-[var(--color-border)]">
                   <div className="flex items-center text-sm text-[var(--color-foreground)]/70">
                     <div className="w-4 h-4 bg-green-500 rounded-full mr-2 flex items-center justify-center">
                       <span className="text-white text-xs">✓</span>
