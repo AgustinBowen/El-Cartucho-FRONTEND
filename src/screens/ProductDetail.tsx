@@ -180,11 +180,11 @@ export const ProductDetail: React.FC = () => {
   const images = getImages()
 
   return (
-    <div className={`min-h-screen bg-[var(--color-background)] pt-16 relative before:absolute before:inset-0 before:bg-[var(--color-background)] before:z-10 ${isXbox ? "before:opacity-20" : "before:opacity-85"
+    <div className={`min-h-screen bg-[var(--color-background)] pt-16 relative before:absolute before:inset-0 before:z-10 ${isXbox ? "before:opacity-20 before:bg-[#ffffff]" : "before:opacity-75  before:bg-[var(--color-background)]" 
       }`}
       style={{
         backgroundImage: `url('${isXbox
-          ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750316271/icegif-1062_cojpk2.gif"
+          ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750361213/9Uvpia_egi7vn.gif"
           : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750306013/3td_ip4a6r.gif"
           }')`,
         backgroundSize: 'cover',

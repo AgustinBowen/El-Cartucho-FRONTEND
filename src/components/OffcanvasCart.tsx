@@ -6,6 +6,7 @@ import { useCart } from "../context/CartContext"
 import { useNavigate } from "react-router-dom"
 import { ShoppingCart, X, Plus, Minus, Trash2, CreditCard } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
+import { formatearPrecio } from "@/utils/formatearPrecio"
 
 interface OffcanvasCartProps {
   isOpen: boolean
@@ -36,16 +37,37 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
   }, [])
 
   useEffect(() => {
-    if (isOpen && isMobile) {
-      document.body.style.overflow = "hidden"
+    if (isOpen) {
+      // Guardar la posición actual del scroll
+      const scrollY = window.scrollY;
+
+      // Bloquear el scroll del body
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
     } else {
-      document.body.style.overflow = "unset"
+      // Restaurar el scroll del body
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+
+      // Restaurar la posición del scroll
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
     }
 
+    // Cleanup function para restaurar el scroll al desmontar
     return () => {
-      document.body.style.overflow = "unset"
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
     }
-  }, [isOpen, isMobile])
+  }, [isOpen])
 
   const handleQuantityChange = (productId: number, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -77,11 +99,10 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
     <>
       {/* Backdrop with blur */}
       <div
-        className={`fixed inset-0 z-[60] transition-all duration-300 ease-in-out ${
-          isOpen 
-            ? 'backdrop-blur-sm bg-black/30 dark:bg-black/50' 
-            : 'backdrop-blur-0 bg-transparent pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-[60] transition-all duration-300 ease-in-out ${isOpen
+          ? 'backdrop-blur-sm bg-black/30 dark:bg-black/50'
+          : 'backdrop-blur-0 bg-transparent pointer-events-none'
+          }`}
         onClick={handleBackdropClick}
       />
 
@@ -132,8 +153,9 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
               </p>
               <button
                 onClick={onClose}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
+                className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
                   } text-white`}
+                aria-label="Eliminar item de carrito"
               >
                 Continuar comprando
               </button>
@@ -172,8 +194,9 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                           </div>
                           <button
                             onClick={() => handleRemoveItem(item.producto_id)}
-                            className="p-1 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors ml-2"
+                            className="cursor-pointer p-1 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors ml-2"
                             title="Eliminar"
+                            aria-label="Eliminar producto de carrito"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -184,14 +207,16 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => handleQuantityChange(item.producto_id, item.quantity - 1)}
-                              className="w-6 h-6 rounded-full border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
+                              className="cursor-pointer w-6 h-6 rounded-full border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
+                              aria-label="Disminuir cantidad producto carrito"
                             >
                               <Minus size={10} />
                             </button>
                             <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
                             <button
                               onClick={() => handleQuantityChange(item.producto_id, item.quantity + 1)}
-                              className="w-6 h-6 rounded-full border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
+                              className="cursor-pointer w-6 h-6 rounded-full border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
+                              aria-label="Aumentar cantidad producto carrito"
                             >
                               <Plus size={10} />
                             </button>
@@ -200,9 +225,9 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                           {/* Price */}
                           <div className="text-right">
                             <div className="text-sm font-bold text-[var(--color-primary)]">
-                              ${(item.price * item.quantity).toFixed(2)}
+                              {formatearPrecio((item.price * item.quantity).toFixed(2))}
                             </div>
-                            <div className="text-xs text-[var(--color-foreground)]/70">${item.price} c/u</div>
+                            <div className="text-xs text-[var(--color-foreground)]/70">{formatearPrecio(item.price)} c/u</div>
                           </div>
                         </div>
                       </div>
@@ -228,8 +253,9 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                 <div className="space-y-6">
                   <button
                     onClick={handleCheckout}
-                    className={`w-full py-3 px-4 rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 ${isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
+                    className={`cursor-pointer w-full py-3 px-4 rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 ${isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
                       }`}
+                    aria-label="Proceder al pago"
                   >
                     <div className="flex items-center justify-center">
                       <CreditCard size={20} className="mr-2" />
@@ -239,7 +265,8 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
 
                   <button
                     onClick={onClose}
-                    className="w-full py-2 px-4 rounded-lg font-medium border border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+                    className="cursor-pointer w-full py-2 px-4 rounded-lg font-medium border border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+                    aria-label="Continuar comprando"
                   >
                     Continuar comprando
                   </button>

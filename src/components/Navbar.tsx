@@ -128,8 +128,9 @@ function Navbar() {
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+                className="p-2 rounded-lg cursor-pointer text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
                 title={`Cambiar a ${theme === "light" ? "PlayStation 2" : "Xbox 360"}`}
+                aria-label="Cambiar tema"
               >
                 {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
               </button>
@@ -137,8 +138,9 @@ function Navbar() {
               {/* Cart */}
               <button
                 onClick={handleCartClick}
-                className="relative p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+                className="relative cursor-pointer p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
                 title="Carrito de compras"
+                aria-label="Abrir carrito"
               >
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
@@ -156,8 +158,9 @@ function Navbar() {
                 onClick={() => {
                   console.log("User account clicked")
                 }}
-                className="p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+                className="p-2 cursor-pointer rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
                 title="Mi cuenta"
+                aria-label="Opciones usuario"
               >
                 <User size={20} />
               </button>

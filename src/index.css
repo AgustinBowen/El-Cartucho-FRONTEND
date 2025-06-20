@@ -5,6 +5,7 @@
   --color-background: #fafafa;
   --color-foreground: #1a1a1a;
   --color-primary: #107c10;
+  --color-primary-hover:#0a4d0a;
   --color-secondary: #3a96dd;
   --color-muted: #f5f5f5;
   --color-accent: #ffffff;
@@ -27,6 +28,7 @@
     --color-background: #0a0a0f;
     --color-foreground: #f0f0f0;
     --color-primary: #4a7bc8;
+    --color-primary-hover: #315286;
     --color-secondary: #006fcd;
     --color-muted: #1a1a24;
     --color-accent: #252530;
@@ -63,7 +65,7 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 11px;
 }
 
 ::-webkit-scrollbar-track {
@@ -71,7 +73,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-[var(--color-border)] rounded-full;
+  @apply bg-[var(--color-primary-hover)] rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {

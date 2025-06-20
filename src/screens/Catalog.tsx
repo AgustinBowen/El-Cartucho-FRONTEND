@@ -23,7 +23,10 @@ export const Catalog: React.FC = () => {
 
   const [searchParams] = useSearchParams()
 
-
+  // Imagen de fondo única
+  const backgroundImage = isXbox 
+    ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750354661/vsgif_com__.2470826_qlu0pm.gif"
+    : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
 
   // Efecto para controlar el scroll del body cuando se abren los filtros móviles
   useEffect(() => {
@@ -98,25 +101,18 @@ export const Catalog: React.FC = () => {
     setSortBy("name")
   }
 
+  const resetOnlyFilters = () => {
+    setPriceRange([0, 100])
+    setSortBy("name")
+  }
+
   const closeMobileFilters = () => {
     setShowMobileFilters(false)
   }
 
-  // Componente de filtros reutilizable
-  const FiltersContent = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className={`${isMobile ? "p-6" : "p-4"} space-y-6`}>
-      {isMobile && (
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Filtros</h2>
-          <button
-            onClick={closeMobileFilters}
-            className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors"
-          >
-            <X size={24} />
-          </button>
-        </div>
-      )}
-
+  // Componente de filtros completo para desktop
+  const DesktopFiltersContent = () => (
+    <div className="p-4 space-y-6">
       {/* Búsqueda */}
       <div>
         <label className="block text-sm font-medium mb-2">Buscar</label>
@@ -175,30 +171,113 @@ export const Catalog: React.FC = () => {
         </div>
       </div>
 
-      {/* Botones de acción */}
-      <div className="space-y-2 pt-4 border-t border-[var(--color-border)]">
+      {/* Botón de acción */}
+      <div className="pt-4 border-t border-[var(--color-border)]">
         <button
           onClick={resetFilters}
           className="w-full btn-secondary text-sm"
         >
           Limpiar filtros
         </button>
-        {isMobile && (
-          <button
-            onClick={closeMobileFilters}
-            className="w-full btn-primary"
+      </div>
+    </div>
+  )
+
+  // Componente de filtros solo para móvil (sin búsqueda)
+  const MobileFiltersContent = () => (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">Filtros</h2>
+        <button
+          onClick={closeMobileFilters}
+          className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors"
+        >
+          <X size={24} />
+        </button>
+      </div>
+
+      {/* Ordenar */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Ordenar por</label>
+        <div className="relative">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="input w-full pr-10 appearance-none cursor-pointer"
           >
-            Aplicar filtros
-          </button>
-        )}
+            <option value="name">Nombre</option>
+            <option value="price-low">Precio: menor a mayor</option>
+            <option value="price-high">Precio: mayor a menor</option>
+          </select>
+          <ChevronDown
+            size={20}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+        </div>
+      </div>
+
+      {/* Rango de precio */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Rango de precio</label>
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <input
+              type="number"
+              placeholder="Mín"
+              value={priceRange[0]}
+              onChange={(e) => setPriceRange([Number(e.target.value) || 0, priceRange[1]])}
+              className="input w-20 text-sm"
+              min="0"
+            />
+            <span className="text-sm">-</span>
+            <input
+              type="number"
+              placeholder="Máx"
+              value={priceRange[1]}
+              onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value) || 100])}
+              className="input w-20 text-sm"
+              min="0"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Botones de acción */}
+      <div className="space-y-2 pt-4 border-t border-[var(--color-border)]">
+        <button
+          onClick={resetOnlyFilters}
+          className="w-full btn-secondary text-sm"
+        >
+          Limpiar filtros
+        </button>
+        <button
+          onClick={closeMobileFilters}
+          className="w-full btn-primary"
+        >
+          Aplicar filtros
+        </button>
       </div>
     </div>
   )
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--color-background)] pt-16 flex items-center justify-center">
-        <div className="text-center animate-fade-in-scale">
+      <div 
+        className="min-h-screen pt-16 flex items-center justify-center relative"
+        style={{
+          backgroundImage: `url('${backgroundImage}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        {/* Overlay para el error */}
+        <div 
+          className="absolute inset-0 bg-[var(--color-background)]"
+          style={{ opacity: isXbox ? 0.85 : 0.93 }}
+        ></div>
+        
+        <div className="text-center animate-fade-in-scale relative z-10">
           <div
             className={`w-16 h-16 rounded-full ${isXbox ? "bg-red-100" : "bg-red-900/20"} flex items-center justify-center mb-4 mx-auto`}
           >
@@ -215,56 +294,62 @@ export const Catalog: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] pt-16">
-      {/* Header */}
-      <div
-        className={`w-full py-12 px-4 bg-[var(--color-background)] ${isXbox ? "bg-gradient-to-br from-green-500 to-green-700" : "bg-gradient-to-br from-blue-500 to-blue-700"
-          }`}
-      >
-        <div className="max-w-screen-xl mx-auto animate-fade-in-up relative z-20">
-          <div className="flex items-center mb-4">
-            {isXbox ? (
-              <img className="w-32 h-32" src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/yoshi_hzevum.gif" alt="Yoshi" />
-            ) : (
-              <img className="w-32 h-32" src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/toad_p9ufsf.gif" alt="Toad" />
-            )}
-            <div>
-              <h1 className="game-title text-4xl md:text-5xl text-white mb-2">Catálogo</h1>
-              <p className="text-white/90 text-lg">Consolas legendarias, juegos eternos. Memory Card no incluida.</p>
+    <div 
+      className="min-h-screen pt-16 relative"
+      style={{
+        backgroundImage: `url('${backgroundImage}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Overlay único para toda la página */}
+      <div 
+        className={`absolute inset-0 ${isXbox? "bg-[#0c0c0c]":"bg-[var(--color-background)]"}`}
+        style={{ opacity: isXbox ? 0.60 : 0.85 }}
+      ></div>
+
+      {/* Todo el contenido dentro del contenedor principal */}
+      <div className="relative z-10">
+        {/* Header */}
+        <div className={`w-full py-12 px-4`}>
+          <div className="max-w-screen-xl mx-auto animate-fade-in-up">
+            <div className="flex items-center mb-4">
+              {isXbox ? (
+                <img className="w-32 h-32" src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/yoshi_hzevum.gif" alt="Yoshi" />
+              ) : (
+                <img className="w-32 h-32" src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/toad_p9ufsf.gif" alt="Toad" />
+              )}
+              <div>
+                <h1 className="game-title text-4xl md:text-5xl text-white mb-2">Catálogo</h1>
+                <p className="text-white/90 text-lg">Consolas legendarias, juegos eternos. Memory Card no incluida.</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Contenedor principal */}
-      <div
-        className="max-w-screen mx-auto px-4 py-8 relative"
-        style={{
-          backgroundImage: `url('${isXbox
-            ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750304016/segarallyjump_pnebvb.webp"
-            : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
-            }')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      >
-        {/* Overlay */}
-        <div
-          className="absolute inset-0 bg-[var(--color-background)]"
-          style={{ opacity: isXbox ? 0.60 : 0.93 }}
-        ></div>
 
         {/* Contenido principal */}
-        <div className="relative z-10">
-          {/* Botón de filtros móvil */}
-          <div className="lg:hidden mb-6 animate-fade-in-up">
+        <div className="max-w-screen mx-auto px-4 py-8">
+          {/* Búsqueda y filtros móvil */}
+          <div className="lg:hidden mb-6 space-y-4 animate-fade-in-up">
+            {/* Campo de búsqueda */}
+            <div>
+              <input
+                type="text"
+                placeholder="Buscar juegos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="input w-full"
+              />
+            </div>
+            
+            {/* Botón de filtros */}
             <button
               onClick={() => setShowMobileFilters(true)}
               className="btn-secondary flex items-center w-full justify-center"
             >
               <SlidersHorizontal size={20} className="mr-2" />
-              Filtros y búsqueda
+              Filtros
             </button>
           </div>
 
@@ -272,8 +357,8 @@ export const Catalog: React.FC = () => {
           <div className="flex gap-6">
             {/* Sidebar de filtros (solo desktop) */}
             <div className="hidden lg:block w-64 flex-shrink-0">
-              <div className="card top-24 animate-fade-in-scale">
-                <FiltersContent />
+              <div className="card top-24 animate-fade-in-up">
+                <DesktopFiltersContent />
               </div>
             </div>
 
@@ -281,7 +366,7 @@ export const Catalog: React.FC = () => {
             <div className="flex-1 min-w-0">
               {/* Información de resultados */}
               <div className="flex items-center justify-between mb-6 animate-fade-in-up">
-                <p className="text-[var(--color-foreground)]/80 font-semibold">
+                <p className={`font-semibold ${isXbox? "text-[var(--color-accent)]" : "text-[var(--color-primary)]"}`}>
                   {loading ? (
                     <span className="flex items-center">
                       <div className="w-4 h-4 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -370,22 +455,20 @@ export const Catalog: React.FC = () => {
       </div>
 
       {/* Modal de filtros móvil */}
-      {
-        showMobileFilters && (
-          <div className="fixed inset-0 z-[60] lg:hidden">
-            {/* Backdrop */}
-            <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={closeMobileFilters}
-            ></div>
+      {showMobileFilters && (
+        <div className="fixed inset-0 z-[60] lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={closeMobileFilters}
+          ></div>
 
-            {/* Modal content */}
-            <div className="relative h-full bg-[var(--color-background)] animate-fade-in-up overflow-y-auto">
-              <FiltersContent isMobile={true} />
-            </div>
+          {/* Modal content */}
+          <div className="relative h-full bg-[var(--color-background)] animate-fade-in-up overflow-y-auto">
+            <MobileFiltersContent />
           </div>
-        )
-      }
-    </div >
+        </div>
+      )}
+    </div>
   )
 }
