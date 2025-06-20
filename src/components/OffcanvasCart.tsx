@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { useCart } from "../context/CartContext"
 import { useNavigate } from "react-router-dom"
 import { ShoppingCart, X, Plus, Minus, Trash2, CreditCard } from "lucide-react"
@@ -17,24 +17,6 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
   const { cartItems, updateQuantity, removeFromCart, total } = useCart()
   const navigate = useNavigate()
   const { isXbox } = useTheme();
-
-  // Bloquear scroll del body cuando el offcanvas está abierto
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 1024px)") // lg breakpoint
-    const handleMediaChange: (e: MediaQueryListEvent) => void = (e) => setIsMobile(e.matches)
-
-    // Set initial value
-    setIsMobile(mediaQuery.matches)
-
-    // Listen for changes
-    mediaQuery.addListener(handleMediaChange)
-
-    return () => {
-      mediaQuery.removeListener(handleMediaChange)
-    }
-  }, [])
 
   useEffect(() => {
     if (isOpen) {
