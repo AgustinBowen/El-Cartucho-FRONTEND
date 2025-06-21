@@ -115,7 +115,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             <button
               onClick={handleAdd}
               disabled={isLoading}
-              className={`p-2 rounded-full text-white transition-all duration-300 transform hover:scale-110 ${
+              className={`cursor-pointer p-2 rounded-full text-white transition-all duration-300 transform hover:scale-110 ${
                 isXbox ? "bg-[#107C10] hover:bg-[#0c5f0c]" : "bg-[#4a7bc8] hover:bg-[#3a5ba8]"
               } ${isLoading ? "animate-pulse" : ""}`}
               title="Agregar al carrito"

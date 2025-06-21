@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { useCart } from "../context/CartContext"
 import type { Producto } from "../types/Producto"
+import { formatearPrecio } from "../utils/formatearPrecio"
 import {
   ShoppingCart,
   ArrowLeft,
@@ -140,15 +141,13 @@ export const ProductDetail: React.FC = () => {
   const isOutOfStock = producto?.stock === 0
   const isLowStock = producto?.stock && producto.stock <= 5 && producto.stock > 0
 
-  // Clases consistentes para las cards
-  const cardClasses = isXbox 
-    ? 'bg-white/80 border border-gray-200/50 shadow-sm' 
-    : 'backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20'
+  // Clases consistentes para las cards - usando la misma clase "card"
+  const cardClasses = "card"
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-background)] pt-16 flex items-center justify-center">
-        <div className={`${cardClasses} rounded-2xl p-8`}>
+        <div className={`rounded-2xl p-8`}>
           <span className="flex items-center text-[var(--color-foreground)]">
             <div className="w-16 h-16 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mr-2"></div>
             Cargando productos...
@@ -189,7 +188,7 @@ export const ProductDetail: React.FC = () => {
       style={{
         backgroundImage: `url('${isXbox
           ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
-          : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750306013/3td_ip4a6r.gif"
+          : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
           }')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -239,13 +238,13 @@ export const ProductDetail: React.FC = () => {
                     <>
                       <button
                         onClick={prevImage}
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm"
+                        className="cursor-pointer absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm"
                       >
                         <ChevronLeft size={24} />
                       </button>
                       <button
                         onClick={nextImage}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm"
+                        className="absolute cursor-pointer right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm"
                       >
                         <ChevronRight size={24} />
                       </button>
@@ -292,7 +291,7 @@ export const ProductDetail: React.FC = () => {
                       <button
                         key={index}
                         onClick={() => selectImage(index)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${index === currentImageIndex
+                        className={`cursor-pointer flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${index === currentImageIndex
                           ? `border-[var(--color-primary)] ${isXbox ? "xbox-glow" : "ps2-glow"}`
                           : "border-white/30 hover:border-[var(--color-primary)]"
                           }`}
@@ -349,9 +348,9 @@ export const ProductDetail: React.FC = () => {
 
                 {/* Precio */}
                 <div className="space-y-2">
-                  {discount > 0 && <span className="text-lg text-gray-400 line-through">${originalPrice}</span>}
+                  {discount > 0 && <span className="text-lg text-gray-400 line-through">{formatearPrecio(originalPrice)}</span>}
                   <div className="flex items-center space-x-3">
-                    <span className="text-4xl font-bold text-[var(--color-primary)]">${producto.precio}</span>
+                    <span className="text-4xl font-bold text-[var(--color-primary)]">{formatearPrecio(producto.precio)}</span>
                     {discount > 0 && (
                       <span className="px-2 py-1 text-sm font-bold text-green-400 bg-green-500/20 backdrop-blur-sm rounded-full">
                         Ahorra ${(originalPrice - producto.precio).toFixed(2)}
@@ -449,11 +448,7 @@ export const ProductDetail: React.FC = () => {
                       <button
                         onClick={handleAddToCart}
                         disabled={addingToCart}
-                        className={`w-full py-3 px-6 rounded-xl font-semibold text-[var(--color-foreground)] border hover:scale-105 cursor-pointer animated-fade-in-up transition-all ${
-                          isXbox 
-                            ? "bg-green-500/20 border-green-400/30" 
-                            : "bg-blue-500/20 border-white/30"
-                        }`}
+                        className={`w-full py-3 px-6 rounded-xl font-semibold border hover:scale-105 cursor-pointer animated-fade-in-up transition-all bg-[var(--color-foreground)] border-white text-[var(--color-muted)]`}
                       >
                         Agregar al carrito
                       </button>
@@ -532,7 +527,7 @@ export const ProductDetail: React.FC = () => {
             <div className={`${cardClasses} rounded-xl p-4 inline-block`}>
               <Link
                 to="/catalogo"
-                className="inline-flex font-semibold items-center text-[var(--color-primary)] hover:text-[var(--color-primary)]/80 group transition-colors"
+                className={`inline-flex font-semibold items-center ${isXbox? "text-[var(--color-primary)]": "text-[var(--color-foreground)]"} hover:text-[var(--color-primary)]/80 group transition-colors`}
               >
                 <ArrowLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform" />
                 Volver al catálogo

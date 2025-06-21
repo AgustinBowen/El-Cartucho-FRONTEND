@@ -110,7 +110,7 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors"
+              className="cursor-pointer p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors"
               title="Cerrar carrito"
             >
               <X size={20} />
