@@ -25,7 +25,7 @@ export const Catalog: React.FC = () => {
 
   // Imagen de fondo única
   const backgroundImage = isXbox 
-    ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750354661/vsgif_com__.2470826_qlu0pm.gif"
+    ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
     : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
 
   // Efecto para controlar el scroll del body cuando se abren los filtros móviles
@@ -274,7 +274,7 @@ export const Catalog: React.FC = () => {
         {/* Overlay para el error */}
         <div 
           className="absolute inset-0 bg-[var(--color-background)]"
-          style={{ opacity: isXbox ? 0.85 : 0.93 }}
+          style={{ opacity: isXbox ? 0.90 : 0.93 }}
         ></div>
         
         <div className="text-center animate-fade-in-scale relative z-10">
@@ -305,8 +305,8 @@ export const Catalog: React.FC = () => {
     >
       {/* Overlay único para toda la página */}
       <div 
-        className={`absolute inset-0 ${isXbox? "bg-[#0c0c0c]":"bg-[var(--color-background)]"}`}
-        style={{ opacity: isXbox ? 0.60 : 0.85 }}
+        className={`absolute inset-0 ${isXbox? "bg-[#141414]":"bg-[var(--color-background)]"}`}
+        style={{ opacity: isXbox ? 0.30 : 0.85 }}
       ></div>
 
       {/* Todo el contenido dentro del contenedor principal */}

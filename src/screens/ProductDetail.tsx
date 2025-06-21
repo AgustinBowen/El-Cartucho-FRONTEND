@@ -46,13 +46,11 @@ export const ProductDetail: React.FC = () => {
         setLoading(true)
         const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/producto/${id}`)
 
-
         if (!response.ok) {
           throw new Error("Producto no encontrado")
         }
 
         const data = await response.json()
-
         setProducto(data)
       } catch (err: any) {
         setError(err.message)
@@ -63,7 +61,6 @@ export const ProductDetail: React.FC = () => {
 
     fetchProducto()
   }, [id])
-
 
   const handleAddToCart = async () => {
     if (!producto) return
@@ -143,13 +140,20 @@ export const ProductDetail: React.FC = () => {
   const isOutOfStock = producto?.stock === 0
   const isLowStock = producto?.stock && producto.stock <= 5 && producto.stock > 0
 
+  // Clases consistentes para las cards
+  const cardClasses = isXbox 
+    ? 'bg-white/80 border border-gray-200/50 shadow-sm' 
+    : 'backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20'
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-background)] pt-16 flex items-center justify-center">
-        <span className="flex items-center">
-          <div className="w-16 h-16 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mr-2"></div>
-          Cargando productos...
-        </span>
+        <div className={`${cardClasses} rounded-2xl p-8`}>
+          <span className="flex items-center text-[var(--color-foreground)]">
+            <div className="w-16 h-16 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mr-2"></div>
+            Cargando productos...
+          </span>
+        </div>
       </div>
     )
   }
@@ -157,13 +161,13 @@ export const ProductDetail: React.FC = () => {
   if (error || !producto) {
     return (
       <div className="min-h-screen bg-[var(--color-background)] pt-16 flex items-center justify-center">
-        <div className="text-center animate-fade-in-scale">
+        <div className={`${cardClasses} rounded-2xl p-8 text-center animate-fade-in-scale`}>
           <div
-            className={`w-24 h-24 rounded-full ${isXbox ? "bg-red-100" : "bg-red-900/20"} flex items-center justify-center mb-6 mx-auto`}
+            className={`w-24 h-24 rounded-full ${isXbox ? "bg-red-100/20" : "bg-red-900/20"} flex items-center justify-center mb-6 mx-auto`}
           >
             <span className="text-4xl">😞</span>
           </div>
-          <h2 className="text-3xl font-bold mb-4">Producto no encontrado</h2>
+          <h2 className="text-3xl font-bold mb-4 text-[var(--color-foreground)]">Producto no encontrado</h2>
           <p className="text-[var(--color-foreground)]/70 mb-6">
             El producto que buscas no existe o ha sido eliminado.
           </p>
@@ -184,7 +188,7 @@ export const ProductDetail: React.FC = () => {
       }`}
       style={{
         backgroundImage: `url('${isXbox
-          ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750361213/9Uvpia_egi7vn.gif"
+          ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
           : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750306013/3td_ip4a6r.gif"
           }')`,
         backgroundSize: 'cover',
@@ -192,28 +196,30 @@ export const ProductDetail: React.FC = () => {
         backgroundRepeat: 'no-repeat',
       }}>
       <div className="relative z-20">
-        {/* Breadcrumb */}
+        {/* Breadcrumb en card */}
         <div className="max-w-screen-xl mx-auto px-4 py-4">
-          <div className="flex items-center space-x-2 text-sm text-[var(--color-foreground)]/90 animate-fade-in-up">
-            <Link to="/" className="hover:text-[var(--color-primary)]">
-              Inicio
-            </Link>
-            <span>/</span>
-            <Link to="/catalogo" className="hover:text-[var(--color-primary)]">
-              Catálogo
-            </Link>
-            <span>/</span>
-            <span className="text-[var(--color-primary)]">{producto.nombre}</span>
+          <div className={`${cardClasses} rounded-xl p-4 animate-fade-in-up`}>
+            <div className="flex items-center space-x-2 text-sm text-[var(--color-foreground)]/90">
+              <Link to="/" className="hover:text-[var(--color-primary)] transition-colors">
+                Inicio
+              </Link>
+              <span>/</span>
+              <Link to="/catalogo" className="hover:text-[var(--color-primary)] transition-colors">
+                Catálogo
+              </Link>
+              <span>/</span>
+              <span className="text-[var(--color-primary)]">{producto.nombre}</span>
+            </div>
           </div>
         </div>
 
         <div className="max-w-screen-xl mx-auto px-4 pb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Galería de imágenes */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Galería de imágenes en card */}
             <div className="animate-fade-in-up">
-              <div className="space-y-4">
+              <div className={`${cardClasses} rounded-2xl p-6 space-y-4`}>
                 {/* Imagen principal */}
-                <div className="relative bg-[var(--color-muted)] rounded-2xl overflow-hidden group">
+                <div className="relative bg-[var(--color-muted)]/50 rounded-xl overflow-hidden group">
                   {!imageLoaded && (
                     <div className="absolute inset-0 shimmer flex items-center justify-center">
                       <Gamepad2 size={64} className="text-gray-400" />
@@ -233,13 +239,13 @@ export const ProductDetail: React.FC = () => {
                     <>
                       <button
                         onClick={prevImage}
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300"
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm"
                       >
                         <ChevronLeft size={24} />
                       </button>
                       <button
                         onClick={nextImage}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm"
                       >
                         <ChevronRight size={24} />
                       </button>
@@ -260,18 +266,15 @@ export const ProductDetail: React.FC = () => {
 
                   {/* Badges */}
                   <div className="absolute top-4 left-4 flex flex-col space-y-2">
-
                     {isLowStock && (
-                      <span className="px-3 py-1 text-sm font-bold text-white bg-orange-500 rounded-full">
+                      <span className="px-3 py-1 text-sm font-bold text-white bg-orange-500/90 backdrop-blur-sm rounded-full">
                         ¡ÚLTIMAS UNIDADES!
                       </span>
                     )}
-
                   </div>
 
                   {/* Actions overlay */}
                   <div className="absolute top-4 right-4 flex flex-col space-y-2">
-
                     <button
                       onClick={handleShare}
                       className="p-3 rounded-full bg-white/20 text-white hover:bg-white/30 backdrop-blur-md transition-all duration-300"
@@ -291,7 +294,7 @@ export const ProductDetail: React.FC = () => {
                         onClick={() => selectImage(index)}
                         className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${index === currentImageIndex
                           ? `border-[var(--color-primary)] ${isXbox ? "xbox-glow" : "ps2-glow"}`
-                          : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                          : "border-white/30 hover:border-[var(--color-primary)]"
                           }`}
                       >
                         <img
@@ -306,9 +309,9 @@ export const ProductDetail: React.FC = () => {
               </div>
             </div>
 
-            {/* Información del producto */}
+            {/* Información del producto en card */}
             <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-              <div className="space-y-6">
+              <div className={`${cardClasses} rounded-2xl p-6 space-y-6`}>
                 {/* Título y categoría */}
                 <div>
                   {producto.categoria && (
@@ -323,7 +326,6 @@ export const ProductDetail: React.FC = () => {
                   <h1 className="game-title text-3xl lg:text-4xl font-bold text-[var(--color-foreground)] mb-4">
                     {producto.nombre}
                   </h1>
-
                 </div>
 
                 {/* Stock */}
@@ -332,12 +334,12 @@ export const ProductDetail: React.FC = () => {
                     <Package size={16} className="text-[var(--color-primary)]" />
                     <span className="text-sm font-medium">
                       {isOutOfStock ? (
-                        <span className="text-red-500 flex items-center">
+                        <span className="text-red-400 flex items-center">
                           <AlertTriangle size={16} className="mr-1" />
                           Sin stock
                         </span>
                       ) : isLowStock ? (
-                        <span className="text-orange-500">Solo quedan {producto.stock} unidades</span>
+                        <span className="text-orange-400">Solo quedan {producto.stock} unidades</span>
                       ) : (
                         <span className="text-[var(--color-primary)">{producto.stock} unidades disponibles</span>
                       )}
@@ -347,11 +349,11 @@ export const ProductDetail: React.FC = () => {
 
                 {/* Precio */}
                 <div className="space-y-2">
-                  {discount > 0 && <span className="text-lg text-gray-500 line-through">${originalPrice}</span>}
+                  {discount > 0 && <span className="text-lg text-gray-400 line-through">${originalPrice}</span>}
                   <div className="flex items-center space-x-3">
                     <span className="text-4xl font-bold text-[var(--color-primary)]">${producto.precio}</span>
                     {discount > 0 && (
-                      <span className="px-2 py-1 text-sm font-bold text-green-600 bg-green-100 dark:bg-green-900/20 dark:text-green-400 rounded-full">
+                      <span className="px-2 py-1 text-sm font-bold text-green-400 bg-green-500/20 backdrop-blur-sm rounded-full">
                         Ahorra ${(originalPrice - producto.precio).toFixed(2)}
                       </span>
                     )}
@@ -361,7 +363,7 @@ export const ProductDetail: React.FC = () => {
                 {/* Descripción */}
                 {producto.descripcion && (
                   <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center">
+                    <h3 className="text-lg font-semibold flex items-center text-[var(--color-foreground)]">
                       <Info size={20} className="mr-2" />
                       Descripción
                     </h3>
@@ -372,12 +374,16 @@ export const ProductDetail: React.FC = () => {
                 {/* Subcategorías */}
                 {producto.subcategorias && producto.subcategorias.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-lg font-semibold">Características</h3>
+                    <h3 className="text-lg font-semibold text-[var(--color-foreground)]">Características</h3>
                     <div className="flex flex-wrap gap-2">
                       {producto.subcategorias.map((subcategoria, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 text-sm bg-[var(--color-muted)] text-[var(--color-foreground)] rounded-full border border-[var(--color-border)]"
+                          className={`px-3 py-1 text-sm text-[var(--color-foreground)] rounded-full border backdrop-blur-sm ${
+                            isXbox 
+                              ? 'bg-gray-100/50 border-gray-300/50' 
+                              : 'bg-white/10 border-white/20'
+                          }`}
                         >
                           {subcategoria}
                         </span>
@@ -390,18 +396,26 @@ export const ProductDetail: React.FC = () => {
                 {!isOutOfStock && (
                   <div className="space-y-4">
                     <div className="flex items-center space-x-4">
-                      <span className="font-medium">Cantidad:</span>
+                      <span className="font-medium text-[var(--color-foreground)]">Cantidad:</span>
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-10 h-10 rounded-full border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
+                          className={`cursor-pointer w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+                            isXbox 
+                              ? 'border-gray-500/90 hover:bg-gray-100/70 text-gray-800' 
+                              : 'border-white/30 hover:bg-white/10 text-[var(--color-foreground)]'
+                          }`}
                         >
                           <Minus size={16} />
                         </button>
-                        <span className="font-bold text-lg w-8 text-center">{quantity}</span>
+                        <span className="font-bold text-lg w-8 text-center text-[var(--color-foreground)]">{quantity}</span>
                         <button
                           onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
-                          className="w-10 h-10 rounded-full border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
+                          className={`cursor-pointer w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+                            isXbox 
+                              ? 'border-gray-500/90 hover:bg-gray-100/70 text-gray-800' 
+                              : 'border-white/30 hover:bg-white/10 text-[var(--color-foreground)]'
+                          }`}
                         >
                           <Plus size={16} />
                         </button>
@@ -435,7 +449,11 @@ export const ProductDetail: React.FC = () => {
                       <button
                         onClick={handleAddToCart}
                         disabled={addingToCart}
-                        className="w-full py-3 px-6 rounded-xl font-semibold bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] hover:scale-105  cursor-pointer transition-all duration-300"
+                        className={`w-full py-3 px-6 rounded-xl font-semibold text-[var(--color-foreground)] border hover:scale-105 cursor-pointer animated-fade-in-up transition-all ${
+                          isXbox 
+                            ? "bg-green-500/20 border-green-400/30" 
+                            : "bg-blue-500/20 border-white/30"
+                        }`}
                       >
                         Agregar al carrito
                       </button>
@@ -445,10 +463,10 @@ export const ProductDetail: React.FC = () => {
 
                 {/* Mensaje de sin stock */}
                 {isOutOfStock && (
-                  <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <div className="p-4 bg-red-500/20 border border-red-400/30 rounded-xl backdrop-blur-sm">
                     <div className="flex items-center">
-                      <AlertTriangle size={20} className="text-red-500 mr-2" />
-                      <span className="font-medium text-red-700 dark:text-red-400">
+                      <AlertTriangle size={20} className="text-red-400 mr-2" />
+                      <span className="font-medium text-red-400">
                         Producto agotado - Te notificaremos cuando esté disponible
                       </span>
                     </div>
@@ -456,39 +474,51 @@ export const ProductDetail: React.FC = () => {
                 )}
 
                 {/* Garantías y beneficios */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-[var(--color-border)]">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-white/20">
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`p-2 rounded-full ${isXbox ? "bg-green-100 text-green-600" : "bg-blue-900/20 text-blue-400"}`}
+                      className={`p-2 rounded-full backdrop-blur-sm ${
+                        isXbox 
+                          ? "bg-green-500/30 text-green-600" 
+                          : "bg-blue-500/20 text-blue-400"
+                      }`}
                     >
                       <Truck size={20} />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">Envíos</p>
+                      <p className="font-medium text-sm text-[var(--color-foreground)]">Envíos</p>
                       <p className="text-xs text-[var(--color-foreground)]/70">A todo el pais</p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`p-2 rounded-full ${isXbox ? "bg-green-100 text-green-600" : "bg-blue-900/20 text-blue-400"}`}
+                      className={`p-2 rounded-full backdrop-blur-sm ${
+                        isXbox 
+                          ? "bg-green-500/30 text-green-600" 
+                          : "bg-blue-500/20 text-blue-400"
+                      }`}
                     >
                       <Shield size={20} />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">Garantía</p>
+                      <p className="font-medium text-sm text-[var(--color-foreground)]">Garantía</p>
                       <p className="text-xs text-[var(--color-foreground)]/70">30 días</p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`p-2 rounded-full ${isXbox ? "bg-green-100 text-green-600" : "bg-blue-900/20 text-blue-400"}`}
+                      className={`p-2 rounded-full backdrop-blur-sm ${
+                        isXbox 
+                          ? "bg-green-500/30 text-green-600" 
+                          : "bg-blue-500/20 text-blue-400"
+                      }`}
                     >
                       <RotateCcw size={20} />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">Devoluciones</p>
+                      <p className="font-medium text-sm text-[var(--color-foreground)]">Devoluciones</p>
                       <p className="text-xs text-[var(--color-foreground)]/70">Sin costo</p>
                     </div>
                   </div>
@@ -497,15 +527,17 @@ export const ProductDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Botón volver */}
-          <div className="mt-12 animate-fade-in-up">
-            <Link
-              to="/catalogo"
-              className="inline-flex font-semibold underline items-center text-[var(--color-link)] hover:text-[var(--color-link)]/80 group transition-colors"
-            >
-              <ArrowLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform" />
-              Volver al catálogo
-            </Link>
+          {/* Botón volver en card */}
+          <div className="mt-8 animate-fade-in-up">
+            <div className={`${cardClasses} rounded-xl p-4 inline-block`}>
+              <Link
+                to="/catalogo"
+                className="inline-flex font-semibold items-center text-[var(--color-primary)] hover:text-[var(--color-primary)]/80 group transition-colors"
+              >
+                <ArrowLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform" />
+                Volver al catálogo
+              </Link>
+            </div>
           </div>
         </div>
       </div>
