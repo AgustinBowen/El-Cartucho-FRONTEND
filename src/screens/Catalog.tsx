@@ -181,7 +181,7 @@ export const Catalog: React.FC = () => {
 
       {/* Botón de acción */}
       <div className="pt-4 border-t border-[var(--color-border)]">
-        <button onClick={resetFilters} className="w-full btn-secondary text-sm">
+        <button onClick={resetFilters} className="w-full btn-secondary text-sm cursor-pointer">
           Limpiar filtros
         </button>
       </div>
@@ -443,7 +443,7 @@ export const Catalog: React.FC = () => {
                           onClick={() =>
                             link.url && setCurrentPage(new URL(link.url).searchParams.get("page") as unknown as number)
                           }
-                          className={`btn-secondary px-3 py-1 ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
+                          className={`cursor-pointer btn-secondary px-3 py-1 ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                           {link.label.includes("Anterior") ? "<" : ">"}
                         </button>
@@ -453,7 +453,7 @@ export const Catalog: React.FC = () => {
                         <button
                           key={index}
                           onClick={() => setCurrentPage(Number(link.label))}
-                          className={`btn-secondary px-3 py-1 ${
+                          className={`cursor-pointer btn-secondary px-3 py-1 ${
                             link.active ? "bg-[var(--color-primary)] text-white" : ""
                           }`}
                         >

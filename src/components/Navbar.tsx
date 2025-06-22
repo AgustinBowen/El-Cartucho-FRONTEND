@@ -101,6 +101,7 @@ function Navbar() {
                     <input
                       type="text"
                       value={searchTerm}
+                      aria-label="Buscar juegos"
                       onChange={(e) => setSearchTerm(e.target.value)}
                       placeholder="Buscar juegos..."
                       className="w-48 px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
@@ -108,8 +109,9 @@ function Navbar() {
                     />
                     <button
                       type="button"
+                      aria-label="Cerrar búsqueda"
                       onClick={() => setSearchOpen(false)}
-                      className="ml-2 p-2 text-[var(--color-foreground)] hover:text-[var(--color-primary)]"
+                      className="cursor-pointer ml-2 p-2 text-[var(--color-foreground)] hover:text-[var(--color-primary)]"
                     >
                       <X size={18} />
                     </button>
@@ -117,8 +119,9 @@ function Navbar() {
                 ) : (
                   <button
                     onClick={() => setSearchOpen(true)}
-                    className="p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300"
+                    className="cursor-pointer p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300"
                     title="Buscar"
+                    aria-label="Abrir búsqueda"
                   >
                     <Search size={20} />
                   </button>
@@ -206,6 +209,7 @@ function Navbar() {
                     <form onSubmit={handleSearch} className="flex gap-2">
                       <input
                         type="text"
+                        aria-label="Buscar juegos"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Buscar juegos..."

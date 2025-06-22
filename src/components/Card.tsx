@@ -147,9 +147,9 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             <button
               onClick={handleCardClick}
               disabled={isLoading}
-              className={`btn-primary text-sm px-4 py-2`}
+              className={`btn-primary text-sm px-4 py-2 cursor-pointer`}
             >
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1 ">
                   <ShoppingCart size={16} />
                   <span>Comprar</span>
                 </div>
