@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useCart } from "../context/CartContext"
 import { useNavigate } from "react-router-dom"
 import { ShoppingCart, X, Plus, Minus, Trash2, CreditCard } from "lucide-react"
@@ -16,38 +16,53 @@ interface OffcanvasCartProps {
 export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose }) => {
   const { cartItems, updateQuantity, removeFromCart, total } = useCart()
   const navigate = useNavigate()
-  const { isXbox } = useTheme();
+  const { isXbox } = useTheme()
+  const [backgroundLoaded, setBackgroundLoaded] = useState(false)
+
+  // Imagen de fondo única
+  const backgroundImage = isXbox
+    ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
+    : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
+
+  // Precargar imagen de fondo solo cuando el offcanvas esté abierto
+  useEffect(() => {
+    if (isOpen) {
+      const img = new Image()
+      img.onload = () => setBackgroundLoaded(true)
+      img.src = backgroundImage
+    }
+  }, [isOpen, backgroundImage])
 
   useEffect(() => {
     if (isOpen) {
       // Guardar la posición actual del scroll
-      const scrollY = window.scrollY;
+      const scrollY = window.scrollY
 
       // Bloquear el scroll del body
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
+      document.body.style.overflow = "hidden"
+      document.body.style.position = "fixed"
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = "100%"
     } else {
       // Restaurar el scroll del body
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
+      const scrollY = document.body.style.top
+      document.body.style.overflow = ""
+      document.body.style.position = ""
+      document.body.style.top = ""
+      document.body.style.width = ""
 
       // Restaurar la posición del scroll
       if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        window.scrollTo(0, Number.parseInt(scrollY || "0") * -1)
       }
     }
 
     // Cleanup function para restaurar el scroll al desmontar
     return () => {
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
+      document.body.style.overflow = ""
+      document.body.style.position = ""
+      document.body.style.top = ""
+      document.body.style.width = ""
     }
   }, [isOpen])
 
@@ -81,62 +96,80 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
     <>
       {/* Backdrop with blur */}
       <div
-        className={`fixed inset-0 z-[60] transition-all duration-300 ease-in-out ${isOpen
-          ? 'backdrop-blur-sm bg-black/30 dark:bg-black/50'
-          : 'backdrop-blur-0 bg-transparent pointer-events-none'
-          }`}
+        className={`fixed inset-0 z-[60] transition-all duration-300 ease-in-out ${
+          isOpen
+            ? "backdrop-blur-sm bg-black/30 dark:bg-black/50"
+            : "backdrop-blur-0 bg-transparent pointer-events-none"
+        }`}
         onClick={handleBackdropClick}
       />
 
       {/* Offcanvas */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-[var(--color-background)] shadow-2xl z-[70] transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
-          } ${isXbox ? "" : "ps2-glow"}`}
+        className={`fixed top-0 right-0 h-full w-full max-w-md shadow-2xl z-[70] transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        } ${isXbox ? "" : "ps2-glow"} ${backgroundLoaded ? "opacity-100" : "opacity-90"}`}
+        style={{
+          backgroundImage: backgroundLoaded && isOpen ? `url('${backgroundImage}')` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
       >
-        {/* Header */}
+        {/* Overlay para el offcanvas */}
         <div
-          className={`p-6 border-b border-[var(--color-border)] ${isXbox ? "bg-gradient-to-r from-green-50 to-green-100" : "bg-gradient-to-r from-blue-900/10 to-blue-800/10"
-            }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <ShoppingCart size={24} className="text-[var(--color-primary)] mr-3" />
-              <div>
-                <h2 className="text-xl font-bold">Tu Carrito</h2>
-                <p className="text-sm text-[var(--color-foreground)]/70">
-                  {cartItems.length} {cartItems.length === 1 ? "producto" : "productos"}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="cursor-pointer p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors"
-              title="Cerrar carrito"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        </div>
+          className={`absolute inset-0 ${isXbox ? "bg-[var(--color-background)]" : "bg-[var(--color-background)]"}`}
+          style={{ opacity: isXbox ? 0.95 : 0.98 }}
+        />
 
-        {/* Content */}
-        <div className="flex flex-col h-full">
+        {/* Contenido del offcanvas */}
+        <div className="relative z-10 h-full flex flex-col">
+          {/* Header */}
+          <div
+            className={`p-6 border-b border-[var(--color-border)] ${
+              isXbox
+                ? "bg-gradient-to-r from-green-50 to-green-100"
+                : "bg-gradient-to-r from-blue-900/10 to-blue-800/10"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <ShoppingCart size={24} className="text-[var(--color-primary)] mr-3" />
+                <div>
+                  <h2 className="text-xl font-bold">Tu Carrito</h2>
+                  <p className="text-sm text-[var(--color-foreground)]/70">
+                    {cartItems.length} {cartItems.length === 1 ? "producto" : "productos"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="cursor-pointer p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors"
+                title="Cerrar carrito"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
           {cartItems.length === 0 ? (
             /* Empty Cart */
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
               <div
-                className={`w-20 h-20 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"
-                  } flex items-center justify-center mb-4`}
+                className={`w-20 h-20 rounded-full ${
+                  isXbox ? "bg-gray-100" : "bg-gray-800"
+                } flex items-center justify-center mb-4`}
               >
                 <ShoppingCart size={40} className="text-gray-400" />
               </div>
               <h3 className="text-lg font-bold mb-2">Tu carrito está vacío</h3>
-              <p className="text-[var(--color-foreground)]/70 mb-4">
-                ¡Agrega algunos juegos increíbles!
-              </p>
+              <p className="text-[var(--color-foreground)]/70 mb-4">¡Agrega algunos juegos increíbles!</p>
               <button
                 onClick={onClose}
-                className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-                  } text-white`}
+                className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${
+                  isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
+                } text-white`}
                 aria-label="Eliminar item de carrito"
               >
                 Continuar comprando
@@ -159,6 +192,7 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                           src={item.image || "/placeholder.svg"}
                           alt={item.title}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
                             target.style.display = "none"
@@ -209,7 +243,9 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                             <div className="text-sm font-bold text-[var(--color-primary)]">
                               {formatearPrecio((item.price * item.quantity).toFixed(2))}
                             </div>
-                            <div className="text-xs text-[var(--color-foreground)]/70">{formatearPrecio(item.price)} c/u</div>
+                            <div className="text-xs text-[var(--color-foreground)]/70">
+                              {formatearPrecio(item.price)} c/u
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -223,7 +259,7 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                 {/* Total */}
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-medium">Total:</span>
-                  <span className="text-2xl font-bold text-[var(--color-primary)]">${total.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-[var(--color-primary)]">{formatearPrecio(total)}</span>
                 </div>
 
                 {/* Shipping Info */}
@@ -235,8 +271,9 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                 <div className="space-y-6">
                   <button
                     onClick={handleCheckout}
-                    className={`cursor-pointer w-full py-3 px-4 rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 ${isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-                      }`}
+                    className={`cursor-pointer w-full py-3 px-4 rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 ${
+                      isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
+                    }`}
                     aria-label="Proceder al pago"
                   >
                     <div className="flex items-center justify-center">

@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useCart } from "../context/CartContext"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, MapPin, Mail, Loader2 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
@@ -14,6 +14,7 @@ export const CartScreen = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { isXbox } = useTheme()
+  const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
   // Nuevos estados para envío y email
   const [codigoPostal, setCodigoPostal] = useState("")
@@ -23,10 +24,17 @@ export const CartScreen = () => {
   const [email, setEmail] = useState("")
   const [emailError, setEmailError] = useState<string | null>(null)
 
-  // Imagen de fondo única (igual que en Catalog)
-  const backgroundImage = isXbox 
+  // Imagen de fondo única
+  const backgroundImage = isXbox
     ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
     : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
+
+  // Precargar imagen de fondo
+  useEffect(() => {
+    const img = new Image()
+    img.onload = () => setBackgroundLoaded(true)
+    img.src = backgroundImage
+  }, [backgroundImage])
 
   const handleConfirmPurchase = async () => {
     // Validar que se haya ingresado email
@@ -154,19 +162,21 @@ export const CartScreen = () => {
   const totalConEnvio = costoEnvio !== null ? total + costoEnvio : total
 
   return (
-    <div 
-      className="min-h-screen pt-16 relative"
+    <div
+      className={`min-h-screen pt-16 relative transition-opacity duration-1000 ${
+        backgroundLoaded ? "opacity-100" : "opacity-0"
+      }`}
       style={{
-        backgroundImage: `url('${backgroundImage}')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        backgroundImage: backgroundLoaded ? `url('${backgroundImage}')` : "none",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
     >
       {/* Overlay único para toda la página */}
-      <div 
-        className={`absolute inset-0 ${isXbox? "bg-[#141414]":"bg-[var(--color-background)]"}`}
-        style={{ opacity: isXbox ? 0.30 : 0.85 }}
+      <div
+        className={`absolute inset-0 ${isXbox ? "bg-[#141414]" : "bg-[var(--color-background)]"}`}
+        style={{ opacity: isXbox ? 0.3 : 0.85 }}
       ></div>
 
       {/* Todo el contenido dentro del contenedor principal */}
@@ -176,9 +186,19 @@ export const CartScreen = () => {
           <div className="max-w-screen-xl mx-auto animate-fade-in-up">
             <div className="flex items-center mb-4">
               {isXbox ? (
-                <img className="w-32 h-32" src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750487805/koopatroopasmall_ylfqpo.gif" alt="KoopaTroopa" />
+                <img
+                  className="w-32 h-32"
+                  src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750487805/koopatroopasmall_ylfqpo.gif"
+                  alt="KoopaTroopa"
+                  loading="eager"
+                />
               ) : (
-                <img className="w-32 h-32" src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750487784/donkeykong_lcc3en.gif" alt="DonkeyKong" />
+                <img
+                  className="w-32 h-32"
+                  src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750487784/donkeykong_lcc3en.gif"
+                  alt="DonkeyKong"
+                  loading="eager"
+                />
               )}
               <div>
                 <h1 className="game-title text-4xl md:text-5xl text-white mb-2">Tu Carrito</h1>
@@ -218,7 +238,9 @@ export const CartScreen = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Cart Items */}
               <div className="lg:col-span-2 space-y-4">
-                <h2 className="text-2xl font-bold mb-6 animate-fade-in-up text-white">Productos ({cartItems.length})</h2>
+                <h2 className="text-2xl font-bold mb-6 animate-fade-in-up text-white">
+                  Productos ({cartItems.length})
+                </h2>
 
                 {cartItems.map((item, index) => (
                   <div
@@ -233,6 +255,7 @@ export const CartScreen = () => {
                           src={item.image || "/placeholder.svg"}
                           alt={item.title}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
                             target.style.display = "none"
@@ -277,7 +300,9 @@ export const CartScreen = () => {
 
                           {/* Price */}
                           <div className="text-right">
-                            <div className="text-sm text-[var(--color-foreground)]/70">{formatearPrecio(item.price)} c/u</div>
+                            <div className="text-sm text-[var(--color-foreground)]/70">
+                              {formatearPrecio(item.price)} c/u
+                            </div>
                             <div className="text-xl font-bold text-[var(--color-primary)]">
                               {formatearPrecio(item.price * item.quantity)}
                             </div>
@@ -398,7 +423,9 @@ export const CartScreen = () => {
 
                   {error && (
                     <div
-                      className={`p-3 rounded-lg ${isXbox ? "bg-red-100/80 text-red-700" : "bg-red-900/20 text-red-400"}`}
+                      className={`p-3 rounded-lg ${
+                        isXbox ? "bg-red-100/80 text-red-700" : "bg-red-900/20 text-red-400"
+                      }`}
                     >
                       <p className="text-sm font-medium">Error al procesar el pago</p>
                       <p className="text-sm">{error}</p>

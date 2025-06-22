@@ -13,34 +13,42 @@ export const Catalog: React.FC = () => {
   const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const { isXbox } = useTheme();
+  const { isXbox } = useTheme()
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("name")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [meta, setMeta] = useState<any>(null)
+  const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
   const [searchParams] = useSearchParams()
 
   // Imagen de fondo única
-  const backgroundImage = isXbox 
+  const backgroundImage = isXbox
     ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
     : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
+
+  // Precargar imagen de fondo
+  useEffect(() => {
+    const img = new Image()
+    img.onload = () => setBackgroundLoaded(true)
+    img.src = backgroundImage
+  }, [backgroundImage])
 
   // Efecto para controlar el scroll del body cuando se abren los filtros móviles
   useEffect(() => {
     if (showMobileFilters) {
       // Bloquear scroll del body
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = "hidden"
     } else {
       // Restaurar scroll del body
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = "unset"
     }
 
     // Cleanup: restaurar el scroll cuando el componente se desmonte
     return () => {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = "unset"
     }
   }, [showMobileFilters])
 
@@ -173,10 +181,7 @@ export const Catalog: React.FC = () => {
 
       {/* Botón de acción */}
       <div className="pt-4 border-t border-[var(--color-border)]">
-        <button
-          onClick={resetFilters}
-          className="w-full btn-secondary text-sm"
-        >
+        <button onClick={resetFilters} className="w-full btn-secondary text-sm">
           Limpiar filtros
         </button>
       </div>
@@ -188,10 +193,7 @@ export const Catalog: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold">Filtros</h2>
-        <button
-          onClick={closeMobileFilters}
-          className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors"
-        >
+        <button onClick={closeMobileFilters} className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors">
           <X size={24} />
         </button>
       </div>
@@ -244,16 +246,10 @@ export const Catalog: React.FC = () => {
 
       {/* Botones de acción */}
       <div className="space-y-2 pt-4 border-t border-[var(--color-border)]">
-        <button
-          onClick={resetOnlyFilters}
-          className="w-full btn-secondary text-sm"
-        >
+        <button onClick={resetOnlyFilters} className="w-full btn-secondary text-sm">
           Limpiar filtros
         </button>
-        <button
-          onClick={closeMobileFilters}
-          className="w-full btn-primary"
-        >
+        <button onClick={closeMobileFilters} className="w-full btn-primary">
           Aplicar filtros
         </button>
       </div>
@@ -262,24 +258,25 @@ export const Catalog: React.FC = () => {
 
   if (error) {
     return (
-      <div 
-        className="min-h-screen pt-16 flex items-center justify-center relative"
+      <div
+        className={`min-h-screen pt-16 flex items-center justify-center relative transition-opacity duration-1000 ${
+          backgroundLoaded ? "opacity-100" : "opacity-0"
+        }`}
         style={{
-          backgroundImage: `url('${backgroundImage}')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+          backgroundImage: backgroundLoaded ? `url('${backgroundImage}')` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
         }}
       >
         {/* Overlay para el error */}
-        <div 
-          className="absolute inset-0 bg-[var(--color-background)]"
-          style={{ opacity: isXbox ? 0.90 : 0.93 }}
-        ></div>
-        
+        <div className="absolute inset-0 bg-[var(--color-background)]" style={{ opacity: isXbox ? 0.9 : 0.93 }}></div>
+
         <div className="text-center animate-fade-in-scale relative z-10">
           <div
-            className={`w-16 h-16 rounded-full ${isXbox ? "bg-red-100" : "bg-red-900/20"} flex items-center justify-center mb-4 mx-auto`}
+            className={`w-16 h-16 rounded-full ${
+              isXbox ? "bg-red-100" : "bg-red-900/20"
+            } flex items-center justify-center mb-4 mx-auto`}
           >
             <span className="text-2xl">😞</span>
           </div>
@@ -294,19 +291,21 @@ export const Catalog: React.FC = () => {
   }
 
   return (
-    <div 
-      className="min-h-screen pt-16 relative"
+    <div
+      className={`min-h-screen pt-16 relative transition-opacity duration-1000 ${
+        backgroundLoaded ? "opacity-100" : "opacity-0"
+      }`}
       style={{
-        backgroundImage: `url('${backgroundImage}')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        backgroundImage: backgroundLoaded ? `url('${backgroundImage}')` : "none",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
     >
       {/* Overlay único para toda la página */}
-      <div 
-        className={`absolute inset-0 ${isXbox? "bg-[#141414]":"bg-[var(--color-background)]"}`}
-        style={{ opacity: isXbox ? 0.30 : 0.85 }}
+      <div
+        className={`absolute inset-0 ${isXbox ? "bg-[#141414]" : "bg-[var(--color-background)]"}`}
+        style={{ opacity: isXbox ? 0.3 : 0.85 }}
       ></div>
 
       {/* Todo el contenido dentro del contenedor principal */}
@@ -316,9 +315,19 @@ export const Catalog: React.FC = () => {
           <div className="max-w-screen-xl mx-auto animate-fade-in-up">
             <div className="flex items-center mb-4">
               {isXbox ? (
-                <img className="w-32 h-32" src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/yoshi_hzevum.gif" alt="Yoshi" />
+                <img
+                  className="w-32 h-32"
+                  src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/yoshi_hzevum.gif"
+                  alt="Yoshi"
+                  loading="eager"
+                />
               ) : (
-                <img className="w-32 h-32" src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/toad_p9ufsf.gif" alt="Toad" />
+                <img
+                  className="w-32 h-32"
+                  src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/toad_p9ufsf.gif"
+                  alt="Toad"
+                  loading="eager"
+                />
               )}
               <div>
                 <h1 className="game-title text-4xl md:text-5xl text-white mb-2">Catálogo</h1>
@@ -342,7 +351,7 @@ export const Catalog: React.FC = () => {
                 className="input w-full"
               />
             </div>
-            
+
             {/* Botón de filtros */}
             <button
               onClick={() => setShowMobileFilters(true)}
@@ -366,7 +375,7 @@ export const Catalog: React.FC = () => {
             <div className="flex-1 min-w-0">
               {/* Información de resultados */}
               <div className="flex items-center justify-between mb-6 animate-fade-in-up">
-                <p className={`font-semibold ${isXbox? "text-[var(--color-accent)]" : "text-[var(--color-primary)]"}`}>
+                <p className={`font-semibold ${isXbox ? "text-[var(--color-accent)]" : "text-[var(--color-primary)]"}`}>
                   {loading ? (
                     <span className="flex items-center">
                       <div className="w-4 h-4 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -388,8 +397,9 @@ export const Catalog: React.FC = () => {
               ) : filteredAndSortedProducts.length === 0 ? (
                 <div className="text-center py-16 animate-fade-in-scale">
                   <div
-                    className={`w-24 h-24 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"
-                      } flex items-center justify-center mb-6 mx-auto`}
+                    className={`w-24 h-24 rounded-full ${
+                      isXbox ? "bg-gray-100" : "bg-gray-800"
+                    } flex items-center justify-center mb-6 mx-auto`}
                   >
                     <Gamepad2 size={48} className="text-gray-400" />
                   </div>
@@ -397,17 +407,18 @@ export const Catalog: React.FC = () => {
                   <p className="text-[var(--color-foreground)]/70 mb-6 max-w-md mx-auto">
                     No hay productos que coincidan con tu búsqueda. Intenta con otros términos o ajusta los filtros.
                   </p>
-                  <button
-                    onClick={resetFilters}
-                    className="btn-primary"
-                  >
+                  <button onClick={resetFilters} className="btn-primary">
                     Limpiar filtros
                   </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in-up">
                   {filteredAndSortedProducts.map((producto, index) => (
-                    <div key={producto.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.05}s` }}>
+                    <div
+                      key={producto.id}
+                      className="animate-fade-in-scale"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
                       <CardComponent
                         imgSrc={producto.imagen}
                         imgAlt={producto.nombre}
@@ -429,7 +440,9 @@ export const Catalog: React.FC = () => {
                         <button
                           key={index}
                           disabled={!link.url}
-                          onClick={() => link.url && setCurrentPage(new URL(link.url).searchParams.get("page") as unknown as number)}
+                          onClick={() =>
+                            link.url && setCurrentPage(new URL(link.url).searchParams.get("page") as unknown as number)
+                          }
                           className={`btn-secondary px-3 py-1 ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                           {link.label.includes("Anterior") ? "<" : ">"}
@@ -440,7 +453,9 @@ export const Catalog: React.FC = () => {
                         <button
                           key={index}
                           onClick={() => setCurrentPage(Number(link.label))}
-                          className={`btn-secondary px-3 py-1 ${link.active ? "bg-[var(--color-primary)] text-white" : ""}`}
+                          className={`btn-secondary px-3 py-1 ${
+                            link.active ? "bg-[var(--color-primary)] text-white" : ""
+                          }`}
                         >
                           {link.label}
                         </button>
@@ -458,10 +473,7 @@ export const Catalog: React.FC = () => {
       {showMobileFilters && (
         <div className="fixed inset-0 z-[60] lg:hidden">
           {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={closeMobileFilters}
-          ></div>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeMobileFilters}></div>
 
           {/* Modal content */}
           <div className="relative h-full bg-[var(--color-background)] animate-fade-in-up overflow-y-auto">
