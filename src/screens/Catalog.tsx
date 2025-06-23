@@ -4,19 +4,24 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import type { Producto } from "../types/Producto"
+import type { Categoria } from "../types/Categoria"
 import { CardComponent } from "../components/Card"
 import { SkeletonCard } from "../components/SkeletonCard"
-import { SlidersHorizontal, Gamepad2, ChevronDown, X } from "lucide-react"
+import { SlidersHorizontal, Gamepad2, ChevronDown, X, Filter } from "lucide-react"
 import { useTheme } from "@/context/ThemeContext"
 
 export const Catalog: React.FC = () => {
   const [productos, setProductos] = useState<Producto[]>([])
+  const [categorias, setCategorias] = useState<Categoria[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  const [loadingCategorias, setLoadingCategorias] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const { isXbox } = useTheme()
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("name")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
+  const [selectedCategoria, setSelectedCategoria] = useState<number | null>(null)
+  const [selectedSubcategorias, setSelectedSubcategorias] = useState<number[]>([])
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [meta, setMeta] = useState<any>(null)
@@ -46,7 +51,7 @@ export const Catalog: React.FC = () => {
       document.body.style.overflow = "unset"
     }
 
-    // Cleanup: restaurar el scroll cuando el componente se desmonte
+    // Cleanup function para restaurar el scroll cuando el componente se desmonte
     return () => {
       document.body.style.overflow = "unset"
     }
@@ -59,11 +64,49 @@ export const Catalog: React.FC = () => {
     }
   }, [searchParams])
 
+  // Fetch categorías
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        setLoadingCategorias(true)
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/categorias`)
+        if (!response.ok) {
+          throw new Error("Error al obtener categorías")
+        }
+
+        const data = await response.json()
+        setCategorias(data)
+      } catch (err: any) {
+        console.error("Error fetching categorias:", err.message)
+      } finally {
+        setLoadingCategorias(false)
+      }
+    }
+
+    fetchCategorias()
+  }, [])
+
+  // Fetch productos con filtros
   useEffect(() => {
     const fetchProductos = async (page = 1) => {
       try {
         setLoading(true)
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/producto/listar?page=${page}`)
+
+        // Construir URL con filtros
+        const params = new URLSearchParams()
+        params.append("page", page.toString())
+
+        if (selectedCategoria) {
+          params.append("categoria_id", selectedCategoria.toString())
+        }
+
+        if (selectedSubcategorias.length > 0) {
+          selectedSubcategorias.forEach((subcatId) => {
+            params.append("subcategorias[]", subcatId.toString())
+          })
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/producto/listar?${params.toString()}`)
         if (!response.ok) {
           throw new Error("Error al obtener productos")
         }
@@ -80,7 +123,31 @@ export const Catalog: React.FC = () => {
     }
 
     fetchProductos(currentPage)
-  }, [currentPage])
+  }, [currentPage, selectedCategoria, selectedSubcategorias])
+
+  // Manejar cambio de categoría
+  const handleCategoriaChange = (categoriaId: number | null) => {
+    setSelectedCategoria(categoriaId)
+    setSelectedSubcategorias([]) // Limpiar subcategorías cuando cambia la categoría
+    setCurrentPage(1) // Resetear a la primera página
+  }
+
+  // Manejar cambio de subcategoría
+  const handleSubcategoriaChange = (subcategoriaId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedSubcategorias((prev) => [...prev, subcategoriaId])
+    } else {
+      setSelectedSubcategorias((prev) => prev.filter((id) => id !== subcategoriaId))
+    }
+    setCurrentPage(1) // Resetear a la primera página
+  }
+
+  // Obtener subcategorías de la categoría seleccionada
+  const getSubcategorias = () => {
+    if (!selectedCategoria) return []
+    const categoria = categorias.find((cat) => cat.id === selectedCategoria)
+    return categoria?.subcategorias || []
+  }
 
   const filteredAndSortedProducts = productos
     .filter((producto) => {
@@ -107,11 +174,17 @@ export const Catalog: React.FC = () => {
     setSearchTerm("")
     setPriceRange([0, 100])
     setSortBy("name")
+    setSelectedCategoria(null)
+    setSelectedSubcategorias([])
+    setCurrentPage(1)
   }
 
   const resetOnlyFilters = () => {
     setPriceRange([0, 100])
     setSortBy("name")
+    setSelectedCategoria(null)
+    setSelectedSubcategorias([])
+    setCurrentPage(1)
   }
 
   const closeMobileFilters = () => {
@@ -132,6 +205,65 @@ export const Catalog: React.FC = () => {
           className="input w-full"
         />
       </div>
+
+      {/* Categorías */}
+      <div>
+        <label className="block text-sm font-medium mb-2 flex items-center">
+          <Filter size={16} className="mr-2" />
+          Categoría
+        </label>
+        {loadingCategorias ? (
+          <div className="space-y-2">
+            <div className="skeleton h-8 w-full rounded"></div>
+            <div className="skeleton h-8 w-full rounded"></div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="categoria"
+                checked={selectedCategoria === null}
+                onChange={() => handleCategoriaChange(null)}
+                className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+              />
+              <span className="text-sm">Todas las categorías</span>
+            </label>
+            {categorias.map((categoria) => (
+              <label key={categoria.id} className="flex items-center">
+                <input
+                  type="radio"
+                  name="categoria"
+                  checked={selectedCategoria === categoria.id}
+                  onChange={() => handleCategoriaChange(categoria.id)}
+                  className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                />
+                <span className="text-sm">{categoria.nombre}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Subcategorías */}
+      {selectedCategoria && getSubcategorias().length > 0 && (
+        <div>
+          <label className="block text-sm font-medium mb-2">Subcategorías</label>
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {getSubcategorias().map((subcategoria) => (
+              <label key={subcategoria.id} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={selectedSubcategorias.includes(subcategoria.id)}
+                  onChange={(e) => handleSubcategoriaChange(subcategoria.id, e.target.checked)}
+                  className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                />
+                <span className="text-sm">{subcategoria.nombre}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Ordenar */}
       <div>
@@ -198,6 +330,65 @@ export const Catalog: React.FC = () => {
         </button>
       </div>
 
+      {/* Categorías */}
+      <div>
+        <label className="block text-sm font-medium mb-2 flex items-center">
+          <Filter size={16} className="mr-2" />
+          Categoría
+        </label>
+        {loadingCategorias ? (
+          <div className="space-y-2">
+            <div className="skeleton h-8 w-full rounded"></div>
+            <div className="skeleton h-8 w-full rounded"></div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="categoria-mobile"
+                checked={selectedCategoria === null}
+                onChange={() => handleCategoriaChange(null)}
+                className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+              />
+              <span className="text-sm">Todas las categorías</span>
+            </label>
+            {categorias.map((categoria) => (
+              <label key={categoria.id} className="flex items-center">
+                <input
+                  type="radio"
+                  name="categoria-mobile"
+                  checked={selectedCategoria === categoria.id}
+                  onChange={() => handleCategoriaChange(categoria.id)}
+                  className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                />
+                <span className="text-sm">{categoria.nombre}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Subcategorías */}
+      {selectedCategoria && getSubcategorias().length > 0 && (
+        <div>
+          <label className="block text-sm font-medium mb-2">Subcategorías</label>
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {getSubcategorias().map((subcategoria) => (
+              <label key={subcategoria.id} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={selectedSubcategorias.includes(subcategoria.id)}
+                  onChange={(e) => handleSubcategoriaChange(subcategoria.id, e.target.checked)}
+                  className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                />
+                <span className="text-sm">{subcategoria.nombre}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Ordenar */}
       <div>
         <label className="block text-sm font-medium mb-2">Ordenar por</label>
@@ -256,6 +447,7 @@ export const Catalog: React.FC = () => {
     </div>
   )
 
+  // Resto del componente permanece igual...
   if (error) {
     return (
       <div
@@ -359,6 +551,11 @@ export const Catalog: React.FC = () => {
             >
               <SlidersHorizontal size={20} className="mr-2" />
               Filtros
+              {(selectedCategoria || selectedSubcategorias.length > 0) && (
+                <span className="ml-2 px-2 py-1 text-xs bg-[var(--color-primary)] text-white rounded-full">
+                  {(selectedCategoria ? 1 : 0) + selectedSubcategorias.length}
+                </span>
+              )}
             </button>
           </div>
 
@@ -386,6 +583,42 @@ export const Catalog: React.FC = () => {
                   )}
                 </p>
               </div>
+
+              {/* Filtros activos */}
+              {(selectedCategoria || selectedSubcategorias.length > 0) && (
+                <div className="mb-6 animate-fade-in-up">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCategoria && (
+                      <span className="inline-flex items-center px-3 py-1 text-sm bg-[var(--color-primary)] text-white rounded-full">
+                        {categorias.find((cat) => cat.id === selectedCategoria)?.nombre}
+                        <button
+                          onClick={() => handleCategoriaChange(null)}
+                          className="ml-2 hover:bg-white/20 rounded-full p-1"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+                    {selectedSubcategorias.map((subcatId) => {
+                      const subcategoria = getSubcategorias().find((sub) => sub.id === subcatId)
+                      return subcategoria ? (
+                        <span
+                          key={subcatId}
+                          className="inline-flex items-center px-3 py-1 text-sm bg-[var(--color-secondary)] text-white rounded-full"
+                        >
+                          {subcategoria.nombre}
+                          <button
+                            onClick={() => handleSubcategoriaChange(subcatId, false)}
+                            className="ml-2 hover:bg-white/20 rounded-full p-1"
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      ) : null
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Grid de productos */}
               {loading ? (
