@@ -75,9 +75,10 @@ export const Catalog: React.FC = () => {
         }
 
         const data = await response.json()
-        setCategorias(data)
+        setCategorias(Array.isArray(data) ? data : [])
       } catch (err: any) {
         console.error("Error fetching categorias:", err.message)
+        setCategorias([]) // Asegurar que siempre sea un array
       } finally {
         setLoadingCategorias(false)
       }
@@ -152,18 +153,20 @@ export const Catalog: React.FC = () => {
   const filteredAndSortedProducts = productos
     .filter((producto) => {
       const matchesSearch = producto.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+      const precio = typeof producto.precio === "string" ? Number.parseFloat(producto.precio) : producto.precio
       const matchesPrice =
-        priceRange[1] === 100
-          ? producto.precio >= priceRange[0]
-          : producto.precio >= priceRange[0] && producto.precio <= priceRange[1]
+        priceRange[1] === 100 ? precio >= priceRange[0] : precio >= priceRange[0] && precio <= priceRange[1]
       return matchesSearch && matchesPrice
     })
     .sort((a, b) => {
+      const precioA = typeof a.precio === "string" ? Number.parseFloat(a.precio) : a.precio
+      const precioB = typeof b.precio === "string" ? Number.parseFloat(b.precio) : b.precio
+
       switch (sortBy) {
         case "price-low":
-          return a.precio - b.precio
+          return precioA - precioB
         case "price-high":
-          return b.precio - a.precio
+          return precioB - precioA
         case "name":
         default:
           return a.nombre.localeCompare(b.nombre)
