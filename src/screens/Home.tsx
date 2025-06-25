@@ -53,7 +53,7 @@ export const Home: React.FC = () => {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/productosRecientes`)
         if (response.ok) {
           const data = await response.json()
-          setProductosRecientes(Array.isArray(data) ? data.slice(0, 6) : [])
+          setProductosRecientes(Array.isArray(data.data) ? data.data.slice(0, 6) : [])
         }
       } catch (error) {
         console.error("Error fetching productos recientes:", error)
@@ -74,7 +74,7 @@ export const Home: React.FC = () => {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/productosMasVendidos`)
         if (response.ok) {
           const data = await response.json()
-          setProductosMasVendidos(Array.isArray(data) ? data.slice(0, 6) : [])
+          setProductosMasVendidos(Array.isArray(data.data) ? data.data.slice(0, 6) : [])
         }
       } catch (error) {
         console.error("Error fetching productos más vendidos:", error)
