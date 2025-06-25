@@ -36,10 +36,11 @@ export const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1)
   const [addingToCart, setAddingToCart] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [imageLoaded, setImageLoaded] = useState(false)
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
-  // Estados para la animación de deslizamiento (reemplazar los anteriores)
+  // Estados para la animación de deslizamiento 
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [slideOffset, setSlideOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
