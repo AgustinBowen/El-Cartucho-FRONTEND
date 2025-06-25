@@ -38,10 +38,6 @@ export const Home: React.FC = () => {
   const [loadingMasVendidos, setLoadingMasVendidos] = useState(true)
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
-  // Newsletter state
-  const [email, setEmail] = useState("")
-  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
-
   // Optimización: Cargar video solo cuando esté visible y conexión lo permita
   useEffect(() => {
     const loadVideo = () => {
@@ -130,24 +126,6 @@ export const Home: React.FC = () => {
     console.warn("Video failed to load, showing fallback image")
     setIsVideoLoaded(false)
     setShowVideo(false)
-  }
-
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email) return
-
-    setNewsletterStatus("loading")
-
-    try {
-      // Simular llamada a API
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setNewsletterStatus("success")
-      setEmail("")
-      setTimeout(() => setNewsletterStatus("idle"), 3000)
-    } catch (error) {
-      setNewsletterStatus("error")
-      setTimeout(() => setNewsletterStatus("idle"), 3000)
-    }
   }
 
   const features = [
