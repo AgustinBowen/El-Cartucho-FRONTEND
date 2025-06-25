@@ -36,9 +36,6 @@ export const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1)
   const [addingToCart, setAddingToCart] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  /* eslint-disable */
-  const [imageLoaded, setImageLoaded] = useState(false)
-  /* eslint-enable */
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
   // Estados para la animación de deslizamiento 
@@ -197,18 +194,15 @@ export const ProductDetail: React.FC = () => {
   const nextImage = () => {
     const images = getImages()
     setCurrentImageIndex((prev) => (prev + 1) % images.length)
-    setImageLoaded(false)
   }
 
   const prevImage = () => {
     const images = getImages()
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
-    setImageLoaded(false)
   }
 
   const selectImage = (index: number) => {
     setCurrentImageIndex(index)
-    setImageLoaded(false)
   }
 
   const maxQuantity = producto?.stock || 99
@@ -319,7 +313,6 @@ export const ProductDetail: React.FC = () => {
                           src={img}
                           alt={`Imagen ${index + 1}`}
                           className="w-full flex-shrink-0 h-full object-cover select-none"
-                          onLoad={() => setImageLoaded(true)}
                           draggable={false}
                         />
                       ))}
