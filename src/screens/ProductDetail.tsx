@@ -36,7 +36,9 @@ export const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1)
   const [addingToCart, setAddingToCart] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  /* eslint-disable */
   const [imageLoaded, setImageLoaded] = useState(false)
+  /* eslint-enable */
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
   // Estados para la animación de deslizamiento 

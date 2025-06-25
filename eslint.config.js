@@ -4,7 +4,6 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
-// Detectar producción o entorno de build (production o preview en Vercel)
 const isBuildEnv =
   process.env.NODE_ENV === 'production' ||
   process.env.VERCEL_ENV === 'production' ||
