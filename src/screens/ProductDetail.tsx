@@ -36,7 +36,6 @@ export const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1)
   const [addingToCart, setAddingToCart] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [imageLoaded, setImageLoaded] = useState(false)
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 

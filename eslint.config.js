@@ -4,6 +4,8 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
+const isProd = process.env.NODE_ENV === 'production'
+
 export default tseslint.config(
   { ignores: ['dist'] },
   {
@@ -23,8 +25,9 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
-      "no-console": "warn",
-      "react/prop-types": "warn"
+      'no-console': 'warn',
+      'react/prop-types': 'warn',
+      ...(isProd ? { '@typescript-eslint/no-unused-vars': 'off' } : {}),
     },
   },
 )
