@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { useCart } from "../context/CartContext"
 import type { Producto } from "../types/Producto"
@@ -15,7 +15,6 @@ import {
   RotateCcw,
   Plus,
   Minus,
-  Gamepad2,
   Tag,
   Info,
   ChevronLeft,
@@ -39,6 +38,18 @@ export const ProductDetail: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
+
+  // Estados para la animación de deslizamiento (reemplazar los anteriores)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [slideOffset, setSlideOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+
+  // Estados para el touch/swipe
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const imageContainerRef = useRef<HTMLDivElement>(null)
+
+  // Distancia mínima para considerar un swipe
+  const minSwipeDistance = 50
 
   // Imagen de fondo única
   const backgroundImage = isXbox
@@ -75,6 +86,54 @@ export const ProductDetail: React.FC = () => {
 
     fetchProducto()
   }, [id])
+
+  // Funciones para el manejo de touch/swipe con animación (reemplazar las anteriores)
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX)
+    setIsDragging(true)
+    setIsTransitioning(false)
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || touchStart === null) return
+
+    const currentTouch = e.touches[0].clientX
+    const containerWidth = imageContainerRef.current?.offsetWidth || 1
+    const delta = currentTouch - touchStart
+    const offsetPercentage = (delta / containerWidth) * 100
+
+    setSlideOffset(offsetPercentage)
+  }
+
+  const onTouchEnd = () => {
+    if (!isDragging || touchStart === null) {
+      setIsDragging(false)
+      setSlideOffset(0)
+      return
+    }
+
+    const containerWidth = imageContainerRef.current?.offsetWidth || 1
+    const distance = slideOffset * (containerWidth / 100)
+
+    const isLeftSwipe = distance < -minSwipeDistance
+    const isRightSwipe = distance > minSwipeDistance
+
+    setIsTransitioning(true)
+
+    if (isLeftSwipe && currentImageIndex < getImages().length - 1) {
+      setCurrentImageIndex((prev) => prev + 1)
+    } else if (isRightSwipe && currentImageIndex > 0) {
+      setCurrentImageIndex((prev) => prev - 1)
+    }
+
+    setSlideOffset(0)
+    setIsDragging(false)
+
+    setTimeout(() => {
+      setIsTransitioning(false)
+    }, 300)
+  }
+
 
   const handleAddToCart = async () => {
     if (!producto) return
@@ -175,9 +234,8 @@ export const ProductDetail: React.FC = () => {
       <div className="min-h-screen bg-[var(--color-background)] pt-16 flex items-center justify-center">
         <div className={`${cardClasses} rounded-2xl p-8 text-center animate-fade-in-scale`}>
           <div
-            className={`w-24 h-24 rounded-full ${
-              isXbox ? "bg-red-100/20" : "bg-red-900/20"
-            } flex items-center justify-center mb-6 mx-auto`}
+            className={`w-24 h-24 rounded-full ${isXbox ? "bg-red-100/20" : "bg-red-900/20"
+              } flex items-center justify-center mb-6 mx-auto`}
           >
             <span className="text-4xl">😞</span>
           </div>
@@ -199,13 +257,11 @@ export const ProductDetail: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen pt-16 relative transition-opacity duration-1000 ${
-        backgroundLoaded ? "opacity-100" : "opacity-0"
-      } ${
-        isXbox
+      className={`min-h-screen pt-16 relative transition-opacity duration-1000 ${backgroundLoaded ? "opacity-100" : "opacity-0"
+        } ${isXbox
           ? "before:absolute before:inset-0 before:z-10 before:opacity-20 before:bg-[#ffffff]"
           : "before:absolute before:inset-0 before:z-10 before:opacity-75 before:bg-[var(--color-background)]"
-      }`}
+        }`}
       style={{
         backgroundImage: backgroundLoaded ? `url('${backgroundImage}')` : "none",
         backgroundSize: "cover",
@@ -236,57 +292,79 @@ export const ProductDetail: React.FC = () => {
             {/* Galería de imágenes en card */}
             <div className="animate-fade-in-up">
               <div className={`${cardClasses} rounded-2xl p-6 space-y-4`}>
-                {/* Imagen principal */}
-                <div className="relative bg-[var(--color-muted)]/50 rounded-xl overflow-hidden group">
-                  {!imageLoaded && (
-                    <div className="absolute inset-0 shimmer flex items-center justify-center">
-                      <Gamepad2 size={64} className="text-gray-400" />
+                {/* Imagen principal - reemplazar todo el div de la imagen */}
+                <div
+                  ref={imageContainerRef}
+                  className="relative bg-[var(--color-muted)]/50 rounded-xl overflow-hidden group touch-pan-y"
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
+                >
+                  {/* Contenedor de imágenes deslizantes */}
+                  <div
+                    className="relative w-full h-96 lg:h-[500px] overflow-hidden"
+                  >
+                    <div
+                      className="flex h-full transition-transform duration-300 ease-out"
+                      style={{
+                        transform: `translateX(calc(${-currentImageIndex * 100}% + ${slideOffset}%))`,
+                        transition: isTransitioning || !isDragging ? "transform 0.3s ease" : "none",
+                      }}
+                    >
+                      {images.map((img, index) => (
+                        <img
+                          key={index}
+                          src={img}
+                          alt={`Imagen ${index + 1}`}
+                          className="w-full flex-shrink-0 h-full object-cover select-none"
+                          onLoad={() => setImageLoaded(true)}
+                          draggable={false}
+                        />
+                      ))}
                     </div>
-                  )}
+                  </div>
 
-                  <img
-                    src={getCurrentImage() || "/placeholder.svg"}
-                    alt={`${producto.nombre} - Imagen ${currentImageIndex + 1}`}
-                    className={`w-full h-96 lg:h-[500px] object-cover transition-all duration-500 ${
-                      imageLoaded ? "opacity-100" : "opacity-0"
-                    }`}
-                    onLoad={() => setImageLoaded(true)}
-                    loading="eager"
-                  />
-
-                  {/* Navegación de imágenes */}
+                  {/* Navegación de imágenes - mantener igual */}
                   {images.length > 1 && (
                     <>
                       <button
                         onClick={prevImage}
-                        className="cursor-pointer absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm"
+                        className="cursor-pointer absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm z-20"
                       >
                         <ChevronLeft size={24} />
                       </button>
                       <button
                         onClick={nextImage}
-                        className="absolute cursor-pointer right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm"
+                        className="absolute cursor-pointer right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 backdrop-blur-sm z-20"
                       >
                         <ChevronRight size={24} />
                       </button>
 
                       {/* Indicador de imagen actual */}
-                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
                         {images.map((_, index) => (
                           <button
                             key={index}
                             onClick={() => selectImage(index)}
-                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                              index === currentImageIndex ? "bg-white scale-125" : "bg-white/50 hover:bg-white/75"
-                            }`}
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentImageIndex ? "bg-white scale-125" : "bg-white/50 hover:bg-white/75"
+                              }`}
                           />
                         ))}
+                      </div>
+
+                      {/* Indicador visual de swipe en móvil */}
+                      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 md:hidden z-20">
+                        <div className="flex items-center space-x-2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1">
+                          <ChevronLeft size={16} className="text-white/70" />
+                          <span className="text-xs text-white/70">Desliza</span>
+                          <ChevronRight size={16} className="text-white/70" />
+                        </div>
                       </div>
                     </>
                   )}
 
-                  {/* Badges */}
-                  <div className="absolute top-4 left-4 flex flex-col space-y-2">
+                  {/* Badges - mantener igual pero ajustar z-index */}
+                  <div className="absolute top-4 left-4 flex flex-col space-y-2 z-20">
                     {isLowStock && (
                       <span className="px-3 py-1 text-sm font-bold text-white bg-orange-500/90 backdrop-blur-sm rounded-full">
                         ¡ÚLTIMAS UNIDADES!
@@ -294,8 +372,8 @@ export const ProductDetail: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Actions overlay */}
-                  <div className="absolute top-4 right-4 flex flex-col space-y-2">
+                  {/* Actions overlay - mantener igual pero ajustar z-index */}
+                  <div className="absolute top-4 right-4 flex flex-col space-y-2 z-20">
                     <button
                       onClick={handleShare}
                       className="p-3 rounded-full bg-white/20 text-white hover:bg-white/30 backdrop-blur-md transition-all duration-300"
@@ -313,17 +391,17 @@ export const ProductDetail: React.FC = () => {
                       <button
                         key={index}
                         onClick={() => selectImage(index)}
-                        className={`cursor-pointer flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-                          index === currentImageIndex
-                            ? `border-[var(--color-primary)] ${isXbox ? "xbox-glow" : "ps2-glow"}`
-                            : "border-white/30 hover:border-[var(--color-primary)]"
-                        }`}
+                        className={`cursor-pointer flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${index === currentImageIndex
+                          ? `border-[var(--color-primary)] ${isXbox ? "xbox-glow" : "ps2-glow"}`
+                          : "border-white/30 hover:border-[var(--color-primary)]"
+                          }`}
                       >
                         <img
                           src={image || "/placeholder.svg"}
                           alt={`Vista ${index + 1}`}
                           className="w-full h-full object-cover"
                           loading="lazy"
+                          draggable={false}
                         />
                       </button>
                     ))}
@@ -406,9 +484,8 @@ export const ProductDetail: React.FC = () => {
                       {producto.subcategorias.map((subcategoria, index) => (
                         <span
                           key={index}
-                          className={`px-3 py-1 text-sm text-[var(--color-foreground)] rounded-full border backdrop-blur-sm ${
-                            isXbox ? "bg-gray-100/50 border-gray-300/50" : "bg-white/10 border-white/20"
-                          }`}
+                          className={`px-3 py-1 text-sm text-[var(--color-foreground)] rounded-full border backdrop-blur-sm ${isXbox ? "bg-gray-100/50 border-gray-300/50" : "bg-white/10 border-white/20"
+                            }`}
                         >
                           {subcategoria}
                         </span>
@@ -425,11 +502,10 @@ export const ProductDetail: React.FC = () => {
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className={`cursor-pointer w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
-                            isXbox
-                              ? "border-gray-500/90 hover:bg-gray-100/70 text-gray-800"
-                              : "border-white/30 hover:bg-white/10 text-[var(--color-foreground)]"
-                          }`}
+                          className={`cursor-pointer w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${isXbox
+                            ? "border-gray-500/90 hover:bg-gray-100/70 text-gray-800"
+                            : "border-white/30 hover:bg-white/10 text-[var(--color-foreground)]"
+                            }`}
                         >
                           <Minus size={16} />
                         </button>
@@ -438,11 +514,10 @@ export const ProductDetail: React.FC = () => {
                         </span>
                         <button
                           onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
-                          className={`cursor-pointer w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
-                            isXbox
-                              ? "border-gray-500/90 hover:bg-gray-100/70 text-gray-800"
-                              : "border-white/30 hover:bg-white/10 text-[var(--color-foreground)]"
-                          }`}
+                          className={`cursor-pointer w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${isXbox
+                            ? "border-gray-500/90 hover:bg-gray-100/70 text-gray-800"
+                            : "border-white/30 hover:bg-white/10 text-[var(--color-foreground)]"
+                            }`}
                         >
                           <Plus size={16} />
                         </button>
@@ -457,9 +532,8 @@ export const ProductDetail: React.FC = () => {
                       <button
                         onClick={handleBuyNow}
                         disabled={addingToCart}
-                        className={`w-full py-4 px-6 rounded-xl font-bold text-white text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 ${
-                          isXbox ? "bg-[#107C10] hover:bg-[#0c5f0c]" : "bg-[#4a7bc8] hover:bg-[#3a5ba8]"
-                        } ${addingToCart ? "opacity-70 cursor-not-allowed" : ""}`}
+                        className={`w-full py-4 px-6 rounded-xl font-bold text-white text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 ${isXbox ? "bg-[#107C10] hover:bg-[#0c5f0c]" : "bg-[#4a7bc8] hover:bg-[#3a5ba8]"
+                          } ${addingToCart ? "opacity-70 cursor-not-allowed" : ""}`}
                       >
                         {addingToCart ? (
                           <div className="flex items-center justify-center">
@@ -501,9 +575,8 @@ export const ProductDetail: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-white/20">
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`p-2 rounded-full backdrop-blur-sm ${
-                        isXbox ? "bg-green-500/30 text-green-600" : "bg-blue-500/20 text-blue-400"
-                      }`}
+                      className={`p-2 rounded-full backdrop-blur-sm ${isXbox ? "bg-green-500/30 text-green-600" : "bg-blue-500/20 text-blue-400"
+                        }`}
                     >
                       <Truck size={20} />
                     </div>
@@ -515,9 +588,8 @@ export const ProductDetail: React.FC = () => {
 
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`p-2 rounded-full backdrop-blur-sm ${
-                        isXbox ? "bg-green-500/30 text-green-600" : "bg-blue-500/20 text-blue-400"
-                      }`}
+                      className={`p-2 rounded-full backdrop-blur-sm ${isXbox ? "bg-green-500/30 text-green-600" : "bg-blue-500/20 text-blue-400"
+                        }`}
                     >
                       <Shield size={20} />
                     </div>
@@ -529,9 +601,8 @@ export const ProductDetail: React.FC = () => {
 
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`p-2 rounded-full backdrop-blur-sm ${
-                        isXbox ? "bg-green-500/30 text-green-600" : "bg-blue-500/20 text-blue-400"
-                      }`}
+                      className={`p-2 rounded-full backdrop-blur-sm ${isXbox ? "bg-green-500/30 text-green-600" : "bg-blue-500/20 text-blue-400"
+                        }`}
                     >
                       <RotateCcw size={20} />
                     </div>
@@ -550,9 +621,8 @@ export const ProductDetail: React.FC = () => {
             <div className={`${cardClasses} rounded-xl p-4 inline-block`}>
               <Link
                 to="/catalogo"
-                className={`inline-flex font-semibold items-center ${
-                  isXbox ? "text-[var(--color-primary)]" : "text-[var(--color-foreground)]"
-                } hover:text-[var(--color-primary)]/80 group transition-colors`}
+                className={`inline-flex font-semibold items-center ${isXbox ? "text-[var(--color-primary)]" : "text-[var(--color-foreground)]"
+                  } hover:text-[var(--color-primary)]/80 group transition-colors`}
               >
                 <ArrowLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform" />
                 Volver al catálogo
