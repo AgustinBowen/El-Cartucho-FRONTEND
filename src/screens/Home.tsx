@@ -119,22 +119,22 @@ export const Home: React.FC = () => {
 
   const features = [
     {
-      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750892890/tumblr_myjokwptjd1qcc19mo1_500_qdudvt.webp" alt="Catalogo extenso" className="w-20 h-20"></img>,
+      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750892890/tumblr_myjokwptjd1qcc19mo1_500_qdudvt.webp" alt="Link de Legends Of Zelda" className="w-20 h-20"></img>,
       title: "Catálogo Extenso",
       description: "Gran variedad de juegos para todas las consolas y géneros.",
     },
     {
-      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750892274/e766c949920f4763386acbc793c96f-unscreen_yilu0u.gif" alt="Envíos a Domicilio" className="w-20 h-20"></img>,
+      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750892274/e766c949920f4763386acbc793c96f-unscreen_yilu0u.gif" alt="Camion de Twisted Metal" className="w-20 h-20"></img>,
       title: "Envíos a Domicilio",
       description: "Recibe tus juegos en la puerta de tu casa.",
     },
     {
-      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750892406/Megaman_retro_3D_by_cezkid_s7mg7y.webp" alt="Garantia total" className="w-12 h-12"></img>,
+      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750892406/Megaman_retro_3D_by_cezkid_s7mg7y.webp" alt="Megaman" className="w-12 h-12"></img>,
       title: "Garantía Total",
       description: "Todos nuestros productos tienen garantía de 30 días.",
     },
     {
-      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750901071/Contra_3D_by_cezkid_x84exc.webp" alt="Calidad premium" className="w-12 h-12"></img>,
+      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750908147/original_uacizu.webp" alt="Sonic" className="w-12 h-12"></img>,
       title: "Calidad Premium",
       description: "Solo vendemos juegos originales y en buen estado."
     },
