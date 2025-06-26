@@ -6,7 +6,6 @@ import { Link } from "react-router-dom"
 import {
   Gamepad2,
   Shield,
-  Truck,
   Award,
   ArrowRight,
   TrendingUp,
@@ -130,36 +129,24 @@ export const Home: React.FC = () => {
 
   const features = [
     {
-      icon: <Gamepad2 size={32} />,
+      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750892890/tumblr_myjokwptjd1qcc19mo1_500_qdudvt.webp" alt="Catalogo extenso" className="w-20 h-20"></img>,
       title: "Catálogo Extenso",
       description: "Gran variedad de juegos para todas las consolas y géneros.",
-      color: isXbox
-        ? "bg-green-100 text-green-600"
-        : "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
     },
     {
-      icon: <Truck size={32} />,
+      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750892274/e766c949920f4763386acbc793c96f-unscreen_yilu0u.gif" alt="Envíos a Domicilio" className="w-20 h-20"></img>,
       title: "Envíos a Domicilio",
       description: "Recibe tus juegos en la puerta de tu casa.",
-      color: isXbox
-        ? "bg-blue-100 text-blue-600"
-        : "bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
     },
     {
-      icon: <Shield size={32} />,
+      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750892406/Megaman_retro_3D_by_cezkid_s7mg7y.webp" alt="Garantia total" className="w-12 h-12"></img>,
       title: "Garantía Total",
       description: "Todos nuestros productos tienen garantía de 30 días.",
-      color: isXbox
-        ? "bg-orange-100 text-orange-600"
-        : "bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400",
     },
     {
-      icon: <Award size={32} />,
+      icon: <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750901071/Contra_3D_by_cezkid_x84exc.webp" alt="Calidad premium" className="w-12 h-12"></img>,
       title: "Calidad Premium",
-      description: "Solo vendemos juegos originales y en buen estado.",
-      color: isXbox
-        ? "bg-purple-100 text-purple-600"
-        : "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400",
+      description: "Solo vendemos juegos originales y en buen estado."
     },
   ]
 
@@ -201,9 +188,11 @@ export const Home: React.FC = () => {
         <div className="relative z-10 h-full flex items-center">
           <div className="max-w-screen-xl mx-auto px-4 w-full">
             <div className="max-w-2xl animate-fade-in-up">
-              <h1 className="game-title text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-tight">
-                Los Mejores Juegos
-              </h1>
+              <div className="flex items-center">
+                <h1 className="game-title text-5xl md:text-6xl lg:text-6xl text-white mb-6 leading-tight">
+                  Los Mejores Juegos
+                </h1>
+              </div>
               <p className="text-white/90 text-xl mb-8 leading-relaxed">
                 Revive tu infancia con los clásicos y descubre nuevas aventuras.
               </p>
@@ -238,7 +227,7 @@ export const Home: React.FC = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div
-                  className={`w-16 h-16 rounded-2xl ${feature.color} flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300`}
+                  className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300`}
                 >
                   {feature.icon}
                 </div>
@@ -271,8 +260,8 @@ export const Home: React.FC = () => {
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12 animate-fade-in-up">
               <div className="flex items-center mb-4 sm:mb-0">
-                <div className={`w-12 h-12 rounded-xl bg-[var(--color-primary)] flex items-center justify-center mr-4`}>
-                  <Clock size={24} className="text-white" />
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4`}>
+                  <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750901461/steamworkshop_guide_223752777_guide_branding_gka7r5.gif" alt="Catalogo extenso" className="w-24 h-24"></img>
                 </div>
                 <div>
                   <h2
@@ -347,8 +336,8 @@ export const Home: React.FC = () => {
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12 animate-fade-in-up">
               <div className="flex items-center mb-4 sm:mb-0">
-                <div className={`w-12 h-12 rounded-xl bg-[var(--color-primary)] flex items-center justify-center mr-4`}>
-                  <TrendingUp size={24} className="text-white" />
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4`}>
+                  <img src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750901756/Zskj9C56UonbzviBsopHhiS8HQUyfZoSLKuj5hRuE1atYVrp4mE2rjb9fTxHXxArCrz4fvjVmcHSux2pz7SvyfMwJJCci8ENysyUV892HZXiA1qFzmuf_w6q4cd.gif" alt="Catalogo extenso" className="w-24 h-24"></img>
                 </div>
                 <div>
                   <h2
