@@ -4,6 +4,11 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
+const isBuildEnv =
+  process.env.NODE_ENV === 'production' ||
+  process.env.VERCEL_ENV === 'production' ||
+  process.env.VERCEL_ENV === 'preview'
+
 export default tseslint.config(
   { ignores: ['dist'] },
   {
@@ -23,6 +28,9 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      'no-console': 'warn',
+      'react/prop-types': 'warn',
+      ...(isBuildEnv ? { '@typescript-eslint/no-unused-vars': 'off' } : {}),
     },
   },
 )
