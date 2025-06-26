@@ -156,6 +156,7 @@ body {
 
 .btn-primary:hover {
   box-shadow: var(--shadow-lg);
+  cursor: pointer;
 }
 
 .btn-primary:before {
@@ -175,6 +176,7 @@ body {
 .btn-secondary:hover {
   @apply border-[var(--color-primary)];
   box-shadow: var(--shadow-md);
+  cursor: pointer;
 }
 
 .card {
