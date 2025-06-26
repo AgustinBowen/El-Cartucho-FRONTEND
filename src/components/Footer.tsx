@@ -179,7 +179,7 @@ const Footer: React.FC<FooterProps> = ({ isXbox = false }) => {
               <p className="text-sm text-[var(--color-foreground)]/70">
                 © 2025 El Cartucho. Todos los derechos reservados.
               </p>
-              <p className="text-xs text-[var(--color-foreground)]/50 mt-1">by bikuta & architín777</p>
+              <p className="text-xs text-[var(--color-foreground)]/50 mt-1">by <a className='text-primary hover:text-[var(--color-primary-hover)]' target='_blank' href={'https://github.com/Bikutah'}>bikuta</a> & <a className='text-primary hover:text-[var(--color-primary-hover)]' target='_blank' href={'https://github.com/AgustinBowen'}>architín777</a></p>
             </div>
           </div>
         </div>
