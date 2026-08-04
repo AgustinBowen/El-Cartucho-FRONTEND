@@ -627,7 +627,7 @@ export const Catalog: React.FC = () => {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-6 animate-fade-in-up">
-                <p className={`font-semibold ${isXbox ? "text-[var(--color-accent)]" : "text-[var(--color-primary)]"}`}>
+                <div className={`font-semibold ${isXbox ? "text-[var(--color-accent)]" : "text-[var(--color-primary)]"}`}>
                   {loading ? (
                     <span className="flex items-center">
                       <div className="w-4 h-4 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -636,7 +636,7 @@ export const Catalog: React.FC = () => {
                   ) : (
                     `Mostrando ${productos.length} de ${meta?.total ?? productos.length} productos`
                   )}
-                </p>
+                </div>
               </div>
 
               {/* Filtros activos */}
