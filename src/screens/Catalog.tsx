@@ -294,9 +294,14 @@ export const Catalog: React.FC = () => {
           Categoría
         </label>
         {loadingCategorias ? (
-          <div className="space-y-2">
-            <div className="skeleton h-8 w-full rounded"></div>
-            <div className="skeleton h-8 w-full rounded"></div>
+          <div className="space-y-2.5 py-1">
+            <div className="flex items-center space-x-2 text-xs text-[var(--color-foreground)]/70 mb-2">
+              <div className="w-3.5 h-3.5 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+              <span>Cargando categorías...</span>
+            </div>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="skeleton h-6 w-full rounded opacity-70"></div>
+            ))}
           </div>
         ) : (
           <div className="space-y-2">
@@ -419,9 +424,14 @@ export const Catalog: React.FC = () => {
           Categoría
         </label>
         {loadingCategorias ? (
-          <div className="space-y-2">
-            <div className="skeleton h-8 w-full rounded"></div>
-            <div className="skeleton h-8 w-full rounded"></div>
+          <div className="space-y-2.5 py-1">
+            <div className="flex items-center space-x-2 text-xs text-[var(--color-foreground)]/70 mb-2">
+              <div className="w-3.5 h-3.5 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+              <span>Cargando categorías...</span>
+            </div>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="skeleton h-6 w-full rounded opacity-70"></div>
+            ))}
           </div>
         ) : (
           <div className="space-y-2">
