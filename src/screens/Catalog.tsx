@@ -112,6 +112,7 @@ export const Catalog: React.FC = () => {
 
   // Fetch categorías
   useEffect(() => {
+    let isMounted = true
     const fetchCategorias = async () => {
       try {
         setLoadingCategorias(true)
@@ -121,16 +122,26 @@ export const Catalog: React.FC = () => {
         }
 
         const data = await response.json()
-        setCategorias(Array.isArray(data) ? data : [])
+        if (isMounted) {
+          setCategorias(Array.isArray(data) ? data : [])
+        }
       } catch (err: any) {
-        console.error("Error fetching categorias:", err.message)
-        setCategorias([])
+        if (isMounted) {
+          console.error("Error fetching categorias:", err.message)
+          setCategorias([])
+        }
       } finally {
-        setLoadingCategorias(false)
+        if (isMounted) {
+          setLoadingCategorias(false)
+        }
       }
     }
 
     fetchCategorias()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   // Fetch productos con AbortController y manejo de 422
@@ -147,14 +158,18 @@ export const Catalog: React.FC = () => {
           { signal: controller.signal }
         )
 
+        if (controller.signal.aborted) return
+
         if (response.status === 422) {
           const errData = await response.json()
           const errorMsg =
             errData.message ||
             (errData.errors ? Object.values(errData.errors).flat().join(" ") : "Error de validación")
-          setError(errorMsg)
-          setProductos([])
-          setMeta(null)
+          if (!controller.signal.aborted) {
+            setError(errorMsg)
+            setProductos([])
+            setMeta(null)
+          }
           return
         }
 
@@ -163,16 +178,20 @@ export const Catalog: React.FC = () => {
         }
 
         const data = await response.json()
-        setProductos(data.data || [])
-        setMeta(data.meta || null)
+        if (!controller.signal.aborted) {
+          setProductos(data.data || [])
+          setMeta(data.meta || null)
+        }
       } catch (err: any) {
-        if (err.name !== "AbortError") {
+        if (err.name !== "AbortError" && !controller.signal.aborted) {
           setError(err.message || "Error al cargar los productos")
           setProductos([])
           setMeta(null)
         }
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 
