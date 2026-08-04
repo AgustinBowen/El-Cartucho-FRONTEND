@@ -274,9 +274,9 @@ export const ProductDetail: React.FC = () => {
                 Inicio
               </Link>
               <span>/</span>
-              <Link to="/catalogo" className="hover:text-[var(--color-primary)] transition-colors">
+              <button onClick={() => navigate(-1)} className="hover:text-[var(--color-primary)] transition-colors cursor-pointer">
                 Catálogo
-              </Link>
+              </button>
               <span>/</span>
               <span className="text-[var(--color-primary)]">{producto.nombre}</span>
             </div>
