@@ -742,7 +742,10 @@ export const Catalog: React.FC = () => {
               {meta && meta.last_page > 1 && (
                 <div className="flex justify-center items-center mt-8 space-x-2">
                   {meta.links.map((link: any, index: number) => {
-                    if (link.label.includes("Anterior") || link.label.includes("Siguiente") || link.label === "&laquo; Anterior" || link.label === "Siguiente &raquo;") {
+                    const isPrev = index === 0 || link.label.includes("Anterior") || link.label.includes("Previous") || link.label.includes("&laquo;") || link.label.includes("<")
+                    const isNext = index === meta.links.length - 1 || link.label.includes("Siguiente") || link.label.includes("Next") || link.label.includes("&raquo;") || link.label.includes(">")
+
+                    if (isPrev || isNext) {
                       return (
                         <button
                           key={index}
@@ -761,7 +764,7 @@ export const Catalog: React.FC = () => {
                           }}
                           className={`cursor-pointer btn-secondary px-3 py-1 ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
-                          {link.label.includes("Anterior") ? "<" : ">"}
+                          {isPrev ? "« Anterior" : "Siguiente »"}
                         </button>
                       )
                     } else {
