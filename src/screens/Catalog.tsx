@@ -272,8 +272,8 @@ export const Catalog: React.FC = () => {
     setShowMobileFilters(false)
   }
 
-  // Componente de filtros completo para desktop
-  const DesktopFiltersContent = () => (
+  // Render de filtros para desktop (función helper para no recrear el componente y mantener el foco en el input)
+  const renderDesktopFilters = () => (
     <div className="p-4 space-y-6">
       {/* Búsqueda */}
       <div>
@@ -407,8 +407,8 @@ export const Catalog: React.FC = () => {
     </div>
   )
 
-  // Componente de filtros solo para móvil (sin búsqueda)
-  const MobileFiltersContent = () => (
+  // Render de filtros para móvil (función helper para mantener el foco en el input)
+  const renderMobileFilters = () => (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold">Filtros</h2>
@@ -650,7 +650,7 @@ export const Catalog: React.FC = () => {
           <div className="flex gap-6">
             <div className="hidden lg:block w-64 flex-shrink-0">
               <div className="card top-24 animate-fade-in-up">
-                <DesktopFiltersContent />
+                {renderDesktopFilters()}
               </div>
             </div>
 
@@ -803,7 +803,7 @@ export const Catalog: React.FC = () => {
         <div className="fixed inset-0 z-[60] lg:hidden">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeMobileFilters}></div>
           <div className="relative h-full bg-[var(--color-background)] animate-fade-in-up overflow-y-auto">
-            <MobileFiltersContent />
+            {renderMobileFilters()}
           </div>
         </div>
       )}
