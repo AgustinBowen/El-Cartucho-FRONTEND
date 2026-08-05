@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 import type { Producto } from "../types/Producto"
 import type { Categoria } from "../types/Categoria"
@@ -17,17 +17,73 @@ export const Catalog: React.FC = () => {
   const [loadingCategorias, setLoadingCategorias] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const { isXbox } = useTheme()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [sortBy, setSortBy] = useState("name")
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
-  const [selectedCategoria, setSelectedCategoria] = useState<number | null>(null)
-  const [selectedSubcategorias, setSelectedSubcategorias] = useState<number[]>([])
   const [showMobileFilters, setShowMobileFilters] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
   const [meta, setMeta] = useState<any>(null)
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Extraer valores actuales desde query params
+  const qParam = searchParams.get("q") || ""
+  const categoriaParam = searchParams.get("categoria_id") ? Number(searchParams.get("categoria_id")) : null
+  const subcategoriasParam = useMemo(() => {
+    const fromArray = searchParams.getAll("subcategorias[]")
+    if (fromArray.length > 0) return fromArray.map(Number)
+    const single = searchParams.get("subcategorias")
+    if (single) return single.split(",").map(Number)
+    return []
+  }, [searchParams])
+  const precioMinParam = searchParams.get("precio_min") || ""
+  const precioMaxParam = searchParams.get("precio_max") || ""
+  const ordenParam = searchParams.get("orden") || ""
+  const dirParam = searchParams.get("dir") || ""
+
+  // Estado local para input de búsqueda (debounce)
+  const [searchInput, setSearchInput] = useState(qParam)
+
+  // Sincronizar searchInput cuando el query param q cambie desde la URL
+  useEffect(() => {
+    setSearchInput(qParam)
+  }, [qParam])
+
+  // Helper para actualizar query params
+  const updateParams = (newParams: Record<string, any>, resetPage = true) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+
+      if (resetPage) {
+        next.set("page", "1")
+      }
+
+      Object.entries(newParams).forEach(([key, value]) => {
+        if (key === "subcategorias") {
+          next.delete("subcategorias[]")
+          next.delete("subcategorias")
+          if (Array.isArray(value) && value.length > 0) {
+            value.forEach((val) => next.append("subcategorias[]", val.toString()))
+          }
+        } else {
+          next.delete(key)
+          if (value !== null && value !== undefined && value !== "") {
+            next.set(key, value.toString())
+          }
+        }
+      })
+
+      return next
+    })
+  }
+
+  // Debounce de 300ms para la búsqueda
+  useEffect(() => {
+    if (searchInput === qParam) return
+
+    const timer = setTimeout(() => {
+      updateParams({ q: searchInput }, true)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchInput, qParam])
 
   // Imagen de fondo única
   const backgroundImage = isXbox
@@ -44,28 +100,19 @@ export const Catalog: React.FC = () => {
   // Efecto para controlar el scroll del body cuando se abren los filtros móviles
   useEffect(() => {
     if (showMobileFilters) {
-      // Bloquear scroll del body
       document.body.style.overflow = "hidden"
     } else {
-      // Restaurar scroll del body
       document.body.style.overflow = "unset"
     }
 
-    // Cleanup function para restaurar el scroll cuando el componente se desmonte
     return () => {
       document.body.style.overflow = "unset"
     }
   }, [showMobileFilters])
 
-  useEffect(() => {
-    const searchFromUrl = searchParams.get("search")
-    if (searchFromUrl) {
-      setSearchTerm(searchFromUrl)
-    }
-  }, [searchParams])
-
   // Fetch categorías
   useEffect(() => {
+    let isMounted = true
     const fetchCategorias = async () => {
       try {
         setLoadingCategorias(true)
@@ -75,127 +122,158 @@ export const Catalog: React.FC = () => {
         }
 
         const data = await response.json()
-        setCategorias(Array.isArray(data) ? data : [])
+        if (isMounted) {
+          setCategorias(Array.isArray(data) ? data : [])
+        }
       } catch (err: any) {
-        console.error("Error fetching categorias:", err.message)
-        setCategorias([]) // Asegurar que siempre sea un array
+        if (isMounted) {
+          console.error("Error fetching categorias:", err.message)
+          setCategorias([])
+        }
       } finally {
-        setLoadingCategorias(false)
+        if (isMounted) {
+          setLoadingCategorias(false)
+        }
       }
     }
 
     fetchCategorias()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
-  // Fetch productos con filtros
+  // Fetch productos con AbortController y manejo de 422
   useEffect(() => {
-    const fetchProductos = async (page = 1) => {
+    const controller = new AbortController()
+
+    const fetchProductos = async () => {
       try {
         setLoading(true)
+        setError(null)
 
-        // Construir URL con filtros
-        const params = new URLSearchParams()
-        params.append("page", page.toString())
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/ed/producto/listar?${searchParams.toString()}`,
+          { signal: controller.signal }
+        )
 
-        if (selectedCategoria) {
-          params.append("categoria_id", selectedCategoria.toString())
+        if (controller.signal.aborted) return
+
+        if (response.status === 422) {
+          const errData = await response.json()
+          const errorMsg =
+            errData.message ||
+            (errData.errors ? Object.values(errData.errors).flat().join(" ") : "Error de validación")
+          if (!controller.signal.aborted) {
+            setError(errorMsg)
+            setProductos([])
+            setMeta(null)
+          }
+          return
         }
 
-        if (selectedSubcategorias.length > 0) {
-          selectedSubcategorias.forEach((subcatId) => {
-            params.append("subcategorias[]", subcatId.toString())
-          })
-        }
-
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/producto/listar?${params.toString()}`)
         if (!response.ok) {
           throw new Error("Error al obtener productos")
         }
 
         const data = await response.json()
-        setProductos(data.data)
-        setMeta(data.meta)
-        setCurrentPage(data.meta.current_page)
+        if (!controller.signal.aborted) {
+          setProductos(data.data || [])
+          setMeta(data.meta || null)
+        }
       } catch (err: any) {
-        setError(err.message)
+        if (err.name !== "AbortError" && !controller.signal.aborted) {
+          setError(err.message || "Error al cargar los productos")
+          setProductos([])
+          setMeta(null)
+        }
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 
-    fetchProductos(currentPage)
-  }, [currentPage, selectedCategoria, selectedSubcategorias])
+    fetchProductos()
+
+    return () => {
+      controller.abort()
+    }
+  }, [searchParams])
 
   // Manejar cambio de categoría
   const handleCategoriaChange = (categoriaId: number | null) => {
-    setSelectedCategoria(categoriaId)
-    setSelectedSubcategorias([]) // Limpiar subcategorías cuando cambia la categoría
-    setCurrentPage(1) // Resetear a la primera página
+    updateParams({ categoria_id: categoriaId, subcategorias: [] }, true)
   }
 
   // Manejar cambio de subcategoría
   const handleSubcategoriaChange = (subcategoriaId: number, checked: boolean) => {
+    let newSubcats: number[]
     if (checked) {
-      setSelectedSubcategorias((prev) => [...prev, subcategoriaId])
+      newSubcats = [...subcategoriasParam, subcategoriaId]
     } else {
-      setSelectedSubcategorias((prev) => prev.filter((id) => id !== subcategoriaId))
+      newSubcats = subcategoriasParam.filter((id) => id !== subcategoriaId)
     }
-    setCurrentPage(1) // Resetear a la primera página
+    updateParams({ subcategorias: newSubcats }, true)
+  }
+
+  // Mapeo del dropdown SortBy <-> orden & dir
+  const currentSortBy = useMemo(() => {
+    if (ordenParam === "nombre" && dirParam === "asc") return "name"
+    if (ordenParam === "precio" && dirParam === "asc") return "price-low"
+    if (ordenParam === "precio" && dirParam === "desc") return "price-high"
+    if (ordenParam === "created_at") return "newest"
+    return "newest"
+  }, [ordenParam, dirParam])
+
+  const handleSortChange = (newSortBy: string) => {
+    switch (newSortBy) {
+      case "price-low":
+        updateParams({ orden: "precio", dir: "asc" }, true)
+        break
+      case "price-high":
+        updateParams({ orden: "precio", dir: "desc" }, true)
+        break
+      case "name":
+        updateParams({ orden: "nombre", dir: "asc" }, true)
+        break
+      case "newest":
+      default:
+        updateParams({ orden: "created_at", dir: "desc" }, true)
+        break
+    }
   }
 
   // Obtener subcategorías de la categoría seleccionada
   const getSubcategorias = () => {
-    if (!selectedCategoria) return []
-    const categoria = categorias.find((cat) => cat.id === selectedCategoria)
+    if (!categoriaParam) return []
+    const categoria = categorias.find((cat) => cat.id === categoriaParam)
     return categoria?.subcategorias || []
   }
 
-  const filteredAndSortedProducts = productos
-    .filter((producto) => {
-      const matchesSearch = producto.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-      const precio = typeof producto.precio === "string" ? Number.parseFloat(producto.precio) : producto.precio
-      const matchesPrice =
-        priceRange[1] === 100 ? precio >= priceRange[0] : precio >= priceRange[0] && precio <= priceRange[1]
-      return matchesSearch && matchesPrice
-    })
-    .sort((a, b) => {
-      const precioA = typeof a.precio === "string" ? Number.parseFloat(a.precio) : a.precio
-      const precioB = typeof b.precio === "string" ? Number.parseFloat(b.precio) : b.precio
-
-      switch (sortBy) {
-        case "price-low":
-          return precioA - precioB
-        case "price-high":
-          return precioB - precioA
-        case "name":
-        default:
-          return a.nombre.localeCompare(b.nombre)
-      }
-    })
-
   const resetFilters = () => {
-    setSearchTerm("")
-    setPriceRange([0, 100])
-    setSortBy("name")
-    setSelectedCategoria(null)
-    setSelectedSubcategorias([])
-    setCurrentPage(1)
+    setSearchInput("")
+    setSearchParams({})
   }
 
   const resetOnlyFilters = () => {
-    setPriceRange([0, 100])
-    setSortBy("name")
-    setSelectedCategoria(null)
-    setSelectedSubcategorias([])
-    setCurrentPage(1)
+    updateParams({
+      categoria_id: null,
+      subcategorias: [],
+      precio_min: null,
+      precio_max: null,
+      orden: null,
+      dir: null,
+    }, true)
   }
 
   const closeMobileFilters = () => {
     setShowMobileFilters(false)
   }
 
-  // Componente de filtros completo para desktop
-  const DesktopFiltersContent = () => (
+  // Render de filtros para desktop (función helper para no recrear el componente y mantener el foco en el input)
+  const renderDesktopFilters = () => (
     <div className="p-4 space-y-6">
       {/* Búsqueda */}
       <div>
@@ -203,8 +281,8 @@ export const Catalog: React.FC = () => {
         <input
           type="text"
           placeholder="Buscar juegos..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           className="input w-full"
         />
       </div>
@@ -216,9 +294,14 @@ export const Catalog: React.FC = () => {
           Categoría
         </label>
         {loadingCategorias ? (
-          <div className="space-y-2">
-            <div className="skeleton h-8 w-full rounded"></div>
-            <div className="skeleton h-8 w-full rounded"></div>
+          <div className="space-y-2.5 py-1">
+            <div className="flex items-center space-x-2 text-xs text-[var(--color-foreground)]/70 mb-2">
+              <div className="w-3.5 h-3.5 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+              <span>Cargando categorías...</span>
+            </div>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="skeleton h-6 w-full rounded opacity-70"></div>
+            ))}
           </div>
         ) : (
           <div className="space-y-2">
@@ -226,7 +309,7 @@ export const Catalog: React.FC = () => {
               <input
                 type="radio"
                 name="categoria"
-                checked={selectedCategoria === null}
+                checked={categoriaParam === null}
                 onChange={() => handleCategoriaChange(null)}
                 className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
               />
@@ -237,7 +320,7 @@ export const Catalog: React.FC = () => {
                 <input
                   type="radio"
                   name="categoria"
-                  checked={selectedCategoria === categoria.id}
+                  checked={categoriaParam === categoria.id}
                   onChange={() => handleCategoriaChange(categoria.id)}
                   className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 />
@@ -249,7 +332,7 @@ export const Catalog: React.FC = () => {
       </div>
 
       {/* Subcategorías */}
-      {selectedCategoria && getSubcategorias().length > 0 && (
+      {categoriaParam && getSubcategorias().length > 0 && (
         <div>
           <label className="block text-sm font-medium mb-2">Subcategorías</label>
           <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -257,7 +340,7 @@ export const Catalog: React.FC = () => {
               <label key={subcategoria.id} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={selectedSubcategorias.includes(subcategoria.id)}
+                  checked={subcategoriasParam.includes(subcategoria.id)}
                   onChange={(e) => handleSubcategoriaChange(subcategoria.id, e.target.checked)}
                   className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 />
@@ -273,10 +356,11 @@ export const Catalog: React.FC = () => {
         <label className="block text-sm font-medium mb-2">Ordenar por</label>
         <div className="relative">
           <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            value={currentSortBy}
+            onChange={(e) => handleSortChange(e.target.value)}
             className="input w-full pr-10 appearance-none cursor-pointer"
           >
+            <option value="newest">Más recientes</option>
             <option value="name">Nombre</option>
             <option value="price-low">Precio: menor a mayor</option>
             <option value="price-high">Precio: mayor a menor</option>
@@ -296,8 +380,8 @@ export const Catalog: React.FC = () => {
             <input
               type="number"
               placeholder="Mín"
-              value={priceRange[0]}
-              onChange={(e) => setPriceRange([Number(e.target.value) || 0, priceRange[1]])}
+              value={precioMinParam}
+              onChange={(e) => updateParams({ precio_min: e.target.value }, true)}
               className="input w-20 text-sm"
               min="0"
             />
@@ -305,8 +389,8 @@ export const Catalog: React.FC = () => {
             <input
               type="number"
               placeholder="Máx"
-              value={priceRange[1]}
-              onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value) || 100])}
+              value={precioMaxParam}
+              onChange={(e) => updateParams({ precio_max: e.target.value }, true)}
               className="input w-20 text-sm"
               min="0"
             />
@@ -323,8 +407,8 @@ export const Catalog: React.FC = () => {
     </div>
   )
 
-  // Componente de filtros solo para móvil (sin búsqueda)
-  const MobileFiltersContent = () => (
+  // Render de filtros para móvil (función helper para mantener el foco en el input)
+  const renderMobileFilters = () => (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold">Filtros</h2>
@@ -340,9 +424,14 @@ export const Catalog: React.FC = () => {
           Categoría
         </label>
         {loadingCategorias ? (
-          <div className="space-y-2">
-            <div className="skeleton h-8 w-full rounded"></div>
-            <div className="skeleton h-8 w-full rounded"></div>
+          <div className="space-y-2.5 py-1">
+            <div className="flex items-center space-x-2 text-xs text-[var(--color-foreground)]/70 mb-2">
+              <div className="w-3.5 h-3.5 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+              <span>Cargando categorías...</span>
+            </div>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="skeleton h-6 w-full rounded opacity-70"></div>
+            ))}
           </div>
         ) : (
           <div className="space-y-2">
@@ -350,7 +439,7 @@ export const Catalog: React.FC = () => {
               <input
                 type="radio"
                 name="categoria-mobile"
-                checked={selectedCategoria === null}
+                checked={categoriaParam === null}
                 onChange={() => handleCategoriaChange(null)}
                 className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
               />
@@ -361,7 +450,7 @@ export const Catalog: React.FC = () => {
                 <input
                   type="radio"
                   name="categoria-mobile"
-                  checked={selectedCategoria === categoria.id}
+                  checked={categoriaParam === categoria.id}
                   onChange={() => handleCategoriaChange(categoria.id)}
                   className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 />
@@ -373,7 +462,7 @@ export const Catalog: React.FC = () => {
       </div>
 
       {/* Subcategorías */}
-      {selectedCategoria && getSubcategorias().length > 0 && (
+      {categoriaParam && getSubcategorias().length > 0 && (
         <div>
           <label className="block text-sm font-medium mb-2">Subcategorías</label>
           <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -381,7 +470,7 @@ export const Catalog: React.FC = () => {
               <label key={subcategoria.id} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={selectedSubcategorias.includes(subcategoria.id)}
+                  checked={subcategoriasParam.includes(subcategoria.id)}
                   onChange={(e) => handleSubcategoriaChange(subcategoria.id, e.target.checked)}
                   className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 />
@@ -397,10 +486,11 @@ export const Catalog: React.FC = () => {
         <label className="block text-sm font-medium mb-2">Ordenar por</label>
         <div className="relative">
           <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            value={currentSortBy}
+            onChange={(e) => handleSortChange(e.target.value)}
             className="input w-full pr-10 appearance-none cursor-pointer"
           >
+            <option value="newest">Más recientes</option>
             <option value="name">Nombre</option>
             <option value="price-low">Precio: menor a mayor</option>
             <option value="price-high">Precio: mayor a menor</option>
@@ -420,8 +510,8 @@ export const Catalog: React.FC = () => {
             <input
               type="number"
               placeholder="Mín"
-              value={priceRange[0]}
-              onChange={(e) => setPriceRange([Number(e.target.value) || 0, priceRange[1]])}
+              value={precioMinParam}
+              onChange={(e) => updateParams({ precio_min: e.target.value }, true)}
               className="input w-20 text-sm"
               min="0"
             />
@@ -429,8 +519,8 @@ export const Catalog: React.FC = () => {
             <input
               type="number"
               placeholder="Máx"
-              value={priceRange[1]}
-              onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value) || 100])}
+              value={precioMaxParam}
+              onChange={(e) => updateParams({ precio_max: e.target.value }, true)}
               className="input w-20 text-sm"
               min="0"
             />
@@ -450,7 +540,6 @@ export const Catalog: React.FC = () => {
     </div>
   )
 
-  // Resto del componente permanece igual...
   if (error) {
     return (
       <div
@@ -463,10 +552,9 @@ export const Catalog: React.FC = () => {
           backgroundRepeat: "no-repeat",
         }}
       >
-        {/* Overlay para el error */}
         <div className="absolute inset-0 bg-[var(--color-background)]" style={{ opacity: isXbox ? 0.9 : 0.93 }}></div>
 
-        <div className="text-center animate-fade-in-scale relative z-10">
+        <div className="text-center animate-fade-in-scale relative z-10 p-6 max-w-lg">
           <div
             className={`w-16 h-16 rounded-full ${isXbox ? "bg-red-100" : "bg-red-900/20"
               } flex items-center justify-center mb-4 mx-auto`}
@@ -475,8 +563,8 @@ export const Catalog: React.FC = () => {
           </div>
           <h2 className="text-2xl font-bold mb-2">¡Oops! Algo salió mal</h2>
           <p className="text-[var(--color-foreground)]/70 mb-4">{error}</p>
-          <button onClick={() => window.location.reload()} className="btn-primary">
-            Intentar de nuevo
+          <button onClick={resetFilters} className="btn-primary">
+            Limpiar filtros / Intentar de nuevo
           </button>
         </div>
       </div>
@@ -494,16 +582,14 @@ export const Catalog: React.FC = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      {/* Overlay único para toda la página */}
       <div
         className={`absolute inset-0 ${isXbox ? "bg-[#141414]" : "bg-[var(--color-background)]"}`}
         style={{ opacity: isXbox ? 0.3 : 0.85 }}
       ></div>
 
-      {/* Todo el contenido dentro del contenedor principal */}
       <div className="relative z-10">
         {/* Header */}
-        <div className={`w-full py-12 px-4`}>
+        <div className="w-full py-12 px-4">
           <div className="max-w-screen-xl mx-auto animate-fade-in-up">
             <div className="flex items-center mb-4">
               {isXbox ? (
@@ -533,27 +619,25 @@ export const Catalog: React.FC = () => {
         <div className="max-w-screen mx-auto px-4 py-8">
           {/* Búsqueda y filtros móvil */}
           <div className="lg:hidden mb-6 space-y-4 animate-fade-in-up">
-            {/* Campo de búsqueda */}
             <div>
               <input
                 type="text"
                 placeholder="Buscar juegos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="input w-full"
               />
             </div>
 
-            {/* Botón de filtros */}
             <button
               onClick={() => setShowMobileFilters(true)}
               className="btn-secondary flex items-center w-full justify-center"
             >
               <SlidersHorizontal size={20} className="mr-2" />
               Filtros
-              {(selectedCategoria || selectedSubcategorias.length > 0) && (
+              {(categoriaParam || subcategoriasParam.length > 0) && (
                 <span className="ml-2 px-2 py-1 text-xs bg-[var(--color-primary)] text-white rounded-full">
-                  {(selectedCategoria ? 1 : 0) + selectedSubcategorias.length}
+                  {(categoriaParam ? 1 : 0) + subcategoriasParam.length}
                 </span>
               )}
             </button>
@@ -561,36 +645,33 @@ export const Catalog: React.FC = () => {
 
           {/* Layout con sidebar */}
           <div className="flex gap-6">
-            {/* Sidebar de filtros (solo desktop) */}
             <div className="hidden lg:block w-64 flex-shrink-0">
               <div className="card top-24 animate-fade-in-up">
-                <DesktopFiltersContent />
+                {renderDesktopFilters()}
               </div>
             </div>
 
-            {/* Contenido principal */}
             <div className="flex-1 min-w-0">
-              {/* Información de resultados */}
               <div className="flex items-center justify-between mb-6 animate-fade-in-up">
-                <p className={`font-semibold ${isXbox ? "text-[var(--color-accent)]" : "text-[var(--color-primary)]"}`}>
+                <div className={`font-semibold ${isXbox ? "text-[var(--color-accent)]" : "text-[var(--color-primary)]"}`}>
                   {loading ? (
                     <span className="flex items-center">
                       <div className="w-4 h-4 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mr-2"></div>
                       Cargando productos...
                     </span>
                   ) : (
-                    `Mostrando ${filteredAndSortedProducts.length} de ${productos.length} productos`
+                    `Mostrando ${productos.length} de ${meta?.total ?? productos.length} productos`
                   )}
-                </p>
+                </div>
               </div>
 
               {/* Filtros activos */}
-              {(selectedCategoria || selectedSubcategorias.length > 0) && (
+              {(categoriaParam || subcategoriasParam.length > 0) && (
                 <div className="mb-6 animate-fade-in-up">
                   <div className="flex flex-wrap gap-2">
-                    {selectedCategoria && (
+                    {categoriaParam && (
                       <span className="inline-flex items-center px-3 py-1 text-sm bg-[var(--color-primary)] text-white rounded-full">
-                        {categorias.find((cat) => cat.id === selectedCategoria)?.nombre}
+                        {categorias.find((cat) => cat.id === categoriaParam)?.nombre}
                         <button
                           onClick={() => handleCategoriaChange(null)}
                           className="ml-2 hover:bg-white/20 rounded-full p-1"
@@ -599,7 +680,7 @@ export const Catalog: React.FC = () => {
                         </button>
                       </span>
                     )}
-                    {selectedSubcategorias.map((subcatId) => {
+                    {subcategoriasParam.map((subcatId) => {
                       const subcategoria = getSubcategorias().find((sub) => sub.id === subcatId)
                       return subcategoria ? (
                         <span
@@ -627,7 +708,7 @@ export const Catalog: React.FC = () => {
                     <SkeletonCard key={index} />
                   ))}
                 </div>
-              ) : filteredAndSortedProducts.length === 0 ? (
+              ) : productos.length === 0 ? (
                 <div className="text-center py-16 animate-fade-in-scale">
                   <div
                     className={`w-24 h-24 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"
@@ -645,7 +726,7 @@ export const Catalog: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in-up">
-                  {filteredAndSortedProducts.map((producto, index) => (
+                  {productos.map((producto, index) => (
                     <div
                       key={producto.id}
                       className="animate-fade-in-scale"
@@ -667,24 +748,36 @@ export const Catalog: React.FC = () => {
               {meta && meta.last_page > 1 && (
                 <div className="flex justify-center items-center mt-8 space-x-2">
                   {meta.links.map((link: any, index: number) => {
-                    if (link.label === "&laquo; Anterior" || link.label === "Siguiente &raquo;") {
+                    const isPrev = index === 0 || link.label.includes("Anterior") || link.label.includes("Previous") || link.label.includes("&laquo;") || link.label.includes("<")
+                    const isNext = index === meta.links.length - 1 || link.label.includes("Siguiente") || link.label.includes("Next") || link.label.includes("&raquo;") || link.label.includes(">")
+
+                    if (isPrev || isNext) {
                       return (
                         <button
                           key={index}
                           disabled={!link.url}
-                          onClick={() =>
-                            link.url && setCurrentPage(new URL(link.url).searchParams.get("page") as unknown as number)
-                          }
+                          onClick={() => {
+                            if (link.url) {
+                              try {
+                                const urlObj = new URL(link.url)
+                                const pageParam = urlObj.searchParams.get("page")
+                                if (pageParam) updateParams({ page: Number(pageParam) }, false)
+                              } catch {
+                                const pageMatch = link.url.match(/page=(\d+)/)
+                                if (pageMatch) updateParams({ page: Number(pageMatch[1]) }, false)
+                              }
+                            }
+                          }}
                           className={`cursor-pointer btn-secondary px-3 py-1 ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
-                          {link.label.includes("Anterior") ? "<" : ">"}
+                          {isPrev ? "« Anterior" : "Siguiente »"}
                         </button>
                       )
                     } else {
                       return (
                         <button
                           key={index}
-                          onClick={() => setCurrentPage(Number(link.label))}
+                          onClick={() => updateParams({ page: Number(link.label) }, false)}
                           className={`cursor-pointer btn-secondary px-3 py-1 ${link.active ? "bg-[var(--color-primary)] text-white" : ""
                             }`}
                         >
@@ -703,12 +796,9 @@ export const Catalog: React.FC = () => {
       {/* Modal de filtros móvil */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-[60] lg:hidden">
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeMobileFilters}></div>
-
-          {/* Modal content */}
           <div className="relative h-full bg-[var(--color-background)] animate-fade-in-up overflow-y-auto">
-            <MobileFiltersContent />
+            {renderMobileFilters()}
           </div>
         </div>
       )}

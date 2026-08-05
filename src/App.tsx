@@ -9,6 +9,7 @@ import { CartProvider } from "./context/CartContext";
 import { ProductDetail } from "./screens/ProductDetail"
 import { ThemeProvider } from './context/ThemeContext';
 import { useState, useEffect } from 'react';
+import ReloadPrompt from './components/ReloadPrompt';
 
 function App() {
 	const [isThemeReady, setIsThemeReady] = useState(false);
@@ -36,11 +37,12 @@ function App() {
 						<Route path="/catalogo" element={<Catalog />} />
 						<Route path="/comprar" element={<CartScreen />} />
 						<Route path="/producto/:id" element={<ProductDetail />} />
-						<Route path="/pago/success*" element={<SuccessScreen />} />
+						<Route path="/pago/success/*" element={<SuccessScreen />} />
 						<Route path="/*" element={<ErrorScreen />} />
 					</Routes>
 				</CartProvider>
 			</Router>
+			<ReloadPrompt />
 		</ThemeProvider>
 
 	);
