@@ -274,7 +274,16 @@ export const ProductDetail: React.FC = () => {
                 Inicio
               </Link>
               <span>/</span>
-              <button onClick={() => navigate(-1)} className="hover:text-[var(--color-primary)] transition-colors cursor-pointer">
+              <button 
+                onClick={() => {
+                  if (window.history.state && window.history.state.idx > 0) {
+                    navigate(-1)
+                  } else {
+                    navigate('/catalogo')
+                  }
+                }} 
+                className="hover:text-[var(--color-primary)] transition-colors cursor-pointer"
+              >
                 Catálogo
               </button>
               <span>/</span>
