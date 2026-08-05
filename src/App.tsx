@@ -9,6 +9,7 @@ import { CartProvider } from "./context/CartContext";
 import { ProductDetail } from "./screens/ProductDetail"
 import { ThemeProvider } from './context/ThemeContext';
 import { useState, useEffect } from 'react';
+import ReloadPrompt from './components/ReloadPrompt';
 
 function App() {
 	const [isThemeReady, setIsThemeReady] = useState(false);
@@ -41,6 +42,7 @@ function App() {
 					</Routes>
 				</CartProvider>
 			</Router>
+			<ReloadPrompt />
 		</ThemeProvider>
 
 	);
