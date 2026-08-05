@@ -543,9 +543,8 @@ export const Catalog: React.FC = () => {
   if (error) {
     return (
       <div
-        className={`min-h-screen pt-16 flex items-center justify-center relative transition-opacity duration-1000 ${
-          backgroundLoaded ? "opacity-100" : "opacity-0"
-        }`}
+        className={`min-h-screen pt-16 flex items-center justify-center relative transition-opacity duration-1000 ${backgroundLoaded ? "opacity-100" : "opacity-0"
+          }`}
         style={{
           backgroundImage: backgroundLoaded ? `url('${backgroundImage}')` : "none",
           backgroundSize: "cover",
@@ -557,9 +556,8 @@ export const Catalog: React.FC = () => {
 
         <div className="text-center animate-fade-in-scale relative z-10 p-6 max-w-lg">
           <div
-            className={`w-16 h-16 rounded-full ${
-              isXbox ? "bg-red-100" : "bg-red-900/20"
-            } flex items-center justify-center mb-4 mx-auto`}
+            className={`w-16 h-16 rounded-full ${isXbox ? "bg-red-100" : "bg-red-900/20"
+              } flex items-center justify-center mb-4 mx-auto`}
           >
             <span className="text-2xl">😞</span>
           </div>
@@ -575,9 +573,8 @@ export const Catalog: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen pt-16 relative transition-opacity duration-1000 ${
-        backgroundLoaded ? "opacity-100" : "opacity-0"
-      }`}
+      className={`min-h-screen pt-16 relative transition-opacity duration-1000 ${backgroundLoaded ? "opacity-100" : "opacity-0"
+        }`}
       style={{
         backgroundImage: backgroundLoaded ? `url('${backgroundImage}')` : "none",
         backgroundSize: "cover",
@@ -714,9 +711,8 @@ export const Catalog: React.FC = () => {
               ) : productos.length === 0 ? (
                 <div className="text-center py-16 animate-fade-in-scale">
                   <div
-                    className={`w-24 h-24 rounded-full ${
-                      isXbox ? "bg-gray-100" : "bg-gray-800"
-                    } flex items-center justify-center mb-6 mx-auto`}
+                    className={`w-24 h-24 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"
+                      } flex items-center justify-center mb-6 mx-auto`}
                   >
                     <Gamepad2 size={48} className="text-gray-400" />
                   </div>
@@ -782,9 +778,8 @@ export const Catalog: React.FC = () => {
                         <button
                           key={index}
                           onClick={() => updateParams({ page: Number(link.label) }, false)}
-                          className={`cursor-pointer btn-secondary px-3 py-1 ${
-                            link.active ? "bg-[var(--color-primary)] text-white" : ""
-                          }`}
+                          className={`cursor-pointer btn-secondary px-3 py-1 ${link.active ? "bg-[var(--color-primary)] text-white" : ""
+                            }`}
                         >
                           {link.label}
                         </button>
