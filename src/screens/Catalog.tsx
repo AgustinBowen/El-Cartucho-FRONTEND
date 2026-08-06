@@ -397,6 +397,7 @@ export const Catalog: React.FC = () => {
                         title={producto.nombre}
                         producto_id={producto.id}
                         price={producto.precio}
+                        stock={producto.stock}
                       />
                     </div>
                   ))}

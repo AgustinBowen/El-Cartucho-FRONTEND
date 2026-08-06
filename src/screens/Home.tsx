@@ -298,6 +298,7 @@ export const Home: React.FC = () => {
                       imgAlt={producto.nombre}
                       title={producto.nombre}
                       price={producto.precio}
+                      stock={producto.stock}
                     />
                   </div>
                 ))}
@@ -374,6 +375,7 @@ export const Home: React.FC = () => {
                       imgAlt={producto.nombre}
                       title={producto.nombre}
                       price={producto.precio}
+                      stock={producto.stock}
                     />
                   </div>
                 ))}

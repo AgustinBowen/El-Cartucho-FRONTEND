@@ -231,11 +231,19 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                             <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
                             <button
                               onClick={() => handleQuantityChange(item.producto_id, item.quantity + 1)}
-                              className="cursor-pointer w-6 h-6 rounded-full border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
+                              disabled={item.quantity >= item.stock}
+                              className={`w-6 h-6 rounded-full border border-[var(--color-border)] flex items-center justify-center transition-colors ${
+                                item.quantity >= item.stock
+                                  ? "opacity-50 cursor-not-allowed bg-[var(--color-muted)]"
+                                  : "cursor-pointer hover:bg-[var(--color-muted)]"
+                              }`}
                               aria-label="Aumentar cantidad producto carrito"
                             >
                               <Plus size={10} />
                             </button>
+                            {item.quantity >= item.stock && (
+                              <span className="text-[10px] text-orange-400 font-medium">Límite reached</span>
+                            )}
                           </div>
 
                           {/* Price */}
