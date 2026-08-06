@@ -2,6 +2,8 @@ import { useSearchParams } from "react-router-dom"
 import { useCallback, useMemo, useRef, useEffect } from "react"
 
 interface FiltrosEstado {
+  categorias: number[]
+  // # DEPRECADO: eliminar en Pasada C
   categoriaId: number | null
   subcategorias: number[]
   precioMin: string
@@ -15,11 +17,21 @@ export function useFiltrosCatalogo() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const estado = useMemo<FiltrosEstado>(() => {
-    const categoriaStr = searchParams.get("categoria_id")
+    const catsStr = searchParams.getAll("categorias[]")
+    const legacyCatStr = searchParams.get("categoria_id")
     const subcatsStr = searchParams.getAll("subcategorias[]")
     
+    let categoriasParsed = catsStr.map(id => parseInt(id, 10)).filter(id => !isNaN(id))
+    if (categoriasParsed.length === 0 && legacyCatStr) {
+      const legacyId = parseInt(legacyCatStr, 10)
+      if (!isNaN(legacyId)) {
+        categoriasParsed = [legacyId]
+      }
+    }
+
     return {
-      categoriaId: categoriaStr ? parseInt(categoriaStr, 10) : null,
+      categorias: categoriasParsed,
+      categoriaId: categoriasParsed.length > 0 ? categoriasParsed[0] : null,
       subcategorias: subcatsStr.map(id => parseInt(id, 10)).filter(id => !isNaN(id)),
       precioMin: searchParams.get("precio_min") || "",
       precioMax: searchParams.get("precio_max") || "",
@@ -68,19 +80,30 @@ export function useFiltrosCatalogo() {
     })
   }, [setSearchParams])
 
-  const seleccionarCategoria = useCallback((id: number, mantenerSubcategorias = false) => {
-    if (estado.categoriaId === id) {
-      updateUrl({
-        categoria_id: null,
-        "subcategorias[]": null 
-      })
+  const toggleCategoria = useCallback((id: number, subcategoriaIdsAsociadas: number[] = []) => {
+    const isSelected = estado.categorias.includes(id)
+    let nuevasCat: number[]
+    let nuevasSub = [...estado.subcategorias]
+
+    if (isSelected) {
+      nuevasCat = estado.categorias.filter(cId => cId !== id)
+      if (subcategoriaIdsAsociadas.length > 0) {
+        nuevasSub = nuevasSub.filter(subId => !subcategoriaIdsAsociadas.includes(subId))
+      }
     } else {
-      updateUrl({
-        categoria_id: id.toString(),
-        "subcategorias[]": mantenerSubcategorias ? estado.subcategorias.map(String) : null
-      })
+      nuevasCat = [...estado.categorias, id]
     }
-  }, [estado.categoriaId, estado.subcategorias, updateUrl])
+
+    updateUrl({
+      "categorias[]": nuevasCat.length > 0 ? nuevasCat.map(String) : null,
+      categoria_id: null, // Limpiar parámetro depreciado en favor de array
+      "subcategorias[]": nuevasSub.length > 0 ? nuevasSub.map(String) : null
+    })
+  }, [estado.categorias, estado.subcategorias, updateUrl])
+
+  const seleccionarCategoria = useCallback((id: number, mantenerSubcategorias = false) => {
+    toggleCategoria(id)
+  }, [toggleCategoria])
 
   const toggleSubcategoria = useCallback((subId: number) => {
     const isSelected = estado.subcategorias.includes(subId)
@@ -107,7 +130,6 @@ export function useFiltrosCatalogo() {
     }, 500)
   }, [updateUrl])
 
-  // Cleanup timeout
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
@@ -155,6 +177,7 @@ export function useFiltrosCatalogo() {
 
   return {
     estado,
+    toggleCategoria,
     seleccionarCategoria,
     toggleSubcategoria,
     aplicarPrecio,
