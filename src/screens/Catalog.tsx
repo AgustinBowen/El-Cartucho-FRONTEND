@@ -164,8 +164,7 @@ export const Catalog: React.FC = () => {
     }
   }, [searchParams])
 
-  // UI Components
-  const TopbarFilters = () => (
+  const renderTopbarFilters = () => (
     <div className="flex flex-col lg:flex-row gap-4 mb-6 p-4 rounded-lg bg-[var(--color-background)] border border-[var(--color-border)] shadow-sm animate-fade-in-up">
       <div className="flex-1 flex gap-2">
         <button onClick={limpiarFiltros} className="btn-secondary whitespace-nowrap text-sm px-4">
@@ -180,7 +179,8 @@ export const Catalog: React.FC = () => {
             placeholder="Buscar juegos..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="input w-full pl-10 h-full py-2"
+            className="input w-full h-full py-2"
+            style={{ paddingLeft: '2.5rem' }}
           />
         </div>
       </div>
@@ -230,7 +230,7 @@ export const Catalog: React.FC = () => {
     </div>
   )
 
-  const SidebarCategorias = () => (
+  const renderSidebarCategorias = () => (
     <div className="card top-24 sticky">
       <div className="p-4">
         <h2 className="text-lg font-bold mb-4 flex items-center">
@@ -339,13 +339,13 @@ export const Catalog: React.FC = () => {
             
             {/* Desktop Sidebar */}
             <div className="hidden lg:block w-72 flex-shrink-0 animate-fade-in-up sticky top-24">
-              <SidebarCategorias />
+              {renderSidebarCategorias()}
             </div>
 
             <div className="flex-1 min-w-0 flex flex-col">
               {/* Desktop Topbar */}
               <div className="hidden lg:block mb-6">
-                <TopbarFilters />
+                {renderTopbarFilters()}
               </div>
 
               <div className="flex items-center justify-between mb-6 animate-fade-in-up">
@@ -464,10 +464,10 @@ export const Catalog: React.FC = () => {
             </div>
             
             <div className="flex flex-col gap-4">
-              <TopbarFilters />
+              {renderTopbarFilters()}
             </div>
 
-            <SidebarCategorias />
+            {renderSidebarCategorias()}
             
             <div className="sticky bottom-0 bg-[var(--color-background)] pt-4 pb-4 border-t border-[var(--color-border)]">
               <button onClick={() => setShowMobileFilters(false)} className="w-full btn-primary py-3">
