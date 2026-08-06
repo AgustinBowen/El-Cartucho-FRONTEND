@@ -1,14 +1,14 @@
-"use client"
-
 import type React from "react"
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import type { Producto } from "../types/Producto"
 import type { Categoria } from "../types/Categoria"
 import { CardComponent } from "../components/Card"
 import { SkeletonCard } from "../components/SkeletonCard"
-import { SlidersHorizontal, Gamepad2, ChevronDown, X, Filter } from "lucide-react"
+import { SlidersHorizontal, Gamepad2, ChevronDown, X, Filter, Search } from "lucide-react"
 import { useTheme } from "@/context/ThemeContext"
+import { useFiltrosCatalogo } from "../hooks/useFiltrosCatalogo"
+import { AcordeonCategorias } from "../components/AcordeonCategorias"
 
 export const Catalog: React.FC = () => {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -21,69 +21,51 @@ export const Catalog: React.FC = () => {
   const [meta, setMeta] = useState<any>(null)
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
+  const { 
+    estado, 
+    seleccionarCategoria, 
+    toggleSubcategoria, 
+    aplicarPrecio, 
+    setBúsqueda, 
+    setSortBy, 
+    setPage, 
+    limpiarFiltros 
+  } = useFiltrosCatalogo()
 
-  // Extraer valores actuales desde query params
-  const qParam = searchParams.get("q") || ""
-  const categoriaParam = searchParams.get("categoria_id") ? Number(searchParams.get("categoria_id")) : null
-  const subcategoriasParam = useMemo(() => {
-    const fromArray = searchParams.getAll("subcategorias[]")
-    if (fromArray.length > 0) return fromArray.map(Number)
-    const single = searchParams.get("subcategorias")
-    if (single) return single.split(",").map(Number)
-    return []
-  }, [searchParams])
-  const precioMinParam = searchParams.get("precio_min") || ""
-  const precioMaxParam = searchParams.get("precio_max") || ""
-  const ordenParam = searchParams.get("orden") || ""
-  const dirParam = searchParams.get("dir") || ""
+  const [searchInput, setSearchInput] = useState(estado.searchQuery)
+  const [localMin, setLocalMin] = useState(estado.precioMin)
+  const [localMax, setLocalMax] = useState(estado.precioMax)
 
-  // Estado local para input de búsqueda (debounce)
-  const [searchInput, setSearchInput] = useState(qParam)
-
-  // Sincronizar searchInput cuando el query param q cambie desde la URL
+  // Sincronizar input local de búsqueda si cambia la URL por fuera
   useEffect(() => {
-    setSearchInput(qParam)
-  }, [qParam])
+    setSearchInput(estado.searchQuery)
+  }, [estado.searchQuery])
 
-  // Helper para actualizar query params
-  const updateParams = (newParams: Record<string, any>, resetPage = true) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-
-      if (resetPage) {
-        next.set("page", "1")
-      }
-
-      Object.entries(newParams).forEach(([key, value]) => {
-        if (key === "subcategorias") {
-          next.delete("subcategorias[]")
-          next.delete("subcategorias")
-          if (Array.isArray(value) && value.length > 0) {
-            value.forEach((val) => next.append("subcategorias[]", val.toString()))
-          }
-        } else {
-          next.delete(key)
-          if (value !== null && value !== undefined && value !== "") {
-            next.set(key, value.toString())
-          }
-        }
-      })
-
-      return next
-    })
-  }
-
-  // Debounce de 300ms para la búsqueda
+  // Sincronizar precio local si cambia la URL
   useEffect(() => {
-    if (searchInput === qParam) return
+    setLocalMin(estado.precioMin)
+    setLocalMax(estado.precioMax)
+  }, [estado.precioMin, estado.precioMax])
 
+  // Debounce de búsqueda manual simple
+  useEffect(() => {
+    if (searchInput === estado.searchQuery) return
     const timer = setTimeout(() => {
-      updateParams({ q: searchInput }, true)
+      setBúsqueda(searchInput)
     }, 300)
-
     return () => clearTimeout(timer)
-  }, [searchInput, qParam])
+  }, [searchInput, estado.searchQuery, setBúsqueda])
+
+  const handlePrecioChange = (type: "min" | "max", val: string) => {
+    if (type === "min") {
+      setLocalMin(val)
+      aplicarPrecio(val, localMax)
+    } else {
+      setLocalMax(val)
+      aplicarPrecio(localMin, val)
+    }
+  }
 
   // Imagen de fondo única
   const backgroundImage = isXbox
@@ -97,17 +79,10 @@ export const Catalog: React.FC = () => {
     img.src = backgroundImage
   }, [backgroundImage])
 
-  // Efecto para controlar el scroll del body cuando se abren los filtros móviles
+  // Scroll móvil
   useEffect(() => {
-    if (showMobileFilters) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = "unset"
-    }
-
-    return () => {
-      document.body.style.overflow = "unset"
-    }
+    document.body.style.overflow = showMobileFilters ? "hidden" : "unset"
+    return () => { document.body.style.overflow = "unset" }
   }, [showMobileFilters])
 
   // Fetch categorías
@@ -117,34 +92,23 @@ export const Catalog: React.FC = () => {
       try {
         setLoadingCategorias(true)
         const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/categorias`)
-        if (!response.ok) {
-          throw new Error("Error al obtener categorías")
-        }
-
+        if (!response.ok) throw new Error("Error al obtener categorías")
         const data = await response.json()
-        if (isMounted) {
-          setCategorias(Array.isArray(data) ? data : [])
-        }
+        if (isMounted) setCategorias(Array.isArray(data) ? data : [])
       } catch (err: any) {
         if (isMounted) {
           console.error("Error fetching categorias:", err.message)
           setCategorias([])
         }
       } finally {
-        if (isMounted) {
-          setLoadingCategorias(false)
-        }
+        if (isMounted) setLoadingCategorias(false)
       }
     }
-
     fetchCategorias()
-
-    return () => {
-      isMounted = false
-    }
+    return () => { isMounted = false }
   }, [])
 
-  // Fetch productos con AbortController y manejo de 422
+  // Fetch productos con AbortController
   useEffect(() => {
     const controller = new AbortController()
 
@@ -152,7 +116,7 @@ export const Catalog: React.FC = () => {
       try {
         setLoading(true)
         setError(null)
-
+        // La URL actual contiene todos los parámetros necesarios construidos por el hook
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/ed/producto/listar?${searchParams.toString()}`,
           { signal: controller.signal }
@@ -173,9 +137,7 @@ export const Catalog: React.FC = () => {
           return
         }
 
-        if (!response.ok) {
-          throw new Error("Error al obtener productos")
-        }
+        if (!response.ok) throw new Error("Error al obtener productos")
 
         const data = await response.json()
         if (!controller.signal.aborted) {
@@ -202,340 +164,94 @@ export const Catalog: React.FC = () => {
     }
   }, [searchParams])
 
-  // Manejar cambio de categoría
-  const handleCategoriaChange = (categoriaId: number | null) => {
-    updateParams({ categoria_id: categoriaId, subcategorias: [] }, true)
-  }
-
-  // Manejar cambio de subcategoría
-  const handleSubcategoriaChange = (subcategoriaId: number, checked: boolean) => {
-    let newSubcats: number[]
-    if (checked) {
-      newSubcats = [...subcategoriasParam, subcategoriaId]
-    } else {
-      newSubcats = subcategoriasParam.filter((id) => id !== subcategoriaId)
-    }
-    updateParams({ subcategorias: newSubcats }, true)
-  }
-
-  // Mapeo del dropdown SortBy <-> orden & dir
-  const currentSortBy = useMemo(() => {
-    if (ordenParam === "nombre" && dirParam === "asc") return "name"
-    if (ordenParam === "precio" && dirParam === "asc") return "price-low"
-    if (ordenParam === "precio" && dirParam === "desc") return "price-high"
-    if (ordenParam === "created_at") return "newest"
-    return "newest"
-  }, [ordenParam, dirParam])
-
-  const handleSortChange = (newSortBy: string) => {
-    switch (newSortBy) {
-      case "price-low":
-        updateParams({ orden: "precio", dir: "asc" }, true)
-        break
-      case "price-high":
-        updateParams({ orden: "precio", dir: "desc" }, true)
-        break
-      case "name":
-        updateParams({ orden: "nombre", dir: "asc" }, true)
-        break
-      case "newest":
-      default:
-        updateParams({ orden: "created_at", dir: "desc" }, true)
-        break
-    }
-  }
-
-  // Obtener subcategorías de la categoría seleccionada
-  const getSubcategorias = () => {
-    if (!categoriaParam) return []
-    const categoria = categorias.find((cat) => cat.id === categoriaParam)
-    return categoria?.subcategorias || []
-  }
-
-  const resetFilters = () => {
-    setSearchInput("")
-    setSearchParams({})
-  }
-
-  const resetOnlyFilters = () => {
-    updateParams({
-      categoria_id: null,
-      subcategorias: [],
-      precio_min: null,
-      precio_max: null,
-      orden: null,
-      dir: null,
-    }, true)
-  }
-
-  const closeMobileFilters = () => {
-    setShowMobileFilters(false)
-  }
-
-  // Render de filtros para desktop (función helper para no recrear el componente y mantener el foco en el input)
-  const renderDesktopFilters = () => (
-    <div className="p-4 space-y-6">
-      {/* Búsqueda */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Buscar</label>
-        <input
-          type="text"
-          placeholder="Buscar juegos..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          className="input w-full"
-        />
-      </div>
-
-      {/* Categorías */}
-      <div>
-        <label className="block text-sm font-medium mb-2 flex items-center">
-          <Filter size={16} className="mr-2" />
-          Categoría
-        </label>
-        {loadingCategorias ? (
-          <div className="space-y-2.5 py-1">
-            <div className="flex items-center space-x-2 text-xs text-[var(--color-foreground)]/70 mb-2">
-              <div className="w-3.5 h-3.5 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
-              <span>Cargando categorías...</span>
-            </div>
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="skeleton h-6 w-full rounded opacity-70"></div>
-            ))}
+  const renderTopbarFilters = () => (
+    <div className="flex flex-col lg:flex-row gap-4 mb-6 p-4 rounded-lg bg-[var(--color-background)] border border-[var(--color-border)] shadow-sm animate-fade-in-up">
+      <div className="flex-1 flex gap-2">
+        <button onClick={limpiarFiltros} className="btn-secondary whitespace-nowrap text-sm px-4">
+          Limpiar filtros
+        </button>
+        <div className="relative flex-1 max-w-md">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+            <Search size={18} />
           </div>
-        ) : (
-          <div className="space-y-2">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="categoria"
-                checked={categoriaParam === null}
-                onChange={() => handleCategoriaChange(null)}
-                className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-              />
-              <span className="text-sm">Todas las categorías</span>
-            </label>
-            {categorias.map((categoria) => (
-              <label key={categoria.id} className="flex items-center">
-                <input
-                  type="radio"
-                  name="categoria"
-                  checked={categoriaParam === categoria.id}
-                  onChange={() => handleCategoriaChange(categoria.id)}
-                  className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                />
-                <span className="text-sm">{categoria.nombre}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Subcategorías */}
-      {categoriaParam && getSubcategorias().length > 0 && (
-        <div>
-          <label className="block text-sm font-medium mb-2">Subcategorías</label>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
-            {getSubcategorias().map((subcategoria) => (
-              <label key={subcategoria.id} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={subcategoriasParam.includes(subcategoria.id)}
-                  onChange={(e) => handleSubcategoriaChange(subcategoria.id, e.target.checked)}
-                  className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                />
-                <span className="text-sm">{subcategoria.nombre}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Ordenar */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Ordenar por</label>
-        <div className="relative">
-          <select
-            value={currentSortBy}
-            onChange={(e) => handleSortChange(e.target.value)}
-            className="input w-full pr-10 appearance-none cursor-pointer"
-          >
-            <option value="newest">Más recientes</option>
-            <option value="name">Nombre</option>
-            <option value="price-low">Precio: menor a mayor</option>
-            <option value="price-high">Precio: mayor a menor</option>
-          </select>
-          <ChevronDown
-            size={20}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+          <input
+            type="text"
+            placeholder="Buscar juegos..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="input w-full h-full py-2"
+            style={{ paddingLeft: '2.5rem' }}
           />
         </div>
       </div>
-
-      {/* Rango de precio */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Rango de precio</label>
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <input
-              type="number"
-              placeholder="Mín"
-              value={precioMinParam}
-              onChange={(e) => updateParams({ precio_min: e.target.value }, true)}
-              className="input w-20 text-sm"
-              min="0"
-            />
-            <span className="text-sm">-</span>
-            <input
-              type="number"
-              placeholder="Máx"
-              value={precioMaxParam}
-              onChange={(e) => updateParams({ precio_max: e.target.value }, true)}
-              className="input w-20 text-sm"
-              min="0"
+      
+      <div className="flex gap-4">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium whitespace-nowrap">Ordenar por:</label>
+          <div className="relative">
+            <select
+              value={estado.sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="input pr-8 py-2 text-sm appearance-none cursor-pointer"
+            >
+              <option value="newest">Más recientes</option>
+              <option value="name">Nombre</option>
+              <option value="price-low">Precio: menor a mayor</option>
+              <option value="price-high">Precio: mayor a menor</option>
+            </select>
+            <ChevronDown
+              size={16}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
             />
           </div>
         </div>
-      </div>
 
-      {/* Botón de acción */}
-      <div className="pt-4 border-t border-[var(--color-border)]">
-        <button onClick={resetFilters} className="w-full btn-secondary text-sm cursor-pointer">
-          Limpiar filtros
-        </button>
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium whitespace-nowrap hidden sm:block">Precio:</label>
+          <input
+            type="number"
+            placeholder="Mín"
+            value={localMin}
+            onChange={(e) => handlePrecioChange("min", e.target.value)}
+            className="input w-20 py-2 text-sm"
+            min="0"
+          />
+          <span className="text-sm text-gray-500">-</span>
+          <input
+            type="number"
+            placeholder="Máx"
+            value={localMax}
+            onChange={(e) => handlePrecioChange("max", e.target.value)}
+            className="input w-20 py-2 text-sm"
+            min="0"
+          />
+        </div>
       </div>
     </div>
   )
 
-  // Render de filtros para móvil (función helper para mantener el foco en el input)
-  const renderMobileFilters = () => (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">Filtros</h2>
-        <button onClick={closeMobileFilters} className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors">
-          <X size={24} />
-        </button>
-      </div>
-
-      {/* Categorías */}
-      <div>
-        <label className="block text-sm font-medium mb-2 flex items-center">
-          <Filter size={16} className="mr-2" />
-          Categoría
-        </label>
+  const renderSidebarCategorias = () => (
+    <div className="card top-24 sticky">
+      <div className="p-4">
+        <h2 className="text-lg font-bold mb-4 flex items-center">
+          <Filter size={18} className="mr-2" />
+          Categorías
+        </h2>
         {loadingCategorias ? (
-          <div className="space-y-2.5 py-1">
-            <div className="flex items-center space-x-2 text-xs text-[var(--color-foreground)]/70 mb-2">
-              <div className="w-3.5 h-3.5 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
-              <span>Cargando categorías...</span>
-            </div>
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="skeleton h-6 w-full rounded opacity-70"></div>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="skeleton h-10 w-full rounded opacity-70"></div>
             ))}
           </div>
         ) : (
-          <div className="space-y-2">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="categoria-mobile"
-                checked={categoriaParam === null}
-                onChange={() => handleCategoriaChange(null)}
-                className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-              />
-              <span className="text-sm">Todas las categorías</span>
-            </label>
-            {categorias.map((categoria) => (
-              <label key={categoria.id} className="flex items-center">
-                <input
-                  type="radio"
-                  name="categoria-mobile"
-                  checked={categoriaParam === categoria.id}
-                  onChange={() => handleCategoriaChange(categoria.id)}
-                  className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                />
-                <span className="text-sm">{categoria.nombre}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Subcategorías */}
-      {categoriaParam && getSubcategorias().length > 0 && (
-        <div>
-          <label className="block text-sm font-medium mb-2">Subcategorías</label>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
-            {getSubcategorias().map((subcategoria) => (
-              <label key={subcategoria.id} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={subcategoriasParam.includes(subcategoria.id)}
-                  onChange={(e) => handleSubcategoriaChange(subcategoria.id, e.target.checked)}
-                  className="mr-2 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                />
-                <span className="text-sm">{subcategoria.nombre}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Ordenar */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Ordenar por</label>
-        <div className="relative">
-          <select
-            value={currentSortBy}
-            onChange={(e) => handleSortChange(e.target.value)}
-            className="input w-full pr-10 appearance-none cursor-pointer"
-          >
-            <option value="newest">Más recientes</option>
-            <option value="name">Nombre</option>
-            <option value="price-low">Precio: menor a mayor</option>
-            <option value="price-high">Precio: mayor a menor</option>
-          </select>
-          <ChevronDown
-            size={20}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+          <AcordeonCategorias 
+            categorias={categorias}
+            categoriaSeleccionada={estado.categoriaId}
+            subcategoriasSeleccionadas={estado.subcategorias}
+            onSeleccionarCategoria={(id) => seleccionarCategoria(id, true)}
+            onToggleSubcategoria={toggleSubcategoria}
           />
-        </div>
-      </div>
-
-      {/* Rango de precio */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Rango de precio</label>
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <input
-              type="number"
-              placeholder="Mín"
-              value={precioMinParam}
-              onChange={(e) => updateParams({ precio_min: e.target.value }, true)}
-              className="input w-20 text-sm"
-              min="0"
-            />
-            <span className="text-sm">-</span>
-            <input
-              type="number"
-              placeholder="Máx"
-              value={precioMaxParam}
-              onChange={(e) => updateParams({ precio_max: e.target.value }, true)}
-              className="input w-20 text-sm"
-              min="0"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Botones de acción */}
-      <div className="space-y-2 pt-4 border-t border-[var(--color-border)]">
-        <button onClick={resetOnlyFilters} className="w-full btn-secondary text-sm">
-          Limpiar filtros
-        </button>
-        <button onClick={closeMobileFilters} className="w-full btn-primary">
-          Aplicar filtros
-        </button>
+        )}
       </div>
     </div>
   )
@@ -543,8 +259,7 @@ export const Catalog: React.FC = () => {
   if (error) {
     return (
       <div
-        className={`min-h-screen pt-16 flex items-center justify-center relative transition-opacity duration-1000 ${backgroundLoaded ? "opacity-100" : "opacity-0"
-          }`}
+        className={`min-h-screen pt-16 flex items-center justify-center relative transition-opacity duration-1000 ${backgroundLoaded ? "opacity-100" : "opacity-0"}`}
         style={{
           backgroundImage: backgroundLoaded ? `url('${backgroundImage}')` : "none",
           backgroundSize: "cover",
@@ -553,17 +268,13 @@ export const Catalog: React.FC = () => {
         }}
       >
         <div className="absolute inset-0 bg-[var(--color-background)]" style={{ opacity: isXbox ? 0.9 : 0.93 }}></div>
-
         <div className="text-center animate-fade-in-scale relative z-10 p-6 max-w-lg">
-          <div
-            className={`w-16 h-16 rounded-full ${isXbox ? "bg-red-100" : "bg-red-900/20"
-              } flex items-center justify-center mb-4 mx-auto`}
-          >
+          <div className={`w-16 h-16 rounded-full ${isXbox ? "bg-red-100" : "bg-red-900/20"} flex items-center justify-center mb-4 mx-auto`}>
             <span className="text-2xl">😞</span>
           </div>
           <h2 className="text-2xl font-bold mb-2">¡Oops! Algo salió mal</h2>
           <p className="text-[var(--color-foreground)]/70 mb-4">{error}</p>
-          <button onClick={resetFilters} className="btn-primary">
+          <button onClick={limpiarFiltros} className="btn-primary">
             Limpiar filtros / Intentar de nuevo
           </button>
         </div>
@@ -573,8 +284,7 @@ export const Catalog: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen pt-16 relative transition-opacity duration-1000 ${backgroundLoaded ? "opacity-100" : "opacity-0"
-        }`}
+      className={`min-h-screen pt-16 relative transition-opacity duration-1000 ${backgroundLoaded ? "opacity-100" : "opacity-0"}`}
       style={{
         backgroundImage: backgroundLoaded ? `url('${backgroundImage}')` : "none",
         backgroundSize: "cover",
@@ -588,25 +298,17 @@ export const Catalog: React.FC = () => {
       ></div>
 
       <div className="relative z-10">
-        {/* Header */}
         <div className="w-full py-12 px-4">
           <div className="max-w-screen-xl mx-auto animate-fade-in-up">
             <div className="flex items-center mb-4">
-              {isXbox ? (
-                <img
-                  className="w-32 h-32"
-                  src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/yoshi_hzevum.gif"
-                  alt="Yoshi"
-                  loading="eager"
-                />
-              ) : (
-                <img
-                  className="w-32 h-32"
-                  src="https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/toad_p9ufsf.gif"
-                  alt="Toad"
-                  loading="eager"
-                />
-              )}
+              <img
+                className="w-32 h-32"
+                src={isXbox 
+                  ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/yoshi_hzevum.gif" 
+                  : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/toad_p9ufsf.gif"}
+                alt={isXbox ? "Yoshi" : "Toad"}
+                loading="eager"
+              />
               <div>
                 <h1 className="game-title text-4xl md:text-5xl text-white mb-2">Catálogo</h1>
                 <p className="text-white/90 text-lg">Consolas legendarias, juegos eternos. Memory Card no incluida.</p>
@@ -615,43 +317,37 @@ export const Catalog: React.FC = () => {
           </div>
         </div>
 
-        {/* Contenido principal */}
-        <div className="max-w-screen mx-auto px-4 py-8">
-          {/* Búsqueda y filtros móvil */}
-          <div className="lg:hidden mb-6 space-y-4 animate-fade-in-up">
-            <div>
-              <input
-                type="text"
-                placeholder="Buscar juegos..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="input w-full"
-              />
-            </div>
-
+        <div className="max-w-screen-2xl mx-auto px-4 py-4">
+          {/* Mobile Filter Button */}
+          <div className="lg:hidden mb-4">
             <button
               onClick={() => setShowMobileFilters(true)}
               className="btn-secondary flex items-center w-full justify-center"
             >
               <SlidersHorizontal size={20} className="mr-2" />
               Filtros
-              {(categoriaParam || subcategoriasParam.length > 0) && (
+              {(estado.categoriaId || estado.subcategorias.length > 0) && (
                 <span className="ml-2 px-2 py-1 text-xs bg-[var(--color-primary)] text-white rounded-full">
-                  {(categoriaParam ? 1 : 0) + subcategoriasParam.length}
+                  {(estado.categoriaId ? 1 : 0) + estado.subcategorias.length}
                 </span>
               )}
             </button>
           </div>
 
-          {/* Layout con sidebar */}
-          <div className="flex gap-6">
-            <div className="hidden lg:block w-64 flex-shrink-0">
-              <div className="card top-24 animate-fade-in-up">
-                {renderDesktopFilters()}
-              </div>
+          {/* Main Content Layout */}
+          <div className="flex gap-6 relative items-start">
+            
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block w-72 flex-shrink-0 animate-fade-in-up sticky top-24">
+              {renderSidebarCategorias()}
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 flex flex-col">
+              {/* Desktop Topbar */}
+              <div className="hidden lg:block mb-6">
+                {renderTopbarFilters()}
+              </div>
+
               <div className="flex items-center justify-between mb-6 animate-fade-in-up">
                 <div className={`font-semibold ${isXbox ? "text-[var(--color-accent)]" : "text-[var(--color-primary)]"}`}>
                   {loading ? (
@@ -665,54 +361,17 @@ export const Catalog: React.FC = () => {
                 </div>
               </div>
 
-              {/* Filtros activos */}
-              {(categoriaParam || subcategoriasParam.length > 0) && (
-                <div className="mb-6 animate-fade-in-up">
-                  <div className="flex flex-wrap gap-2">
-                    {categoriaParam && (
-                      <span className="inline-flex items-center px-3 py-1 text-sm bg-[var(--color-primary)] text-white rounded-full">
-                        {categorias.find((cat) => cat.id === categoriaParam)?.nombre}
-                        <button
-                          onClick={() => handleCategoriaChange(null)}
-                          className="ml-2 hover:bg-white/20 rounded-full p-1"
-                        >
-                          <X size={12} />
-                        </button>
-                      </span>
-                    )}
-                    {subcategoriasParam.map((subcatId) => {
-                      const subcategoria = getSubcategorias().find((sub) => sub.id === subcatId)
-                      return subcategoria ? (
-                        <span
-                          key={subcatId}
-                          className="inline-flex items-center px-3 py-1 text-sm bg-[var(--color-secondary)] text-white rounded-full"
-                        >
-                          {subcategoria.nombre}
-                          <button
-                            onClick={() => handleSubcategoriaChange(subcatId, false)}
-                            className="ml-2 hover:bg-white/20 rounded-full p-1"
-                          >
-                            <X size={12} />
-                          </button>
-                        </span>
-                      ) : null
-                    })}
-                  </div>
-                </div>
-              )}
-
               {/* Grid de productos */}
               {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_, index) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {[...Array(8)].map((_, index) => (
                     <SkeletonCard key={index} />
                   ))}
                 </div>
               ) : productos.length === 0 ? (
                 <div className="text-center py-16 animate-fade-in-scale">
                   <div
-                    className={`w-24 h-24 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"
-                      } flex items-center justify-center mb-6 mx-auto`}
+                    className={`w-24 h-24 rounded-full ${isXbox ? "bg-gray-100" : "bg-gray-800"} flex items-center justify-center mb-6 mx-auto`}
                   >
                     <Gamepad2 size={48} className="text-gray-400" />
                   </div>
@@ -720,12 +379,12 @@ export const Catalog: React.FC = () => {
                   <p className="text-[var(--color-foreground)]/70 mb-6 max-w-md mx-auto">
                     No hay productos que coincidan con tu búsqueda. Intenta con otros términos o ajusta los filtros.
                   </p>
-                  <button onClick={resetFilters} className="btn-primary">
+                  <button onClick={limpiarFiltros} className="btn-primary">
                     Limpiar filtros
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in-up">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in-up">
                   {productos.map((producto, index) => (
                     <div
                       key={producto.id}
@@ -748,8 +407,8 @@ export const Catalog: React.FC = () => {
               {meta && meta.last_page > 1 && (
                 <div className="flex justify-center items-center mt-8 space-x-2">
                   {meta.links.map((link: any, index: number) => {
-                    const isPrev = index === 0 || link.label.includes("Anterior") || link.label.includes("Previous") || link.label.includes("&laquo;") || link.label.includes("<")
-                    const isNext = index === meta.links.length - 1 || link.label.includes("Siguiente") || link.label.includes("Next") || link.label.includes("&raquo;") || link.label.includes(">")
+                    const isPrev = index === 0 || link.label.includes("Anterior") || link.label.includes("&laquo;")
+                    const isNext = index === meta.links.length - 1 || link.label.includes("Siguiente") || link.label.includes("&raquo;")
 
                     if (isPrev || isNext) {
                       return (
@@ -761,10 +420,10 @@ export const Catalog: React.FC = () => {
                               try {
                                 const urlObj = new URL(link.url)
                                 const pageParam = urlObj.searchParams.get("page")
-                                if (pageParam) updateParams({ page: Number(pageParam) }, false)
+                                if (pageParam) setPage(Number(pageParam))
                               } catch {
                                 const pageMatch = link.url.match(/page=(\d+)/)
-                                if (pageMatch) updateParams({ page: Number(pageMatch[1]) }, false)
+                                if (pageMatch) setPage(Number(pageMatch[1]))
                               }
                             }
                           }}
@@ -777,9 +436,8 @@ export const Catalog: React.FC = () => {
                       return (
                         <button
                           key={index}
-                          onClick={() => updateParams({ page: Number(link.label) }, false)}
-                          className={`cursor-pointer btn-secondary px-3 py-1 ${link.active ? "bg-[var(--color-primary)] text-white" : ""
-                            }`}
+                          onClick={() => setPage(Number(link.label))}
+                          className={`cursor-pointer btn-secondary px-3 py-1 ${link.active ? "bg-[var(--color-primary)] text-white" : ""}`}
                         >
                           {link.label}
                         </button>
@@ -796,9 +454,26 @@ export const Catalog: React.FC = () => {
       {/* Modal de filtros móvil */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-[60] lg:hidden">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeMobileFilters}></div>
-          <div className="relative h-full bg-[var(--color-background)] animate-fade-in-up overflow-y-auto">
-            {renderMobileFilters()}
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowMobileFilters(false)}></div>
+          <div className="relative h-full w-4/5 max-w-sm bg-[var(--color-background)] animate-fade-in-up overflow-y-auto p-4 flex flex-col gap-6 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold">Filtros</h2>
+              <button onClick={() => setShowMobileFilters(false)} className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="flex flex-col gap-4">
+              {renderTopbarFilters()}
+            </div>
+
+            {renderSidebarCategorias()}
+            
+            <div className="sticky bottom-0 bg-[var(--color-background)] pt-4 pb-4 border-t border-[var(--color-border)]">
+              <button onClick={() => setShowMobileFilters(false)} className="w-full btn-primary py-3">
+                Ver resultados
+              </button>
+            </div>
           </div>
         </div>
       )}
