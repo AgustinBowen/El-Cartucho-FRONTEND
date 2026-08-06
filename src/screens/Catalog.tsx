@@ -24,6 +24,7 @@ export const Catalog: React.FC = () => {
   const [searchParams] = useSearchParams()
   const { 
     estado, 
+    toggleCategoria,
     seleccionarCategoria, 
     toggleSubcategoria, 
     aplicarPrecio, 
@@ -246,9 +247,9 @@ export const Catalog: React.FC = () => {
         ) : (
           <AcordeonCategorias 
             categorias={categorias}
-            categoriaSeleccionada={estado.categoriaId}
+            categoriasSeleccionadas={estado.categorias}
             subcategoriasSeleccionadas={estado.subcategorias}
-            onSeleccionarCategoria={(id) => seleccionarCategoria(id, true)}
+            onSeleccionarCategoria={(id, subIds) => toggleCategoria(id, subIds)}
             onToggleSubcategoria={toggleSubcategoria}
           />
         )}
@@ -326,9 +327,9 @@ export const Catalog: React.FC = () => {
             >
               <SlidersHorizontal size={20} className="mr-2" />
               Filtros
-              {(estado.categoriaId || estado.subcategorias.length > 0) && (
+              {(estado.categorias.length > 0 || estado.subcategorias.length > 0) && (
                 <span className="ml-2 px-2 py-1 text-xs bg-[var(--color-primary)] text-white rounded-full">
-                  {(estado.categoriaId ? 1 : 0) + estado.subcategorias.length}
+                  {estado.categorias.length + estado.subcategorias.length}
                 </span>
               )}
             </button>

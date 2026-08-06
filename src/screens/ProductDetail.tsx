@@ -419,12 +419,20 @@ export const ProductDetail: React.FC = () => {
               <div className={`${cardClasses} rounded-2xl p-6 space-y-6`}>
                 {/* Título y categoría */}
                 <div>
-                  {producto.categoria && (
-                    <div className="flex items-center mb-3">
-                      <Tag size={16} className="mr-2 text-[var(--color-primary)]" />
-                      <span className="text-sm font-medium text-[var(--color-primary)] uppercase tracking-wide">
-                        {producto.categoria}
-                      </span>
+                  {((producto.categorias && producto.categorias.length > 0) || producto.categoria) && (
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <Tag size={16} className="mr-1 text-[var(--color-primary)]" />
+                      {(producto.categorias && producto.categorias.length > 0
+                        ? producto.categorias
+                        : [{ id: 0, nombre: producto.categoria! }]
+                      ).map((cat) => (
+                        <span
+                          key={cat.id || cat.nombre}
+                          className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] uppercase tracking-wide border border-[var(--color-primary)]/20"
+                        >
+                          {cat.nombre}
+                        </span>
+                      ))}
                     </div>
                   )}
 
