@@ -101,7 +101,7 @@ export function useFiltrosCatalogo() {
     })
   }, [estado.categorias, estado.subcategorias, updateUrl])
 
-  const seleccionarCategoria = useCallback((id: number, mantenerSubcategorias = false) => {
+  const seleccionarCategoria = useCallback((id: number) => {
     toggleCategoria(id)
   }, [toggleCategoria])
 

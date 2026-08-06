@@ -247,8 +247,6 @@ export const ProductDetail: React.FC = () => {
     )
   }
 
-  const originalPrice = Math.floor(producto.precio * 1.2)
-  const discount = Math.floor(((originalPrice - producto.precio) / originalPrice) * 100)
   const images = getImages()
 
   return (
@@ -461,20 +459,10 @@ export const ProductDetail: React.FC = () => {
                 )}
 
                 {/* Precio */}
-                <div className="space-y-2">
-                  {discount > 0 && (
-                    <span className="text-lg text-gray-400 line-through">{formatearPrecio(originalPrice)}</span>
-                  )}
-                  <div className="flex items-center space-x-3">
-                    <span className="text-4xl font-bold text-[var(--color-primary)]">
-                      {formatearPrecio(producto.precio)}
-                    </span>
-                    {discount > 0 && (
-                      <span className="px-2 py-1 text-sm font-bold text-green-400 bg-green-500/20 backdrop-blur-sm rounded-full">
-                        Ahorra ${(originalPrice - producto.precio).toFixed(2)}
-                      </span>
-                    )}
-                  </div>
+                <div>
+                  <span className="text-4xl font-bold text-[var(--color-primary)]">
+                    {formatearPrecio(producto.precio)}
+                  </span>
                 </div>
 
                 {/* Descripción */}
