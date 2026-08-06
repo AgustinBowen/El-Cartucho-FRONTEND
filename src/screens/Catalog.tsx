@@ -25,7 +25,6 @@ export const Catalog: React.FC = () => {
   const { 
     estado, 
     toggleCategoria,
-    seleccionarCategoria, 
     toggleSubcategoria, 
     aplicarPrecio, 
     setBúsqueda, 
