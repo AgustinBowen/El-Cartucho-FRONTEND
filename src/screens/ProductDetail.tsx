@@ -148,6 +148,7 @@ export const ProductDetail: React.FC = () => {
         title: producto.nombre,
         price: producto.precio,
         image: getCurrentImage(),
+        stock: producto.stock ?? 0,
       })
     }
 

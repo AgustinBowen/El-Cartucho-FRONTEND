@@ -14,9 +14,10 @@ type CardProps = {
   imgAlt: string
   title: string
   price: number
+  stock?: number
 }
 
-export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt, title, price }) => {
+export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt, title, price, stock }) => {
   const { addToCart } = useCart()
   const navigate = useNavigate()
   const { isXbox } = useTheme();
@@ -35,6 +36,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
       title,
       price,
       image: imgSrc,
+      stock: stock ?? 0,
     })
 
     setIsLoading(false)

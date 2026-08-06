@@ -4,13 +4,13 @@ import type React from "react"
 
 import { useCart } from "../context/CartContext"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, MapPin, Mail, Loader2 } from "lucide-react"
+import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, MapPin, Mail, Loader2, AlertTriangle } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
 import { formatearPrecio } from "../utils/formatearPrecio"
 
 export const CartScreen = () => {
-  const { cartItems, updateQuantity, removeFromCart, total } = useCart()
+  const { cartItems, updateQuantity, removeFromCart, total, updateCartItems } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { isXbox } = useTheme()
@@ -24,17 +24,72 @@ export const CartScreen = () => {
   const [email, setEmail] = useState("")
   const [emailError, setEmailError] = useState<string | null>(null)
 
+  // Estado para advertencias de stock
+  const [stockWarnings, setStockWarnings] = useState<string[]>([])
+
   // Imagen de fondo única
   const backgroundImage = isXbox
     ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
     : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
 
-  // Precargar imagen de fondo
+  // Precargar imagen de fondo y validar stock
   useEffect(() => {
     const img = new Image()
     img.onload = () => setBackgroundLoaded(true)
     img.src = backgroundImage
   }, [backgroundImage])
+
+  useEffect(() => {
+    const revalidateStock = async () => {
+      if (cartItems.length === 0) return
+
+      let adjusted = false
+      const warnings: string[] = []
+
+      const updatedItems = await Promise.all(
+        cartItems.map(async (item) => {
+          try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/producto/${item.producto_id}`)
+            if (response.ok) {
+              const productData = await response.json()
+              const liveStock = productData.stock ?? 0
+
+              let newQty = item.quantity
+              if (item.quantity > liveStock) {
+                newQty = liveStock
+                adjusted = true
+                if (liveStock === 0) {
+                  warnings.push(`"${item.title}" se quedó sin stock y fue removido del carrito.`)
+                } else {
+                  warnings.push(`El stock de "${item.title}" disminuyó. Cantidad ajustada a ${liveStock}.`)
+                }
+              }
+
+              return { ...item, stock: liveStock, quantity: newQty }
+            }
+          } catch (err) {
+            console.error("Error revalidating stock for item:", item.producto_id, err)
+          }
+          return item
+        })
+      )
+
+      const finalItems = updatedItems.filter(item => item.quantity > 0)
+      if (finalItems.length !== updatedItems.length) {
+        adjusted = true
+      }
+
+      if (adjusted) {
+        updateCartItems(finalItems)
+      }
+
+      if (warnings.length > 0) {
+        setStockWarnings(warnings)
+      }
+    }
+
+    revalidateStock()
+  }, [])
 
   const handleConfirmPurchase = async () => {
     // Validar que se haya ingresado email
@@ -83,6 +138,10 @@ export const CartScreen = () => {
       })
 
       if (!response.ok) {
+        if (response.status === 409) {
+          const errorData = await response.json()
+          throw new Error(errorData.message || "Stock insuficiente para completar la compra.")
+        }
         throw new Error(`Error al crear pedido: ${response.statusText}`)
       }
 
@@ -217,6 +276,20 @@ export const CartScreen = () => {
             Continuar comprando
           </Link>
 
+          {stockWarnings.length > 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-200 animate-fade-in-up">
+              <h4 className="font-bold mb-2 flex items-center">
+                <AlertTriangle className="mr-2 text-orange-400" size={20} />
+                Ajustes de stock en tu carrito:
+              </h4>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                {stockWarnings.map((warning, index) => (
+                  <li key={index}>{warning}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {cartItems.length === 0 ? (
             <div className="text-center py-16 animate-fade-in-scale">
               <div
@@ -292,10 +365,18 @@ export const CartScreen = () => {
                             <span className="font-medium w-8 text-center">{item.quantity}</span>
                             <button
                               onClick={() => handleQuantityChange(item.producto_id, item.quantity + 1)}
-                              className="cursor-pointer w-8 h-8 rounded-full border border-[var(--color-border)] flex items-center justify-center hover:bg-[var(--color-muted)] transition-colors"
+                              disabled={item.quantity >= item.stock}
+                              className={`w-8 h-8 rounded-full border border-[var(--color-border)] flex items-center justify-center transition-colors ${
+                                item.quantity >= item.stock
+                                  ? "opacity-50 cursor-not-allowed bg-[var(--color-muted)]"
+                                  : "cursor-pointer hover:bg-[var(--color-muted)]"
+                              }`}
                             >
                               <Plus size={14} />
                             </button>
+                            {item.quantity >= item.stock && (
+                              <span className="text-xs text-orange-400 font-medium">Límite de stock alcanzado</span>
+                            )}
                           </div>
 
                           {/* Price */}
