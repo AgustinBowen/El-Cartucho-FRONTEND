@@ -31,11 +31,12 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
   const [wishlistIds, setWishlistIds] = useState<Set<number>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
 
-  const authHeaders = useCallback((): Record<string, string> => {
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
     if (!user) return {}
-    return { "X-Firebase-UID": user.uid }
+    const token = await user.getIdToken()
+    return { "Authorization": `Bearer ${token}` }
   }, [user])
 
   useEffect(() => {
@@ -47,7 +48,12 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     const loadWishlist = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`${API_URL}/ed/wishlist`, { headers: authHeaders() })
+        const headers = await getAuthHeaders()
+        const res = await fetch(`${API_URL}/ed/wishlist`, { headers })
+        if (res.status === 401) {
+          await logout()
+          return
+        }
         if (res.ok) {
           const data: WishlistItem[] = await res.json()
           setWishlist(data)
@@ -65,17 +71,22 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const toggleWishlist = async (productoId: number) => {
     if (!user) return
     try {
+      const headers = await getAuthHeaders()
       const res = await fetch(`${API_URL}/ed/wishlist/toggle`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
+        headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify({ producto_id: productoId }),
       })
+      if (res.status === 401) {
+        await logout()
+        return
+      }
       if (res.ok) {
         const data = await res.json()
         if (data.action === "added") {
           setWishlistIds(prev => new Set([...prev, productoId]))
           // Reload full list to get item details
-          const listRes = await fetch(`${API_URL}/ed/wishlist`, { headers: authHeaders() })
+          const listRes = await fetch(`${API_URL}/ed/wishlist`, { headers: await getAuthHeaders() })
           if (listRes.ok) setWishlist(await listRes.json())
         } else {
           setWishlistIds(prev => { const s = new Set(prev); s.delete(productoId); return s })
@@ -90,7 +101,12 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const removeFromWishlist = async (productoId: number) => {
     if (!user) return
     try {
-      await fetch(`${API_URL}/ed/wishlist/${productoId}`, { method: "DELETE", headers: authHeaders() })
+      const headers = await getAuthHeaders()
+      const res = await fetch(`${API_URL}/ed/wishlist/${productoId}`, { method: "DELETE", headers })
+      if (res.status === 401) {
+        await logout()
+        return
+      }
       setWishlistIds(prev => { const s = new Set(prev); s.delete(productoId); return s })
       setWishlist(prev => prev.filter(i => i.producto_id !== productoId))
     } catch (e) {

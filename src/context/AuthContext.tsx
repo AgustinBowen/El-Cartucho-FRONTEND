@@ -36,16 +36,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const fetchProfile = async (firebaseUser: FirebaseUser) => {
         try {
+            const token = await firebaseUser.getIdToken();
             const res = await fetch(`${API_URL}/profile`, {
                 headers: {
-                    "X-Firebase-UID": firebaseUser.uid,
-                    "X-User-Email": firebaseUser.email || "",
-                    "X-User-Name": firebaseUser.displayName || "",
+                    "Authorization": `Bearer ${token}`,
                 }
             });
+            if (res.status === 401) {
+                await logout();
+                setProfile(null);
+                return;
+            }
             if (res.ok) {
-                const data = await res.json();
-                setProfile(data);
+                const responseData = await res.json();
+                setProfile(responseData.data || responseData);
             } else {
                 console.error("Failed to fetch profile:", res.statusText);
             }
@@ -57,17 +61,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const updateProfileData = async (data: Partial<UserProfile>) => {
         if (!user) return;
         try {
+            const token = await user.getIdToken();
             const res = await fetch(`${API_URL}/profile`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-Firebase-UID": user.uid,
+                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify(data)
             });
+            if (res.status === 401) {
+                await logout();
+                setProfile(null);
+                throw new Error("Sesión expirada. Por favor, volvé a iniciar sesión.");
+            }
             if (res.ok) {
                 const updated = await res.json();
-                setProfile(updated);
+                setProfile(updated.data || updated);
             } else {
                 const errorData = await res.json().catch(() => ({}));
                 throw new Error((errorData as { error?: string }).error || "Failed to update profile");
@@ -98,6 +108,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = async () => {
         await signOut(auth);
+        setProfile(null);
     };
 
     return (

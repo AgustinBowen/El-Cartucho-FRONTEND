@@ -31,11 +31,12 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
 
-  const authHeaders = useCallback((): Record<string, string> => {
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
     if (!user) return {}
-    return { "X-Firebase-UID": user.uid }
+    const token = await user.getIdToken()
+    return { "Authorization": `Bearer ${token}` }
   }, [user])
 
   // Load cart from backend when user logs in
@@ -45,9 +46,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const loadCart = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`${API_URL}/ed/carrito`, {
-          headers: authHeaders(),
-        })
+        const headers = await getAuthHeaders()
+        const res = await fetch(`${API_URL}/ed/carrito`, { headers })
+        if (res.status === 401) {
+          await logout()
+          return
+        }
         if (res.ok) {
           const backendItems: CartItem[] = await res.json()
 
@@ -68,7 +72,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             })
             const merged = Array.from(mergedMap.values())
             // Sync merged cart to backend
-            merged.forEach(item => syncToBackend(item.producto_id, item.quantity, user.uid))
+            merged.forEach(item => syncToBackend(item.producto_id, item.quantity))
             return merged
           })
         }
@@ -89,15 +93,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user])
 
-  const syncToBackend = async (productoId: number, cantidad: number, uid?: string) => {
-    const firebaseUid = uid ?? user?.uid
-    if (!firebaseUid) return
+  const syncToBackend = async (productoId: number, cantidad: number) => {
+    if (!user) return
     try {
-      await fetch(`${API_URL}/ed/carrito`, {
+      const headers = await getAuthHeaders()
+      const res = await fetch(`${API_URL}/ed/carrito`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Firebase-UID": firebaseUid },
+        headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify({ producto_id: productoId, cantidad }),
       })
+      if (res.status === 401) {
+        await logout()
+      }
     } catch (e) {
       console.error("Error syncing cart to backend", e)
     }
@@ -106,10 +113,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const removeFromBackend = async (productoId: number) => {
     if (!user) return
     try {
-      await fetch(`${API_URL}/ed/carrito/${productoId}`, {
+      const headers = await getAuthHeaders()
+      const res = await fetch(`${API_URL}/ed/carrito/${productoId}`, {
         method: "DELETE",
-        headers: authHeaders(),
+        headers,
       })
+      if (res.status === 401) {
+        await logout()
+      }
     } catch (e) {
       console.error("Error removing from cart backend", e)
     }
@@ -158,7 +169,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCartItems([])
     if (user) {
       try {
-        await fetch(`${API_URL}/ed/carrito`, { method: "DELETE", headers: authHeaders() })
+        const headers = await getAuthHeaders()
+        const res = await fetch(`${API_URL}/ed/carrito`, { method: "DELETE", headers })
+        if (res.status === 401) {
+          await logout()
+        }
       } catch (e) {
         console.error("Error clearing cart", e)
       }

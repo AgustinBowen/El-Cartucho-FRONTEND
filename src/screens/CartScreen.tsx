@@ -127,12 +127,13 @@ export const CartScreen = () => {
     setError(null)
 
     try {
+      const token = await user.getIdToken()
       const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/pedido/crear`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-vercel-protection-bypass": import.meta.env.protectionBypassToken,
-          ...(user ? { "X-Firebase-UID": user.uid } : {}),
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           productos: cartItems.map((item) => ({
@@ -144,6 +145,10 @@ export const CartScreen = () => {
           costo_envio: costoEnvio,
         }),
       })
+
+      if (response.status === 401) {
+        throw new Error("Tu sesión expiró o no tenés permiso. Por favor, iniciá sesión nuevamente.")
+      }
 
       if (!response.ok) {
         if (response.status === 409) {

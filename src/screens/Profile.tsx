@@ -78,9 +78,15 @@ export function Profile() {
         const loadOrders = async () => {
             setOrdersLoading(true);
             try {
+                const token = await user.getIdToken();
                 const res = await fetch(`${API_URL}/ed/mis-pedidos`, {
-                    headers: { "X-Firebase-UID": user.uid }
+                    headers: { "Authorization": `Bearer ${token}` }
                 });
+                if (res.status === 401) {
+                    await logout();
+                    navigate("/");
+                    return;
+                }
                 if (res.ok) setOrders(await res.json());
             } catch (e) {
                 console.error("Error loading orders", e);
@@ -89,7 +95,7 @@ export function Profile() {
             }
         };
         loadOrders();
-    }, [activeTab, user]);
+    }, [activeTab, user, logout, navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
