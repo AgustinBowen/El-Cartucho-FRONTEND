@@ -7,13 +7,14 @@ import { useTheme } from "../context/ThemeContext"
 import { useNavigate, Link, useLocation } from "react-router-dom"
 import { ShoppingCart, Menu, X, Sun, Moon, Search, User, Heart } from "lucide-react"
 import { OffcanvasCart } from "./OffcanvasCart"
-import { useAuth } from "../context/AuthContext"
+import { useAuth, isProfileIncomplete } from "../context/AuthContext"
 import { AuthModal } from "./AuthModal"
 
 function Navbar() {
   const { cartItems } = useCart()
   const { theme, setTheme, isXbox } = useTheme()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  const profileIncomplete = isProfileIncomplete(profile)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -176,15 +177,20 @@ function Navbar() {
               {user ? (
                 <Link
                   to="/perfil"
-                  className="flex items-center gap-2 p-1.5 cursor-pointer rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
-                  title="Mi perfil"
+                  className="flex items-center gap-2 p-1.5 cursor-pointer rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible relative"
+                  title={profileIncomplete ? "Tu perfil está incompleto" : "Mi perfil"}
                   aria-label="Mi perfil"
                 >
-                  <img
-                    src={user.photoURL ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName ?? user.email ?? "U")}&background=4a7bc8&color=fff`}
-                    alt="Avatar"
-                    className="w-7 h-7 rounded-full object-cover border border-[var(--color-border)]"
-                  />
+                  <div className="relative">
+                    <img
+                      src={user.photoURL ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName ?? user.email ?? "U")}&background=4a7bc8&color=fff`}
+                      alt="Avatar"
+                      className="w-7 h-7 rounded-full object-cover border border-[var(--color-border)]"
+                    />
+                    {profileIncomplete && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-[var(--color-background)] animate-pulse" title="Perfil incompleto" />
+                    )}
+                  </div>
                   <span className="font-semibold text-sm hidden sm:inline">
                     {user.displayName ? user.displayName.split(" ")[0] : "Perfil"}
                   </span>
