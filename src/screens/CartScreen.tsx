@@ -8,14 +8,71 @@ import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, MapPin, Mail,
 import { Link } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
 import { formatearPrecio } from "../utils/formatearPrecio"
-import { useAuth } from "../context/AuthContext"
+import { useAuth, isProfileIncomplete } from "../context/AuthContext"
 
 export const CartScreen = () => {
   const { cartItems, updateQuantity, removeFromCart, total, updateCartItems } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { isXbox } = useTheme()
-  const { user } = useAuth()
+  const { user, profile, updateProfileData } = useAuth()
+  const [profileFormData, setProfileFormData] = useState({
+    name: "",
+    apellido: "",
+    domicilio: "",
+    ciudad: "",
+    codigo_postal: "",
+  })
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [profileFormError, setProfileFormError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (profile) {
+      setProfileFormData({
+        name: profile.name || "",
+        apellido: profile.apellido || "",
+        domicilio: profile.domicilio || "",
+        ciudad: profile.ciudad || "",
+        codigo_postal: profile.codigo_postal || "",
+      })
+    }
+  }, [profile])
+
+  const handleProfileFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setProfileFormError(null)
+
+    if (!profileFormData.name.trim()) {
+      setProfileFormError("El nombre es requerido.")
+      return
+    }
+    if (!profileFormData.apellido.trim()) {
+      setProfileFormError("El apellido es requerido.")
+      return
+    }
+    if (!profileFormData.domicilio.trim()) {
+      setProfileFormError("El domicilio es requerido.")
+      return
+    }
+    if (!profileFormData.ciudad.trim()) {
+      setProfileFormError("La ciudad es requerida.")
+      return
+    }
+    if (!profileFormData.codigo_postal.trim() || !/^\d{4}$/.test(profileFormData.codigo_postal.trim())) {
+      setProfileFormError("El código postal debe tener exactamente 4 dígitos.")
+      return
+    }
+
+    setSavingProfile(true)
+    try {
+      await updateProfileData(profileFormData)
+      setCodigoPostal(profileFormData.codigo_postal.trim())
+    } catch (err) {
+      setProfileFormError("Error al actualizar el perfil. Intentá nuevamente.")
+    } finally {
+      setSavingProfile(false)
+    }
+  }
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
   // Auto-fill email from Firebase user
@@ -494,33 +551,113 @@ export const CartScreen = () => {
                     </div>
                   </div>
 
-                  {/* Checkout Button or Login Prompt */}
+                  {/* Checkout Button, Profile Form, or Login Prompt */}
                   {!user ? (
                     <div className="p-4 rounded-xl border-2 border-dashed border-[var(--color-primary)]/40 text-center">
                       <Lock size={24} className="mx-auto mb-2 text-[var(--color-primary)]" />
                       <p className="text-sm font-medium mb-1">Iniciá sesión para comprar</p>
                       <p className="text-xs text-[var(--color-foreground)]/60">Necesitás una cuenta para completar tu compra.</p>
                     </div>
+                  ) : isProfileIncomplete(profile) ? (
+                    <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-4">
+                      <div className="flex items-center gap-2 text-amber-500 font-bold text-sm">
+                        <AlertTriangle size={18} />
+                        <span>Completá tu perfil para continuar</span>
+                      </div>
+                      <p className="text-xs text-[var(--color-foreground)]/70">
+                        Para poder procesar el envío necesitaremos tus datos personales completos.
+                      </p>
+                      {profileFormError && (
+                        <p className="text-xs text-red-500 font-medium">{profileFormError}</p>
+                      )}
+                      <form onSubmit={handleProfileFormSubmit} className="space-y-3 text-xs">
+                        <div>
+                          <label htmlFor="cart_profile_name" className="block mb-1 font-medium">Nombre</label>
+                          <input
+                            id="cart_profile_name"
+                            type="text"
+                            value={profileFormData.name}
+                            onChange={(e) => setProfileFormData({ ...profileFormData, name: e.target.value })}
+                            className="input w-full"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="cart_profile_apellido" className="block mb-1 font-medium">Apellido</label>
+                          <input
+                            id="cart_profile_apellido"
+                            type="text"
+                            value={profileFormData.apellido}
+                            onChange={(e) => setProfileFormData({ ...profileFormData, apellido: e.target.value })}
+                            className="input w-full"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="cart_profile_domicilio" className="block mb-1 font-medium">Domicilio</label>
+                          <input
+                            id="cart_profile_domicilio"
+                            type="text"
+                            value={profileFormData.domicilio}
+                            onChange={(e) => setProfileFormData({ ...profileFormData, domicilio: e.target.value })}
+                            className="input w-full"
+                            required
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label htmlFor="cart_profile_ciudad" className="block mb-1 font-medium">Ciudad</label>
+                            <input
+                              id="cart_profile_ciudad"
+                              type="text"
+                              value={profileFormData.ciudad}
+                              onChange={(e) => setProfileFormData({ ...profileFormData, ciudad: e.target.value })}
+                              className="input w-full"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor="cart_profile_cp" className="block mb-1 font-medium">CP (4 dígitos)</label>
+                            <input
+                              id="cart_profile_cp"
+                              type="text"
+                              value={profileFormData.codigo_postal}
+                              onChange={(e) => setProfileFormData({ ...profileFormData, codigo_postal: e.target.value })}
+                              maxLength={4}
+                              className="input w-full"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={savingProfile}
+                          className={`w-full mt-2 cursor-pointer btn-primary ${savingProfile ? "opacity-50 cursor-not-allowed" : ""}`}
+                        >
+                          {savingProfile ? "Guardando datos..." : "Guardar datos y continuar"}
+                        </button>
+                      </form>
+                    </div>
                   ) : (
-                  <button
-                    onClick={handleConfirmPurchase}
-                    disabled={loading || !email.trim() || costoEnvio === null}
-                    className={`w-full cursor-pointer btn-primary ${
-                      loading || !email.trim() || costoEnvio === null ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    {loading ? (
-                      <div className="flex items-center justify-center">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Procesando...
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center">
-                        <CreditCard size={20} className="mr-2" />
-                        Proceder al pago
-                      </div>
-                    )}
-                  </button>
+                    <button
+                      onClick={handleConfirmPurchase}
+                      disabled={loading || !email.trim() || costoEnvio === null}
+                      className={`w-full cursor-pointer btn-primary ${
+                        loading || !email.trim() || costoEnvio === null ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      {loading ? (
+                        <div className="flex items-center justify-center">
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Procesando...
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center">
+                          <CreditCard size={20} className="mr-2" />
+                          Proceder al pago
+                        </div>
+                      )}
+                    </button>
                   )}
 
                   {error && (
