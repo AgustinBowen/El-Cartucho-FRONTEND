@@ -27,6 +27,7 @@ export const Catalog: React.FC = () => {
     toggleCategoria,
     toggleSubcategoria, 
     aplicarPrecio, 
+    setDisponibilidad,
     setBúsqueda, 
     setSortBy, 
     setPage, 
@@ -185,7 +186,26 @@ export const Catalog: React.FC = () => {
         </div>
       </div>
       
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium whitespace-nowrap">Stock:</label>
+          <div className="relative">
+            <select
+              value={estado.disponibilidad}
+              onChange={(e) => setDisponibilidad(e.target.value)}
+              className="input pr-8 py-2 text-sm appearance-none cursor-pointer"
+            >
+              <option value="">Todas</option>
+              <option value="con_stock">Con stock</option>
+              <option value="sin_stock">Sin stock</option>
+            </select>
+            <ChevronDown
+              size={16}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+            />
+          </div>
+        </div>
+
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium whitespace-nowrap">Ordenar por:</label>
           <div className="relative">

@@ -5,12 +5,16 @@ import { useState } from "react"
 import { useCart } from "../context/CartContext"
 import { useTheme } from "../context/ThemeContext"
 import { useNavigate, Link, useLocation } from "react-router-dom"
-import { ShoppingCart, Menu, X, Sun, Moon, Search, User } from "lucide-react"
+import { ShoppingCart, Menu, X, Sun, Moon, Search, User, Heart } from "lucide-react"
 import { OffcanvasCart } from "./OffcanvasCart"
+import { useAuth, isProfileIncomplete } from "../context/AuthContext"
+import { AuthModal } from "./AuthModal"
 
 function Navbar() {
   const { cartItems } = useCart()
-  const { theme, setTheme, isXbox } = useTheme() // Usar ThemeContext
+  const { theme, setTheme, isXbox } = useTheme()
+  const { user, profile } = useAuth()
+  const profileIncomplete = isProfileIncomplete(profile)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -19,6 +23,7 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
 
   const toggleTheme = () => {
@@ -58,8 +63,8 @@ function Navbar() {
   return (
     <>
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-md ${isXbox
-          ? "bg-[var(--color-background)]/90 border-b border-[var(--color-border)]"
-          : "bg-[var(--color-background)]/90 border-b border-[var(--color-border)] ps2-glow"
+        ? "bg-[var(--color-background)]/90 border-b border-[var(--color-border)]"
+        : "bg-[var(--color-background)]/90 border-b border-[var(--color-border)] ps2-glow"
         }`}>
         <div className="max-w-screen-xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
@@ -138,6 +143,18 @@ function Navbar() {
                 {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
               </button>
 
+              {/* Wishlist */}
+              {user && (
+                <Link
+                  to="/wishlist"
+                  className="relative cursor-pointer p-2 rounded-lg text-[var(--color-foreground)] hover:text-red-500 hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+                  title="Lista de deseados"
+                  aria-label="Lista de deseados"
+                >
+                  <Heart size={20} />
+                </Link>
+              )}
+
               {/* Cart */}
               <button
                 onClick={handleCartClick}
@@ -157,16 +174,38 @@ function Navbar() {
               </button>
 
               {/* User */}
-              <button
-                onClick={() => {
-                  console.log("User account clicked")
-                }}
-                className="p-2 cursor-pointer rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
-                title="Mi cuenta"
-                aria-label="Opciones usuario"
-              >
-                <User size={20} />
-              </button>
+              {user ? (
+                <Link
+                  to="/perfil"
+                  className="flex items-center gap-2 p-1.5 cursor-pointer rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible relative"
+                  title={profileIncomplete ? "Tu perfil está incompleto" : "Mi perfil"}
+                  aria-label="Mi perfil"
+                >
+                  <div className="relative">
+                    <img
+                      src={user.photoURL ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName ?? user.email ?? "U")}&background=4a7bc8&color=fff`}
+                      alt="Avatar"
+                      className="w-7 h-7 rounded-full object-cover border border-[var(--color-border)]"
+                    />
+                    {profileIncomplete && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-[var(--color-background)] animate-pulse" title="Perfil incompleto" />
+                    )}
+                  </div>
+                  <span className="font-semibold text-sm hidden sm:inline">
+                    {user.displayName ? user.displayName.split(" ")[0] : "Perfil"}
+                  </span>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setAuthModalOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+                  title="Ingresá"
+                  aria-label="Iniciar sesión"
+                >
+                  <User size={20} className="text-[#FF4A3D]" />
+                  <span className="font-semibold text-sm hidden sm:inline">Ingresá</span>
+                </button>
+              )}
 
               {/* Mobile menu button */}
               <button
@@ -231,6 +270,7 @@ function Navbar() {
         </div>
       </nav>
       <OffcanvasCart isOpen={cartOpen} onClose={handleCloseCart} />
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </>
   )
 }
