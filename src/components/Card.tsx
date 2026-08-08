@@ -8,7 +8,6 @@ import { formatearPrecio } from "../utils/formatearPrecio"
 import { useNavigate } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
 import { useWishlist } from "../context/WishlistContext"
-import { useAuth } from "../context/AuthContext"
 
 type CardProps = {
   producto_id: number
@@ -24,7 +23,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
   const navigate = useNavigate()
   const { isXbox } = useTheme();
   const { toggleWishlist, isInWishlist } = useWishlist()
-  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [wishlistLoading, setWishlistLoading] = useState(false)
@@ -42,7 +40,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
 
   const handleWishlist = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!user) return
     setWishlistLoading(true)
     await toggleWishlist(producto_id)
     setWishlistLoading(false)
@@ -133,20 +130,18 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
 
           {/* Wishlist + Quick Add Buttons overlay */}
           <div className="absolute bottom-3 right-3 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 transform translate-y-0 md:translate-y-2 md:group-hover:translate-y-0">
-            {user && (
-              <button
-                onClick={handleWishlist}
-                disabled={wishlistLoading}
-                className={`cursor-pointer p-2 rounded-full transition-all duration-300 transform hover:scale-110 ${
-                  inWishlist
-                    ? "bg-red-500 text-white hover:bg-red-600"
-                    : "bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500"
-                } ${wishlistLoading ? "animate-pulse" : ""}`}
-                title={inWishlist ? "Quitar de deseados" : "Agregar a deseados"}
-              >
-                <Heart size={16} fill={inWishlist ? "currentColor" : "none"} />
-              </button>
-            )}
+            <button
+              onClick={handleWishlist}
+              disabled={wishlistLoading}
+              className={`cursor-pointer p-2 rounded-full transition-all duration-300 transform hover:scale-110 ${
+                inWishlist
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500"
+              } ${wishlistLoading ? "animate-pulse" : ""}`}
+              title={inWishlist ? "Quitar de deseados" : "Agregar a deseados"}
+            >
+              <Heart size={16} fill={inWishlist ? "currentColor" : "none"} />
+            </button>
             <button
               onClick={handleAdd}
               disabled={isLoading || sinStock}

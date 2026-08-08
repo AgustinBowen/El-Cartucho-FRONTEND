@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { auth } from "../firebase";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import type { User as FirebaseUser } from "firebase/auth";
+import { AuthModal } from "../components/AuthModal";
 
 interface UserProfile {
     id: number;
@@ -30,6 +31,9 @@ interface AuthContextType {
     user: FirebaseUser | null;
     profile: UserProfile | null;
     loading: boolean;
+    isAuthModalOpen: boolean;
+    openAuthModal: () => void;
+    closeAuthModal: () => void;
     signInWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
     updateProfileData: (data: Partial<UserProfile>) => Promise<void>;
@@ -43,6 +47,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<FirebaseUser | null>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+    const openAuthModal = () => setIsAuthModalOpen(true);
+    const closeAuthModal = () => setIsAuthModalOpen(false);
 
     const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000") + "/ed";
 
@@ -124,8 +132,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, logout, updateProfileData }}>
+        <AuthContext.Provider value={{ user, profile, loading, isAuthModalOpen, openAuthModal, closeAuthModal, signInWithGoogle, logout, updateProfileData }}>
             {children}
+            <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />
         </AuthContext.Provider>
     );
 };
