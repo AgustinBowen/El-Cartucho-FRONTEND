@@ -31,7 +31,8 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
   const [wishlistIds, setWishlistIds] = useState<Set<number>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
-  const { user, logout } = useAuth()
+  const [pendingProductId, setPendingProductId] = useState<number | null>(null)
+  const { user, openAuthModal, logout } = useAuth()
 
   const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
     if (!user) return {}
@@ -68,8 +69,20 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     loadWishlist()
   }, [user?.uid])
 
+  useEffect(() => {
+    if (user && pendingProductId) {
+      const prodId = pendingProductId
+      setPendingProductId(null)
+      toggleWishlist(prodId)
+    }
+  }, [user?.uid, pendingProductId])
+
   const toggleWishlist = async (productoId: number) => {
-    if (!user) return
+    if (!user) {
+      setPendingProductId(productoId)
+      openAuthModal()
+      return
+    }
     try {
       const headers = await getAuthHeaders()
       const res = await fetch(`${API_URL}/ed/wishlist/toggle`, {

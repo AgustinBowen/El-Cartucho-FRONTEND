@@ -75,13 +75,22 @@ export const CartScreen = () => {
   }
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
-  // Auto-fill email from Firebase user
-  const [codigoPostal, setCodigoPostal] = useState("")
+  // Auto-fill email and CP from profile
+  const [codigoPostal, setCodigoPostal] = useState(profile?.codigo_postal ?? "")
   const [costoEnvio, setCostoEnvio] = useState<number | null>(null)
   const [validandoCP, setValidandoCP] = useState(false)
   const [errorCP, setErrorCP] = useState<string | null>(null)
-  const [email, setEmail] = useState(user?.email ?? "")
+  const [email, setEmail] = useState(profile?.email ?? user?.email ?? "")
   const [emailError, setEmailError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (profile?.codigo_postal && !codigoPostal) {
+      setCodigoPostal(profile.codigo_postal)
+    }
+    if ((profile?.email || user?.email) && !email) {
+      setEmail(profile?.email ?? user?.email ?? "")
+    }
+  }, [profile, user])
 
   // Estado para advertencias de stock
   const [stockWarnings, setStockWarnings] = useState<string[]>([])
@@ -199,6 +208,8 @@ export const CartScreen = () => {
           })),
           email: email,
           codigo_postal: codigoPostal,
+          domicilio: profile?.domicilio ?? "",
+          ciudad: profile?.ciudad ?? "",
           costo_envio: costoEnvio,
         }),
       })
@@ -517,6 +528,12 @@ export const CartScreen = () => {
                     </div>
 
                     {errorCP && <p className="text-red-500 text-sm">{errorCP}</p>}
+
+                    {profile?.codigo_postal && codigoPostal.trim() !== "" && codigoPostal.trim() !== profile.codigo_postal.trim() && (
+                      <p className="text-xs text-blue-400 dark:text-blue-300 font-medium mt-1">
+                        ℹ️ El pedido se enviará a este código postal (CP {codigoPostal}), no al de tu perfil ({profile.codigo_postal}).
+                      </p>
+                    )}
 
                     {costoEnvio !== null && (
                       <div className="p-3 bg-green-50 dark:bg-green-200/20 border border-green-200 dark:border-green-800 rounded-lg">

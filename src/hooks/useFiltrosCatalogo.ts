@@ -8,6 +8,7 @@ interface FiltrosEstado {
   subcategorias: number[]
   precioMin: string
   precioMax: string
+  disponibilidad: string
   searchQuery: string
   sortBy: string
   page: number
@@ -35,6 +36,7 @@ export function useFiltrosCatalogo() {
       subcategorias: subcatsStr.map(id => parseInt(id, 10)).filter(id => !isNaN(id)),
       precioMin: searchParams.get("precio_min") || "",
       precioMax: searchParams.get("precio_max") || "",
+      disponibilidad: searchParams.get("disponibilidad") || "",
       searchQuery: searchParams.get("q") || "",
       sortBy: (() => {
         const o = searchParams.get("orden")
@@ -136,6 +138,10 @@ export function useFiltrosCatalogo() {
     }
   }, [])
 
+  const setDisponibilidad = useCallback((disp: string) => {
+    updateUrl({ disponibilidad: disp || null })
+  }, [updateUrl])
+
   const setBúsqueda = useCallback((q: string) => {
     updateUrl({ q: q || null })
   }, [updateUrl])
@@ -181,6 +187,7 @@ export function useFiltrosCatalogo() {
     seleccionarCategoria,
     toggleSubcategoria,
     aplicarPrecio,
+    setDisponibilidad,
     setBúsqueda,
     setSortBy,
     setPage,
