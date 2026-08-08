@@ -29,9 +29,11 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
   const [imageLoaded, setImageLoaded] = useState(false)
   const [wishlistLoading, setWishlistLoading] = useState(false)
   const inWishlist = isInWishlist(producto_id)
+  const sinStock = stock !== undefined && stock <= 0
 
   const handleAdd = async (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (sinStock) return
     setIsLoading(true)
     await new Promise((resolve) => setTimeout(resolve, 300))
     addToCart({ producto_id, title, price, image: imgSrc, stock: stock ?? 0 })
@@ -50,7 +52,6 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
     navigate(`/producto/${producto_id}`)
   }
 
-
   // Diseño para móviles (horizontal) y desktop (vertical)
   return (
     <div 
@@ -62,6 +63,12 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
         {/* Imagen a la izquierda */}
         <div className="relative w-2/5 overflow-hidden bg-[var(--color-muted)]">
           {!imageLoaded && <div className="absolute inset-0 shimmer"></div>}
+
+          {sinStock && (
+            <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold bg-neutral-900/90 text-red-400 border border-red-500/30 backdrop-blur-sm z-10" aria-label="Producto sin stock">
+              Sin stock
+            </span>
+          )}
 
           <img
             className={`w-full h-full object-cover transition-all duration-500 ${
@@ -88,8 +95,10 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
 
             <button
               onClick={handleAdd}
-              disabled={isLoading}
-              className={`btn-primary text-xs px-2 py-1 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+              disabled={isLoading || sinStock}
+              aria-disabled={sinStock ? "true" : undefined}
+              title={sinStock ? "Producto sin stock disponible" : "Agregar al carrito"}
+              className={`btn-primary text-xs px-2 py-1 ${isLoading || sinStock ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {isLoading ? (
                 <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -106,6 +115,12 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
         {/* Image Container */}
         <div className="relative overflow-hidden bg-[var(--color-muted)]">
           {!imageLoaded && <div className="absolute inset-0 shimmer"></div>}
+
+          {sinStock && (
+            <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-bold bg-neutral-900/90 text-red-400 border border-red-500/30 backdrop-blur-sm z-10" aria-label="Producto sin stock">
+              Sin stock
+            </span>
+          )}
 
           <img
             className={`w-full h-48 object-cover transition-all duration-500 ${
@@ -134,11 +149,16 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             )}
             <button
               onClick={handleAdd}
-              disabled={isLoading}
-              className={`cursor-pointer p-2 rounded-full text-white transition-all duration-300 transform hover:scale-110 ${
-                isXbox ? "bg-[#107C10] hover:bg-[#0c5f0c]" : "bg-[#4a7bc8] hover:bg-[#3a5ba8]"
+              disabled={isLoading || sinStock}
+              aria-disabled={sinStock ? "true" : undefined}
+              title={sinStock ? "Producto sin stock disponible" : "Agregar al carrito"}
+              className={`p-2 rounded-full text-white transition-all duration-300 transform ${
+                sinStock 
+                  ? "opacity-50 bg-gray-500 cursor-not-allowed" 
+                  : isXbox 
+                    ? "bg-[#107C10] hover:bg-[#0c5f0c] hover:scale-110 cursor-pointer" 
+                    : "bg-[#4a7bc8] hover:bg-[#3a5ba8] hover:scale-110 cursor-pointer"
               } ${isLoading ? "animate-pulse" : ""}`}
-              title="Agregar al carrito"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -171,7 +191,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             >
                 <div className="flex items-center space-x-1 ">
                   <ShoppingCart size={16} />
-                  <span>Comprar</span>
+                  <span>{sinStock ? "Ver detalle" : "Comprar"}</span>
                 </div>
             </button>
           </div>
