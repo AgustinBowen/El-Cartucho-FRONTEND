@@ -2,11 +2,13 @@
 
 import type React from "react"
 import { useCart } from "../context/CartContext"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingCart, Heart } from "lucide-react"
 import { useState} from "react"
 import { formatearPrecio } from "../utils/formatearPrecio"
 import { useNavigate } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
+import { useWishlist } from "../context/WishlistContext"
+import { useAuth } from "../context/AuthContext"
 
 type CardProps = {
   producto_id: number
@@ -21,25 +23,27 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
   const { addToCart } = useCart()
   const navigate = useNavigate()
   const { isXbox } = useTheme();
+  const { toggleWishlist, isInWishlist } = useWishlist()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [wishlistLoading, setWishlistLoading] = useState(false)
+  const inWishlist = isInWishlist(producto_id)
 
   const handleAdd = async (e: React.MouseEvent) => {
-    e.stopPropagation() // Evitar que se ejecute el click del card
+    e.stopPropagation()
     setIsLoading(true)
-
-    // Simular una pequeña demora para mostrar el estado de carga
     await new Promise((resolve) => setTimeout(resolve, 300))
-
-    addToCart({
-      producto_id,
-      title,
-      price,
-      image: imgSrc,
-      stock: stock ?? 0,
-    })
-
+    addToCart({ producto_id, title, price, image: imgSrc, stock: stock ?? 0 })
     setIsLoading(false)
+  }
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!user) return
+    setWishlistLoading(true)
+    await toggleWishlist(producto_id)
+    setWishlistLoading(false)
   }
 
   const handleCardClick = () => {
@@ -112,8 +116,22 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             onLoad={() => setImageLoaded(true)}
           />
 
-          {/* Quick Add Button */}
-          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+          {/* Wishlist + Quick Add Buttons overlay */}
+          <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+            {user && (
+              <button
+                onClick={handleWishlist}
+                disabled={wishlistLoading}
+                className={`cursor-pointer p-2 rounded-full transition-all duration-300 transform hover:scale-110 ${
+                  inWishlist
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500"
+                } ${wishlistLoading ? "animate-pulse" : ""}`}
+                title={inWishlist ? "Quitar de deseados" : "Agregar a deseados"}
+              >
+                <Heart size={16} fill={inWishlist ? "currentColor" : "none"} />
+              </button>
+            )}
             <button
               onClick={handleAdd}
               disabled={isLoading}

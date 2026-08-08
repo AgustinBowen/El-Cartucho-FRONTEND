@@ -8,6 +8,10 @@ import { CartScreen } from './screens/CartScreen';
 import { CartProvider } from "./context/CartContext";
 import { ProductDetail } from "./screens/ProductDetail"
 import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
+import { WishlistProvider } from './context/WishlistContext';
+import { Profile } from './screens/Profile';
+import { WishlistScreen } from './screens/WishlistScreen';
 import { useState, useEffect } from 'react';
 import ReloadPrompt from './components/ReloadPrompt';
 
@@ -29,22 +33,27 @@ function App() {
 	}
 	return (
 		<ThemeProvider>
-			<Router>
-				<CartProvider>
-					<Navbar />
-					<Routes>
-						<Route path="/" element={<Home />} />
-						<Route path="/catalogo" element={<Catalog />} />
-						<Route path="/comprar" element={<CartScreen />} />
-						<Route path="/producto/:id" element={<ProductDetail />} />
-						<Route path="/pago/success/*" element={<SuccessScreen />} />
-						<Route path="/*" element={<ErrorScreen />} />
-					</Routes>
-				</CartProvider>
-			</Router>
-			<ReloadPrompt />
+			<AuthProvider>
+				<WishlistProvider>
+					<Router>
+						<CartProvider>
+							<Navbar />
+							<Routes>
+								<Route path="/" element={<Home />} />
+								<Route path="/catalogo" element={<Catalog />} />
+								<Route path="/comprar" element={<CartScreen />} />
+								<Route path="/producto/:id" element={<ProductDetail />} />
+								<Route path="/pago/success/*" element={<SuccessScreen />} />
+								<Route path="/perfil" element={<Profile />} />
+								<Route path="/wishlist" element={<WishlistScreen />} />
+								<Route path="/*" element={<ErrorScreen />} />
+							</Routes>
+						</CartProvider>
+					</Router>
+					<ReloadPrompt />
+				</WishlistProvider>
+			</AuthProvider>
 		</ThemeProvider>
-
 	);
 }
 

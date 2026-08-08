@@ -1,0 +1,108 @@
+import { createContext, useContext, useState, useEffect, useCallback } from "react"
+import type { ReactNode } from "react"
+import { useAuth } from "./AuthContext"
+
+type WishlistItem = {
+  wishlist_id: number
+  producto_id: number
+  nombre: string
+  precio: number
+  stock: number
+  image: string | null
+  created_at: string
+}
+
+type WishlistContextType = {
+  wishlist: WishlistItem[]
+  wishlistIds: Set<number>
+  toggleWishlist: (productoId: number) => Promise<void>
+  isInWishlist: (productoId: number) => boolean
+  removeFromWishlist: (productoId: number) => Promise<void>
+  isLoading: boolean
+}
+
+const WishlistContext = createContext<WishlistContextType>({} as WishlistContextType)
+
+export const useWishlist = () => useContext(WishlistContext)
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+
+export const WishlistProvider = ({ children }: { children: ReactNode }) => {
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([])
+  const [wishlistIds, setWishlistIds] = useState<Set<number>>(new Set())
+  const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth()
+
+  const authHeaders = useCallback((): Record<string, string> => {
+    if (!user) return {}
+    return { "X-Firebase-UID": user.uid }
+  }, [user])
+
+  useEffect(() => {
+    if (!user) {
+      setWishlist([])
+      setWishlistIds(new Set())
+      return
+    }
+    const loadWishlist = async () => {
+      setIsLoading(true)
+      try {
+        const res = await fetch(`${API_URL}/ed/wishlist`, { headers: authHeaders() })
+        if (res.ok) {
+          const data: WishlistItem[] = await res.json()
+          setWishlist(data)
+          setWishlistIds(new Set(data.map(i => i.producto_id)))
+        }
+      } catch (e) {
+        console.error("Error loading wishlist", e)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadWishlist()
+  }, [user?.uid])
+
+  const toggleWishlist = async (productoId: number) => {
+    if (!user) return
+    try {
+      const res = await fetch(`${API_URL}/ed/wishlist/toggle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ producto_id: productoId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.action === "added") {
+          setWishlistIds(prev => new Set([...prev, productoId]))
+          // Reload full list to get item details
+          const listRes = await fetch(`${API_URL}/ed/wishlist`, { headers: authHeaders() })
+          if (listRes.ok) setWishlist(await listRes.json())
+        } else {
+          setWishlistIds(prev => { const s = new Set(prev); s.delete(productoId); return s })
+          setWishlist(prev => prev.filter(i => i.producto_id !== productoId))
+        }
+      }
+    } catch (e) {
+      console.error("Error toggling wishlist", e)
+    }
+  }
+
+  const removeFromWishlist = async (productoId: number) => {
+    if (!user) return
+    try {
+      await fetch(`${API_URL}/ed/wishlist/${productoId}`, { method: "DELETE", headers: authHeaders() })
+      setWishlistIds(prev => { const s = new Set(prev); s.delete(productoId); return s })
+      setWishlist(prev => prev.filter(i => i.producto_id !== productoId))
+    } catch (e) {
+      console.error("Error removing from wishlist", e)
+    }
+  }
+
+  const isInWishlist = (productoId: number) => wishlistIds.has(productoId)
+
+  return (
+    <WishlistContext.Provider value={{ wishlist, wishlistIds, toggleWishlist, isInWishlist, removeFromWishlist, isLoading }}>
+      {children}
+    </WishlistContext.Provider>
+  )
+}

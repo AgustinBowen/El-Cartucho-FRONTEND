@@ -4,24 +4,26 @@ import type React from "react"
 
 import { useCart } from "../context/CartContext"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, MapPin, Mail, Loader2, AlertTriangle } from "lucide-react"
+import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, MapPin, Mail, Loader2, AlertTriangle, Lock } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
 import { formatearPrecio } from "../utils/formatearPrecio"
+import { useAuth } from "../context/AuthContext"
 
 export const CartScreen = () => {
   const { cartItems, updateQuantity, removeFromCart, total, updateCartItems } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { isXbox } = useTheme()
+  const { user } = useAuth()
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
-  // Nuevos estados para envío y email
+  // Auto-fill email from Firebase user
   const [codigoPostal, setCodigoPostal] = useState("")
   const [costoEnvio, setCostoEnvio] = useState<number | null>(null)
   const [validandoCP, setValidandoCP] = useState(false)
   const [errorCP, setErrorCP] = useState<string | null>(null)
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState(user?.email ?? "")
   const [emailError, setEmailError] = useState<string | null>(null)
 
   // Estado para advertencias de stock
@@ -92,6 +94,11 @@ export const CartScreen = () => {
   }, [])
 
   const handleConfirmPurchase = async () => {
+    // Require login
+    if (!user) {
+      setError("Debes iniciar sesión para completar la compra.")
+      return
+    }
     // Validar que se haya ingresado email
     if (!email.trim()) {
       setEmailError("El email es requerido")
@@ -125,6 +132,7 @@ export const CartScreen = () => {
         headers: {
           "Content-Type": "application/json",
           "x-vercel-protection-bypass": import.meta.env.protectionBypassToken,
+          ...(user ? { "X-Firebase-UID": user.uid } : {}),
         },
         body: JSON.stringify({
           productos: cartItems.map((item) => ({
@@ -481,7 +489,14 @@ export const CartScreen = () => {
                     </div>
                   </div>
 
-                  {/* Checkout Button */}
+                  {/* Checkout Button or Login Prompt */}
+                  {!user ? (
+                    <div className="p-4 rounded-xl border-2 border-dashed border-[var(--color-primary)]/40 text-center">
+                      <Lock size={24} className="mx-auto mb-2 text-[var(--color-primary)]" />
+                      <p className="text-sm font-medium mb-1">Iniciá sesión para comprar</p>
+                      <p className="text-xs text-[var(--color-foreground)]/60">Necesitás una cuenta para completar tu compra.</p>
+                    </div>
+                  ) : (
                   <button
                     onClick={handleConfirmPurchase}
                     disabled={loading || !email.trim() || costoEnvio === null}
@@ -501,6 +516,7 @@ export const CartScreen = () => {
                       </div>
                     )}
                   </button>
+                  )}
 
                   {error && (
                     <div
