@@ -14,6 +14,18 @@ interface UserProfile {
     codigo_postal?: string | null;
 }
 
+export const isProfileIncomplete = (profile: UserProfile | null): boolean => {
+    if (!profile) return true;
+    return (
+        !profile.name?.trim() ||
+        !profile.apellido?.trim() ||
+        !profile.domicilio?.trim() ||
+        !profile.ciudad?.trim() ||
+        !profile.codigo_postal?.trim() ||
+        !/^\d{4}$/.test(profile.codigo_postal.trim())
+    );
+};
+
 interface AuthContextType {
     user: FirebaseUser | null;
     profile: UserProfile | null;
