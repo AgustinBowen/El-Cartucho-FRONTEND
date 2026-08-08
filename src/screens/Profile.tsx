@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { FormEvent } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, isProfileIncomplete } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigate, Link } from "react-router-dom";
 import { formatearPrecio } from "../utils/formatearPrecio";
@@ -52,6 +52,7 @@ export function Profile() {
     });
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState("");
+    const [cpError, setCpError] = useState("");
 
     // Orders
     const [orders, setOrders] = useState<Order[]>([]);
@@ -99,12 +100,21 @@ export function Profile() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        if (e.target.name === "codigo_postal") setCpError("");
     };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setMessage("");
+        setCpError("");
+
+        if (!formData.codigo_postal.trim() || !/^\d{4}$/.test(formData.codigo_postal.trim())) {
+            setCpError("El código postal debe tener 4 dígitos.");
+            setSaving(false);
+            return;
+        }
+
         try {
             await updateProfileData(formData);
             setMessage("Perfil actualizado correctamente");
@@ -127,6 +137,8 @@ export function Profile() {
         ? "bg-[#2A2A2A] border-gray-600 text-white focus:border-[#107C10]"
         : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#4a7bc8]"
         } focus:ring-2 focus:ring-opacity-50 focus:outline-none transition-colors`;
+
+    const profileIncomplete = isProfileIncomplete(profile);
 
     return (
         <div
@@ -170,6 +182,16 @@ export function Profile() {
                         </div>
                     </div>
 
+                    {/* Alert banner for incomplete profile */}
+                    {profileIncomplete && (
+                        <div className="mb-6 p-4 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 flex items-center gap-3">
+                            <span className="text-xl">⚠️</span>
+                            <p className="text-sm font-medium">
+                                Tu perfil está incompleto. Completá tu apellido, domicilio, ciudad y código postal (4 dígitos) para realizar compras.
+                            </p>
+                        </div>
+                    )}
+
                     {/* Tabs */}
                     <div className={`flex gap-1 p-1 rounded-xl mb-6 backdrop-blur-md ${isXbox ? "bg-[#111]/90" : "bg-white/80 shadow-sm"}`}>
                         {(["perfil", "pedidos"] as const).map(tab => (
@@ -201,30 +223,31 @@ export function Profile() {
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Nombre</label>
-                                        <input type="text" name="name" value={formData.name} onChange={handleChange} className={inputClass} required />
+                                        <label htmlFor="profile_name" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Nombre</label>
+                                        <input id="profile_name" type="text" name="name" value={formData.name} onChange={handleChange} className={inputClass} required />
                                     </div>
                                     <div>
-                                        <label className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Apellido</label>
-                                        <input type="text" name="apellido" value={formData.apellido} onChange={handleChange} className={inputClass} />
+                                        <label htmlFor="profile_apellido" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Apellido</label>
+                                        <input id="profile_apellido" type="text" name="apellido" value={formData.apellido} onChange={handleChange} className={inputClass} required />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Email (No modificable)</label>
-                                    <input type="email" value={user.email || ""} disabled className={`${inputClass} opacity-70 cursor-not-allowed`} />
+                                    <label htmlFor="profile_email" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Email (No modificable)</label>
+                                    <input id="profile_email" type="email" value={user.email || ""} disabled className={`${inputClass} opacity-70 cursor-not-allowed`} />
                                 </div>
                                 <div>
-                                    <label className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Domicilio</label>
-                                    <input type="text" name="domicilio" value={formData.domicilio} onChange={handleChange} className={inputClass} />
+                                    <label htmlFor="profile_domicilio" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Domicilio</label>
+                                    <input id="profile_domicilio" type="text" name="domicilio" value={formData.domicilio} onChange={handleChange} className={inputClass} required />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Ciudad</label>
-                                        <input type="text" name="ciudad" value={formData.ciudad} onChange={handleChange} className={inputClass} />
+                                        <label htmlFor="profile_ciudad" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Ciudad</label>
+                                        <input id="profile_ciudad" type="text" name="ciudad" value={formData.ciudad} onChange={handleChange} className={inputClass} required />
                                     </div>
                                     <div>
-                                        <label className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Código Postal</label>
-                                        <input type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleChange} className={inputClass} />
+                                        <label htmlFor="profile_codigo_postal" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Código Postal (4 dígitos)</label>
+                                        <input id="profile_codigo_postal" type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleChange} maxLength={4} className={`${inputClass} ${cpError ? "border-red-500" : ""}`} required />
+                                        {cpError && <p className="text-red-500 text-xs mt-1">{cpError}</p>}
                                     </div>
                                 </div>
                                 <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700/50">
