@@ -13,6 +13,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { Profile } from './screens/Profile';
+import { OrderDetailScreen } from './screens/OrderDetailScreen';
 import { WishlistScreen } from './screens/WishlistScreen';
 import { useState, useEffect } from 'react';
 import ReloadPrompt from './components/ReloadPrompt';
@@ -49,6 +50,7 @@ function App() {
 								<Route path="/pago/failure/*" element={<PaymentFailureScreen />} />
 								<Route path="/pago/pending/*" element={<PaymentPendingScreen />} />
 								<Route path="/perfil" element={<Profile />} />
+								<Route path="/mis-pedidos/:id" element={<OrderDetailScreen />} />
 								<Route path="/wishlist" element={<WishlistScreen />} />
 								<Route path="/*" element={<ErrorScreen />} />
 							</Routes>
