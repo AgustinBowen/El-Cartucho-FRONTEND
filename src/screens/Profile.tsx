@@ -7,7 +7,12 @@ import { formatearPrecio } from "../utils/formatearPrecio";
 
 type Order = {
     id: number;
-    estado: "pendiente" | "pagado" | "cancelado";
+    estado: string;
+    estado_pago?: string;
+    estado_envio?: string | null;
+    estado_visible?: string;
+    costo_envio?: number;
+    tiene_tracking?: boolean;
     total: number;
     created_at: string;
     productos: {
@@ -21,6 +26,14 @@ type Order = {
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const ESTADO_COLORS: Record<string, string> = {
+    "Pago confirmado": "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20",
+    "Preparando tu pedido": "bg-blue-500/10 text-blue-600 border border-blue-500/20",
+    "En camino": "bg-purple-500/10 text-purple-600 border border-purple-500/20",
+    "Entregado": "bg-green-500/10 text-green-600 border border-green-500/20",
+    "Esperando pago": "bg-amber-500/10 text-amber-600 border border-amber-500/20",
+    "Pago rechazado": "bg-rose-500/10 text-rose-600 border border-rose-500/20",
+    "Expirado": "bg-gray-500/10 text-gray-600 border border-gray-500/20",
+    "Reembolsado": "bg-rose-500/10 text-rose-600 border border-rose-500/20",
     pagado: "bg-green-100 text-green-700",
     pendiente: "bg-yellow-100 text-yellow-700",
     cancelado: "bg-red-100 text-red-600",
@@ -291,8 +304,8 @@ export function Profile() {
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${ESTADO_COLORS[order.estado] ?? "bg-gray-100 text-gray-600"}`}>
-                                                        {order.estado}
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${ESTADO_COLORS[order.estado_visible ?? order.estado] ?? "bg-gray-100 text-gray-600"}`}>
+                                                        {order.estado_visible ?? order.estado}
                                                     </span>
                                                     <span className={`text-lg font-bold ${isXbox ? "text-[#107C10]" : "text-[var(--color-primary)]"}`}>
                                                         {formatearPrecio(order.total)}
@@ -308,6 +321,21 @@ export function Profile() {
                                                         <span className="font-medium">{formatearPrecio(p.precio_unitario)}</span>
                                                     </div>
                                                 ))}
+                                            </div>
+                                            <div className="mt-4 pt-3 border-t border-gray-200/10 flex items-center justify-between">
+                                                {order.tiene_tracking ? (
+                                                    <span className="text-xs font-semibold text-emerald-500 flex items-center gap-1">
+                                                        📦 En envío con seguimiento
+                                                    </span>
+                                                ) : (
+                                                    <span />
+                                                )}
+                                                <Link
+                                                    to={`/mis-pedidos/${order.id}`}
+                                                    className="text-xs font-semibold text-[var(--color-primary)] hover:underline flex items-center gap-1 cursor-pointer"
+                                                >
+                                                    Ver detalle del pedido →
+                                                </Link>
                                             </div>
                                         </div>
                                     ))}
