@@ -95,7 +95,7 @@ export const OrderDetailScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-[var(--color-background)] pt-16 pb-12">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        
+
         {/* Botón Volver */}
         <Link
           to="/perfil"
@@ -126,7 +126,7 @@ export const OrderDetailScreen: React.FC = () => {
 
         {order && !loading && (
           <div className="space-y-6 animate-fade-in-scale">
-            
+
             {/* Header del Pedido */}
             <div className="card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -162,11 +162,10 @@ export const OrderDetailScreen: React.FC = () => {
                     return (
                       <div key={idx} className="relative flex items-start gap-4">
                         <div
-                          className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                            isLast
+                          className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs ${isLast
                               ? "bg-[var(--color-primary)] text-white shadow-md ring-4 ring-[var(--color-primary)]/20"
                               : "bg-emerald-500 text-white"
-                          }`}
+                            }`}
                         >
                           <Check className="w-3 h-3" />
                         </div>
@@ -220,7 +219,7 @@ export const OrderDetailScreen: React.FC = () => {
 
             {/* Grid 2 columnas: Datos de Envío y Desglose */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
+
               {/* Datos de envío */}
               <div className="card p-6 space-y-4">
                 <h3 className="text-base font-bold flex items-center gap-2">
