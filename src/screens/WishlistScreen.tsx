@@ -16,13 +16,13 @@ export function WishlistScreen() {
     const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
     const backgroundImage = isXbox
-      ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
-      : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
+        ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
+        : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
 
     useEffect(() => {
-      const img = new Image()
-      img.onload = () => setBackgroundLoaded(true)
-      img.src = backgroundImage
+        const img = new Image()
+        img.onload = () => setBackgroundLoaded(true)
+        img.src = backgroundImage
     }, [backgroundImage])
 
     useEffect(() => {
@@ -64,8 +64,8 @@ export function WishlistScreen() {
 
             <div className="relative z-10 pb-12">
                 {/* Header banner */}
-                <div className={`relative overflow-hidden ${isXbox ? "bg-gradient-to-r from-[#0e3a0e]/90 to-[#1a5c1a]/90" : "bg-gradient-to-r from-[#1a1a2e]/90 to-[#16213e]/90"}`}>
-                    <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/subtle-dots.png')]" />
+                <div className={`}`}>
+                    <div className="absolute inset-0 opacity-10" />
                     <div className="relative max-w-screen-xl mx-auto px-4 py-12">
                         <div className="flex items-center gap-4 mb-3">
                             <div className={`p-3 rounded-xl ${isXbox ? "bg-[#107C10]" : "bg-[#4a7bc8]"}`}>
@@ -149,13 +149,12 @@ export function WishlistScreen() {
                                             <button
                                                 onClick={() => handleAddToCart(item)}
                                                 disabled={item.stock <= 0}
-                                                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors ${
-                                                    item.stock > 0
-                                                        ? isXbox
-                                                            ? "bg-[#107C10] hover:bg-[#0c5f0c] cursor-pointer"
-                                                            : "bg-[#4a7bc8] hover:bg-[#3a5ba8] cursor-pointer"
-                                                        : "bg-gray-400 cursor-not-allowed"
-                                                }`}
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors ${item.stock > 0
+                                                    ? isXbox
+                                                        ? "bg-[#107C10] hover:bg-[#0c5f0c] cursor-pointer"
+                                                        : "bg-[#4a7bc8] hover:bg-[#3a5ba8] cursor-pointer"
+                                                    : "bg-gray-400 cursor-not-allowed"
+                                                    }`}
                                             >
                                                 <ShoppingCart size={16} />
                                                 <span className="hidden sm:inline">Agregar al carrito</span>

@@ -159,26 +159,38 @@ export function Profile() {
                 <div className="max-w-3xl mx-auto">
 
                     {/* User header card */}
-                    <div className={`p-6 rounded-2xl mb-6 flex items-center gap-4 backdrop-blur-md ${isXbox ? "bg-[#1A1A1A]/90 border border-[#107C10]" : "bg-white/90 shadow-lg"}`}>
-                        <img
-                            src={user.photoURL ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName ?? "U")}&background=4a7bc8&color=fff`}
-                            alt="Avatar"
-                            className="w-16 h-16 rounded-full object-cover border-2 border-[var(--color-primary)] bg-white"
-                        />
-                        <div>
-                            <h1 className={`text-2xl font-bold ${isXbox ? "text-white" : "text-gray-900"}`}>{user.displayName || "Usuario"}</h1>
-                            <p className={`text-sm ${isXbox ? "text-gray-400" : "text-gray-500"}`}>{user.email}</p>
-                        </div>
-                        <div className="ml-auto flex gap-3">
-                            <Link to="/wishlist" className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${isXbox ? "border-gray-600 text-gray-300 hover:border-gray-400 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-black/5"}`}>
-                                ♥ Deseados
-                            </Link>
+                    {/* User header card */}
+                    <div className={`p-4 sm:p-6 rounded-2xl mb-6 backdrop-blur-md ${isXbox ? "bg-[#1A1A1A]/90 border border-[#107C10]" : "bg-white/90 shadow-lg"}`}>
+                        {/* Fila superior: avatar + nombre + acciones */}
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <img
+                                src={user.photoURL ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName ?? "U")}&background=4a7bc8&color=fff`}
+                                alt="Avatar"
+                                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover flex-shrink-0 border-2 border-[var(--color-primary)] bg-white"
+                            />
+                            <div className="min-w-0 flex-1">
+                                <h1 className={`text-lg sm:text-2xl font-bold truncate ${isXbox ? "text-white" : "text-gray-900"}`}>{user.displayName || "Usuario"}</h1>
+                                <p className={`text-xs sm:text-sm truncate ${isXbox ? "text-gray-400" : "text-gray-500"}`}>{user.email}</p>
+                            </div>
+                            {/* Botón salir — siempre visible */}
                             <button
                                 onClick={logout}
-                                className="px-4 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+                                className="flex-shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                             >
                                 Salir
                             </button>
+                        </div>
+                        {/* Fila inferior (solo mobile): botón deseados a ancho completo */}
+                        <div className="mt-3 sm:hidden">
+                            <Link to="/wishlist" className={`flex items-center justify-center gap-2 w-full px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${isXbox ? "border-gray-600 text-gray-300 hover:border-gray-400 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-black/5"}`}>
+                                ♥ Deseados
+                            </Link>
+                        </div>
+                        {/* Botón deseados en desktop — al lado del salir */}
+                        <div className="hidden sm:flex justify-end mt-0">
+                            <Link to="/wishlist" className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${isXbox ? "border-gray-600 text-gray-300 hover:border-gray-400 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-black/5"}`}>
+                                ♥ Deseados
+                            </Link>
                         </div>
                     </div>
 
@@ -214,7 +226,7 @@ export function Profile() {
 
                     {/* TAB: PERFIL */}
                     {activeTab === "perfil" && (
-                        <div className={`p-8 rounded-2xl backdrop-blur-md ${isXbox ? "bg-[#1A1A1A]/95 border border-[#107C10]" : "bg-white/95 shadow-xl"}`}>
+                        <div className={`p-4 sm:p-8 rounded-2xl backdrop-blur-md ${isXbox ? "bg-[#1A1A1A]/95 border border-[#107C10]" : "bg-white/95 shadow-xl"}` }>
                             {message && (
                                 <div className={`p-4 mb-6 rounded-lg ${message.includes("error") ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
                                     {message}
@@ -250,11 +262,11 @@ export function Profile() {
                                         {cpError && <p className="text-red-500 text-xs mt-1">{cpError}</p>}
                                     </div>
                                 </div>
-                                <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700/50">
+                                <div className="flex justify-stretch sm:justify-end pt-4 border-t border-gray-200 dark:border-gray-700/50">
                                     <button
                                         type="submit"
                                         disabled={saving}
-                                        className={`px-8 py-3 rounded-lg font-medium text-white transition-colors cursor-pointer ${isXbox ? "bg-[#107C10] hover:bg-[#0c5f0c]" : "bg-[#4a7bc8] hover:bg-[#3a5ba8]"} ${saving ? "opacity-70 cursor-not-allowed" : ""}`}
+                                        className={`w-full sm:w-auto px-8 py-3 rounded-lg font-medium text-white transition-colors cursor-pointer ${isXbox ? "bg-[#107C10] hover:bg-[#0c5f0c]" : "bg-[#4a7bc8] hover:bg-[#3a5ba8]"} ${saving ? "opacity-70 cursor-not-allowed" : ""}`}
                                     >
                                         {saving ? "Guardando..." : "Guardar cambios"}
                                     </button>
@@ -280,9 +292,9 @@ export function Profile() {
                             ) : (
                                 <div className="space-y-4">
                                     {orders.map((order, idx) => (
-                                        <div key={order.id} className={`p-6 rounded-2xl backdrop-blur-md animate-fade-in-up ${isXbox ? "bg-[#1A1A1A]/95 border border-[#222]" : "bg-white/95 shadow-lg"}`} style={{ animationDelay: `${idx * 0.1}s` }}>
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div>
+                                        <div key={order.id} className={`p-4 sm:p-6 rounded-2xl backdrop-blur-md animate-fade-in-up ${isXbox ? "bg-[#1A1A1A]/95 border border-[#222]" : "bg-white/95 shadow-lg"}`} style={{ animationDelay: `${idx * 0.1}s` }}>
+                                            <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
+                                                <div className="min-w-0">
                                                     <span className={`font-mono text-sm font-bold ${isXbox ? "text-gray-300" : "text-gray-500"}`}>
                                                         Pedido #{String(order.id).padStart(4, "0")}
                                                     </span>
@@ -290,11 +302,11 @@ export function Profile() {
                                                         {new Date(order.created_at).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
                                                     </p>
                                                 </div>
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-2 flex-shrink-0">
                                                     <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${ESTADO_COLORS[order.estado] ?? "bg-gray-100 text-gray-600"}`}>
                                                         {order.estado}
                                                     </span>
-                                                    <span className={`text-lg font-bold ${isXbox ? "text-[#107C10]" : "text-[var(--color-primary)]"}`}>
+                                                    <span className={`text-base sm:text-lg font-bold ${isXbox ? "text-[#107C10]" : "text-[var(--color-primary)]"}`}>
                                                         {formatearPrecio(order.total)}
                                                     </span>
                                                 </div>

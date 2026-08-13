@@ -3,7 +3,7 @@
 import type React from "react"
 import { useCart } from "../context/CartContext"
 import { ShoppingCart, Heart } from "lucide-react"
-import { useState} from "react"
+import { useState } from "react"
 import { formatearPrecio } from "../utils/formatearPrecio"
 import { useNavigate } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
@@ -51,7 +51,7 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
 
   // Diseño para móviles (horizontal) y desktop (vertical)
   return (
-    <div 
+    <div
       className="group card h-full flex flex-col overflow-hidden animate-fade-in-scale cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
       onClick={handleCardClick}
     >
@@ -68,9 +68,8 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
           )}
 
           <img
-            className={`w-full h-full object-cover transition-all duration-500 ${
-              imageLoaded ? "opacity-100" : "opacity-0"
-            }`}
+            className={`w-full h-full object-cover transition-all duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"
+              }`}
             src={imgSrc || "/placeholder.svg"}
             alt={imgAlt}
             onLoad={() => setImageLoaded(true)}
@@ -120,9 +119,8 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
           )}
 
           <img
-            className={`w-full h-48 object-cover transition-all duration-500 ${
-              imageLoaded ? "opacity-100" : "opacity-0"
-            }`}
+            className={`w-full h-48 object-cover transition-all duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"
+              }`}
             src={imgSrc || "/placeholder.svg"}
             alt={imgAlt}
             onLoad={() => setImageLoaded(true)}
@@ -133,11 +131,10 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
             <button
               onClick={handleWishlist}
               disabled={wishlistLoading}
-              className={`cursor-pointer p-2 rounded-full transition-all duration-300 transform hover:scale-110 ${
-                inWishlist
+              className={`cursor-pointer p-2 rounded-full transition-all duration-300 transform hover:scale-110 ${inWishlist
                   ? "bg-red-500 text-white hover:bg-red-600"
                   : "bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500"
-              } ${wishlistLoading ? "animate-pulse" : ""}`}
+                } ${wishlistLoading ? "animate-pulse" : ""}`}
               title={inWishlist ? "Quitar de deseados" : "Agregar a deseados"}
             >
               <Heart size={16} fill={inWishlist ? "currentColor" : "none"} />
@@ -147,13 +144,12 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
               disabled={isLoading || sinStock}
               aria-disabled={sinStock ? "true" : undefined}
               title={sinStock ? "Producto sin stock disponible" : "Agregar al carrito"}
-              className={`p-2 rounded-full text-white transition-all duration-300 transform ${
-                sinStock 
-                  ? "opacity-50 bg-gray-500 cursor-not-allowed" 
-                  : isXbox 
-                    ? "bg-[#107C10] hover:bg-[#0c5f0c] hover:scale-110 cursor-pointer" 
+              className={`p-2 rounded-full text-white transition-all duration-300 transform ${sinStock
+                  ? "opacity-50 bg-gray-500 cursor-not-allowed"
+                  : isXbox
+                    ? "bg-[#107C10] hover:bg-[#0c5f0c] hover:scale-110 cursor-pointer"
                     : "bg-[#4a7bc8] hover:bg-[#3a5ba8] hover:scale-110 cursor-pointer"
-              } ${isLoading ? "animate-pulse" : ""}`}
+                } ${isLoading ? "animate-pulse" : ""}`}
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -172,22 +168,20 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
           </h3>
 
           {/* Price and Action */}
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col">
-              <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold text-[var(--color-primary)]">{formatearPrecio(price)}</span>
-              </div>
+          <div className="flex flex-col gap-3 mt-auto">
+            <div className="flex items-center space-x-2">
+              <span className="text-xl font-bold text-[var(--color-primary)]">{formatearPrecio(price)}</span>
             </div>
 
             <button
               onClick={handleCardClick}
               disabled={isLoading}
-              className={`btn-primary text-sm px-4 py-2 cursor-pointer`}
+              className={`btn-primary text-sm px-4 py-2 cursor-pointer w-full`}
             >
-                <div className="flex items-center space-x-1 ">
-                  <ShoppingCart size={16} />
-                  <span>{sinStock ? "Ver detalle" : "Comprar"}</span>
-                </div>
+              <div className="flex items-center justify-center space-x-1">
+                <ShoppingCart size={16} />
+                <span>{sinStock ? "Ver detalle" : "Comprar"}</span>
+              </div>
             </button>
           </div>
         </div>

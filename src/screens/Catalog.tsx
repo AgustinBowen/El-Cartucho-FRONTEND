@@ -5,7 +5,7 @@ import type { Producto } from "../types/Producto"
 import type { Categoria } from "../types/Categoria"
 import { CardComponent } from "../components/Card"
 import { SkeletonCard } from "../components/SkeletonCard"
-import { SlidersHorizontal, Gamepad2, ChevronDown, X, Filter, Search } from "lucide-react"
+import { SlidersHorizontal, Gamepad2, ChevronDown, ChevronLeft, ChevronRight, X, Filter, Search } from "lucide-react"
 import { useTheme } from "@/context/ThemeContext"
 import { useFiltrosCatalogo } from "../hooks/useFiltrosCatalogo"
 import { AcordeonCategorias } from "../components/AcordeonCategorias"
@@ -22,16 +22,16 @@ export const Catalog: React.FC = () => {
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
 
   const [searchParams] = useSearchParams()
-  const { 
-    estado, 
+  const {
+    estado,
     toggleCategoria,
-    toggleSubcategoria, 
-    aplicarPrecio, 
+    toggleSubcategoria,
+    aplicarPrecio,
     setDisponibilidad,
-    setBúsqueda, 
-    setSortBy, 
-    setPage, 
-    limpiarFiltros 
+    setBúsqueda,
+    setSortBy,
+    setPage,
+    limpiarFiltros
   } = useFiltrosCatalogo()
 
   const [searchInput, setSearchInput] = useState(estado.searchQuery)
@@ -166,12 +166,11 @@ export const Catalog: React.FC = () => {
   }, [searchParams])
 
   const renderTopbarFilters = () => (
-    <div className="flex flex-col lg:flex-row gap-4 mb-6 p-4 rounded-lg bg-[var(--color-background)] border border-[var(--color-border)] shadow-sm animate-fade-in-up">
-      <div className="flex-1 flex gap-2">
-        <button onClick={limpiarFiltros} className="btn-secondary whitespace-nowrap text-sm px-4">
-          Limpiar filtros
-        </button>
-        <div className="relative flex-1 max-w-md">
+    <div className="filter-bar mb-6 p-4 rounded-lg bg-[var(--color-background)] border border-[var(--color-border)] shadow-sm animate-fade-in-up">
+
+      {/* Zona de acciones: Buscar + Limpiar */}
+      <div className="filter-bar__actions">
+        <div className="relative w-full">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
             <Search size={18} />
           </div>
@@ -180,15 +179,20 @@ export const Catalog: React.FC = () => {
             placeholder="Buscar juegos..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="input w-full h-full py-2"
+            className="input w-full py-2"
             style={{ paddingLeft: '2.5rem' }}
           />
         </div>
+        <button onClick={limpiarFiltros} className="btn-secondary whitespace-nowrap text-sm filter-bar__clear-btn">
+          Limpiar filtros
+        </button>
       </div>
-      
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium whitespace-nowrap">Stock:</label>
+
+      {/* Zona de filtros: Stock | Ordenar por | Precio */}
+      <div className="filter-bar__filters">
+
+        <div className="filter-bar__group">
+          <label className="filter-bar__label">Stock</label>
           <div className="relative">
             <select
               value={estado.disponibilidad}
@@ -206,8 +210,8 @@ export const Catalog: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium whitespace-nowrap">Ordenar por:</label>
+        <div className="filter-bar__group">
+          <label className="filter-bar__label">Ordenar por</label>
           <div className="relative">
             <select
               value={estado.sortBy}
@@ -226,26 +230,29 @@ export const Catalog: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium whitespace-nowrap hidden sm:block">Precio:</label>
-          <input
-            type="number"
-            placeholder="Mín"
-            value={localMin}
-            onChange={(e) => handlePrecioChange("min", e.target.value)}
-            className="input w-20 py-2 text-sm"
-            min="0"
-          />
-          <span className="text-sm text-gray-500">-</span>
-          <input
-            type="number"
-            placeholder="Máx"
-            value={localMax}
-            onChange={(e) => handlePrecioChange("max", e.target.value)}
-            className="input w-20 py-2 text-sm"
-            min="0"
-          />
+        <div className="filter-bar__group">
+          <label className="filter-bar__label">Precio</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              placeholder="Mín"
+              value={localMin}
+              onChange={(e) => handlePrecioChange("min", e.target.value)}
+              className="input filter-bar__price-input py-2 text-sm"
+              min="0"
+            />
+            <span className="text-sm text-gray-500 flex-shrink-0">—</span>
+            <input
+              type="number"
+              placeholder="Máx"
+              value={localMax}
+              onChange={(e) => handlePrecioChange("max", e.target.value)}
+              className="input filter-bar__price-input py-2 text-sm"
+              min="0"
+            />
+          </div>
         </div>
+
       </div>
     </div>
   )
@@ -264,7 +271,7 @@ export const Catalog: React.FC = () => {
             ))}
           </div>
         ) : (
-          <AcordeonCategorias 
+          <AcordeonCategorias
             categorias={categorias}
             categoriasSeleccionadas={estado.categorias}
             subcategoriasSeleccionadas={estado.subcategorias}
@@ -323,8 +330,8 @@ export const Catalog: React.FC = () => {
             <div className="flex items-center mb-4">
               <img
                 className="w-32 h-32"
-                src={isXbox 
-                  ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/yoshi_hzevum.gif" 
+                src={isXbox
+                  ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/yoshi_hzevum.gif"
                   : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302080/toad_p9ufsf.gif"}
                 alt={isXbox ? "Yoshi" : "Toad"}
                 loading="eager"
@@ -356,7 +363,7 @@ export const Catalog: React.FC = () => {
 
           {/* Main Content Layout */}
           <div className="flex gap-6 relative items-start">
-            
+
             {/* Desktop Sidebar */}
             <div className="hidden lg:block w-72 flex-shrink-0 animate-fade-in-up sticky top-24">
               {renderSidebarCategorias()}
@@ -426,7 +433,7 @@ export const Catalog: React.FC = () => {
 
               {/* Paginación */}
               {meta && meta.last_page > 1 && (
-                <div className="flex justify-center items-center mt-8 space-x-2">
+                <div className="flex justify-center items-center mt-8 gap-2 overflow-x-auto no-scrollbar">
                   {meta.links.map((link: any, index: number) => {
                     const isPrev = index === 0 || link.label.includes("Anterior") || link.label.includes("&laquo;")
                     const isNext = index === meta.links.length - 1 || link.label.includes("Siguiente") || link.label.includes("&raquo;")
@@ -436,6 +443,7 @@ export const Catalog: React.FC = () => {
                         <button
                           key={index}
                           disabled={!link.url}
+                          aria-label={isPrev ? "Página anterior" : "Página siguiente"}
                           onClick={() => {
                             if (link.url) {
                               try {
@@ -448,9 +456,9 @@ export const Catalog: React.FC = () => {
                               }
                             }
                           }}
-                          className={`cursor-pointer btn-secondary px-3 py-1 ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
+                          className={`cursor-pointer btn-secondary px-3 py-2 flex items-center justify-center ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
-                          {isPrev ? "« Anterior" : "Siguiente »"}
+                          {isPrev ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
                         </button>
                       )
                     } else {
@@ -458,7 +466,7 @@ export const Catalog: React.FC = () => {
                         <button
                           key={index}
                           onClick={() => setPage(Number(link.label))}
-                          className={`cursor-pointer btn-secondary px-3 py-1 ${link.active ? "bg-[var(--color-primary)] text-white" : ""}`}
+                          className={`cursor-pointer btn-secondary px-3 py-2 min-w-[2.5rem] ${link.active ? "bg-[var(--color-primary)] text-white" : ""}`}
                         >
                           {link.label}
                         </button>
@@ -476,25 +484,32 @@ export const Catalog: React.FC = () => {
       {showMobileFilters && (
         <div className="fixed inset-0 z-[60] lg:hidden">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowMobileFilters(false)}></div>
-          <div className="relative h-full w-4/5 max-w-sm bg-[var(--color-background)] animate-fade-in-up overflow-y-auto p-4 flex flex-col gap-6 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">Filtros</h2>
-              <button onClick={() => setShowMobileFilters(false)} className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors">
-                <X size={24} />
-              </button>
-            </div>
-            
-            <div className="flex flex-col gap-4">
-              {renderTopbarFilters()}
+          {/* Panel: flex-col, sin scroll propio — el body interior scrollea */}
+          <div className="relative h-full w-full bg-[var(--color-background)] animate-fade-in-up flex flex-col shadow-2xl">
+
+            {/* Área scrolleable */}
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">Filtros</h2>
+                <button onClick={() => setShowMobileFilters(false)} className="p-2 rounded-lg hover:bg-[var(--color-muted)] transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {renderTopbarFilters()}
+              </div>
+
+              {renderSidebarCategorias()}
             </div>
 
-            {renderSidebarCategorias()}
-            
-            <div className="sticky bottom-0 bg-[var(--color-background)] pt-4 pb-4 border-t border-[var(--color-border)]">
+            {/* Footer fijo — siempre visible, fuera del scroll */}
+            <div className="flex-shrink-0 p-4 border-t border-[var(--color-border)] bg-[var(--color-background)]">
               <button onClick={() => setShowMobileFilters(false)} className="w-full btn-primary py-3">
                 Ver resultados
               </button>
             </div>
+
           </div>
         </div>
       )}
