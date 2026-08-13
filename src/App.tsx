@@ -2,6 +2,8 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import { Home } from './screens/Home';
 import { SuccessScreen } from './screens/SuccessScreen';
+import { PaymentFailureScreen } from './screens/PaymentFailureScreen';
+import { PaymentPendingScreen } from './screens/PaymentPendingScreen';
 import { ErrorScreen } from './screens/ErrorScreen';
 import { Catalog } from './screens/Catalog';
 import { CartScreen } from './screens/CartScreen';
@@ -11,6 +13,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { Profile } from './screens/Profile';
+import { OrderDetailScreen } from './screens/OrderDetailScreen';
 import { WishlistScreen } from './screens/WishlistScreen';
 import { useState, useEffect } from 'react';
 import ReloadPrompt from './components/ReloadPrompt';
@@ -44,7 +47,10 @@ function App() {
 								<Route path="/comprar" element={<CartScreen />} />
 								<Route path="/producto/:id" element={<ProductDetail />} />
 								<Route path="/pago/success/*" element={<SuccessScreen />} />
+								<Route path="/pago/failure/*" element={<PaymentFailureScreen />} />
+								<Route path="/pago/pending/*" element={<PaymentPendingScreen />} />
 								<Route path="/perfil" element={<Profile />} />
+								<Route path="/mis-pedidos/:id" element={<OrderDetailScreen />} />
 								<Route path="/wishlist" element={<WishlistScreen />} />
 								<Route path="/*" element={<ErrorScreen />} />
 							</Routes>

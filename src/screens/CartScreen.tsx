@@ -248,9 +248,9 @@ export const CartScreen = () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/ed/pedido/costo/${codigoPostal}`)
 
-      if (response.status === 418) {
+      if (response.status === 418 || response.status === 422) {
         const errorData = await response.json()
-        setErrorCP(errorData.message || "El código postal ingresado no es válido.")
+        setErrorCP(errorData.message || errorData.error || "El código postal ingresado no es válido.")
         return
       }
 
