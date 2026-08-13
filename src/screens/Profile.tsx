@@ -305,7 +305,7 @@ export function Profile() {
                             ) : (
                                 <div className="space-y-4">
                                     {orders.map((order, idx) => (
-                                        <div key={order.id} className={`p-4 sm:p-6 rounded-2xl backdrop-blur-md animate-fade-in-up ${isXbox ? "bg-[#1A1A1A]/95 border border-[#222]" : "bg-white/95 shadow-lg"}`} style={{ animationDelay: `${idx * 0.1}s` }}>
+                                        <div key={order.id} className="card p-4 sm:p-6 animate-fade-in-up" style={{ animationDelay: `${idx * 0.1}s` }}>
                                             <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
                                                 <div className="min-w-0">
                                                     <span className={`font-mono text-sm font-bold ${isXbox ? "text-gray-300" : "text-gray-500"}`}>
