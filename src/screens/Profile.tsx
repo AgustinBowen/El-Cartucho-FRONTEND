@@ -148,8 +148,8 @@ export function Profile() {
 
     const inputClass = `w-full px-4 py-3 rounded-lg border ${isXbox
         ? "bg-[#2A2A2A] border-gray-600 text-white focus:border-[#107C10]"
-        : "bg-gray-50 border-gray-200 text-gray-900 focus:border-[#4a7bc8]"
-        } focus:ring-2 focus:ring-opacity-50 focus:outline-none transition-colors`;
+        : "bg-[var(--color-foreground)]/5 border-[var(--color-foreground)]/15 text-[var(--color-foreground)] focus:border-[var(--color-primary)]"
+        } focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none transition-colors placeholder:text-[var(--color-foreground)]/40`;
 
     const profileIncomplete = isProfileIncomplete(profile);
 
@@ -173,7 +173,7 @@ export function Profile() {
 
                     {/* User header card */}
                     {/* User header card */}
-                    <div className={`p-4 sm:p-6 rounded-2xl mb-6 backdrop-blur-md ${isXbox ? "bg-[#1A1A1A]/90 border border-[#107C10]" : "bg-white/90 shadow-lg"}`}>
+                    <div className={`card p-4 sm:p-6 mb-6 ${isXbox ? "bg-[#1A1A1A]/90 border border-[#107C10]" : ""}`}>
                         {/* Fila superior: avatar + nombre + acciones */}
                         <div className="flex items-center gap-3 sm:gap-4">
                             <img
@@ -182,8 +182,8 @@ export function Profile() {
                                 className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover flex-shrink-0 border-2 border-[var(--color-primary)] bg-white"
                             />
                             <div className="min-w-0 flex-1">
-                                <h1 className={`text-lg sm:text-2xl font-bold truncate ${isXbox ? "text-white" : "text-gray-900"}`}>{user.displayName || "Usuario"}</h1>
-                                <p className={`text-xs sm:text-sm truncate ${isXbox ? "text-gray-400" : "text-gray-500"}`}>{user.email}</p>
+                                <h1 className="text-lg sm:text-2xl font-bold truncate text-[var(--color-foreground)]">{user.displayName || "Usuario"}</h1>
+                                <p className="text-xs sm:text-sm truncate text-[var(--color-foreground)]/60">{user.email}</p>
                             </div>
                             {/* Botón salir — siempre visible */}
                             <button
@@ -195,13 +195,13 @@ export function Profile() {
                         </div>
                         {/* Fila inferior (solo mobile): botón deseados a ancho completo */}
                         <div className="mt-3 sm:hidden">
-                            <Link to="/wishlist" className={`flex items-center justify-center gap-2 w-full px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${isXbox ? "border-gray-600 text-gray-300 hover:border-gray-400 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-black/5"}`}>
+                            <Link to="/wishlist" className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-lg text-sm font-medium border border-[var(--color-foreground)]/20 text-[var(--color-foreground)]/70 hover:border-[var(--color-primary)]/50 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors">
                                 ♥ Deseados
                             </Link>
                         </div>
                         {/* Botón deseados en desktop — al lado del salir */}
                         <div className="hidden sm:flex justify-end mt-0">
-                            <Link to="/wishlist" className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${isXbox ? "border-gray-600 text-gray-300 hover:border-gray-400 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-black/5"}`}>
+                            <Link to="/wishlist" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--color-foreground)]/20 text-[var(--color-foreground)]/70 hover:border-[var(--color-primary)]/50 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors">
                                 ♥ Deseados
                             </Link>
                         </div>
@@ -218,7 +218,7 @@ export function Profile() {
                     )}
 
                     {/* Tabs */}
-                    <div className={`flex gap-1 p-1 rounded-xl mb-6 backdrop-blur-md ${isXbox ? "bg-[#111]/90" : "bg-white/80 shadow-sm"}`}>
+                    <div className={`card flex gap-1 p-1 mb-6 ${isXbox ? "bg-[#111]/90" : ""}`}>
                         {(["perfil", "pedidos"] as const).map(tab => (
                             <button
                                 key={tab}
@@ -227,9 +227,7 @@ export function Profile() {
                                     ? isXbox
                                         ? "bg-[#107C10] text-white shadow"
                                         : "bg-[var(--color-primary)] text-white shadow"
-                                    : isXbox
-                                        ? "text-gray-400 hover:text-gray-200 hover:bg-white/5"
-                                        : "text-gray-600 hover:text-gray-800 hover:bg-black/5"
+                                    : "text-[var(--color-foreground)]/50 hover:text-[var(--color-foreground)] hover:bg-[var(--color-foreground)]/5"
                                     }`}
                             >
                                 {tab === "perfil" ? "Mi Perfil" : "Mis Pedidos"}
@@ -239,43 +237,43 @@ export function Profile() {
 
                     {/* TAB: PERFIL */}
                     {activeTab === "perfil" && (
-                        <div className={`p-4 sm:p-8 rounded-2xl backdrop-blur-md ${isXbox ? "bg-[#1A1A1A]/95 border border-[#107C10]" : "bg-white/95 shadow-xl"}` }>
+                        <div className={`card p-4 sm:p-8 ${isXbox ? "bg-[#1A1A1A]/95 border border-[#107C10]" : ""}`}>
                             {message && (
-                                <div className={`p-4 mb-6 rounded-lg ${message.includes("error") ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
+                                <div className={`p-4 mb-6 rounded-lg ${message.includes("error") ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
                                     {message}
                                 </div>
                             )}
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label htmlFor="profile_name" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Nombre</label>
+                                        <label htmlFor="profile_name" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Nombre</label>
                                         <input id="profile_name" type="text" name="name" value={formData.name} onChange={handleChange} className={inputClass} required />
                                     </div>
                                     <div>
-                                        <label htmlFor="profile_apellido" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Apellido</label>
+                                        <label htmlFor="profile_apellido" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Apellido</label>
                                         <input id="profile_apellido" type="text" name="apellido" value={formData.apellido} onChange={handleChange} className={inputClass} required />
                                     </div>
                                 </div>
                                 <div>
-                                    <label htmlFor="profile_email" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Email (No modificable)</label>
+                                    <label htmlFor="profile_email" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Email (No modificable)</label>
                                     <input id="profile_email" type="email" value={user.email || ""} disabled className={`${inputClass} opacity-70 cursor-not-allowed`} />
                                 </div>
                                 <div>
-                                    <label htmlFor="profile_domicilio" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Domicilio</label>
+                                    <label htmlFor="profile_domicilio" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Domicilio</label>
                                     <input id="profile_domicilio" type="text" name="domicilio" value={formData.domicilio} onChange={handleChange} className={inputClass} required />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label htmlFor="profile_ciudad" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Ciudad</label>
+                                        <label htmlFor="profile_ciudad" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Ciudad</label>
                                         <input id="profile_ciudad" type="text" name="ciudad" value={formData.ciudad} onChange={handleChange} className={inputClass} required />
                                     </div>
                                     <div>
-                                        <label htmlFor="profile_codigo_postal" className={`block mb-2 text-sm font-medium ${isXbox ? "text-gray-300" : "text-gray-700"}`}>Código Postal (4 dígitos)</label>
+                                        <label htmlFor="profile_codigo_postal" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Código Postal (4 dígitos)</label>
                                         <input id="profile_codigo_postal" type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleChange} maxLength={4} className={`${inputClass} ${cpError ? "border-red-500" : ""}`} required />
                                         {cpError && <p className="text-red-500 text-xs mt-1">{cpError}</p>}
                                     </div>
                                 </div>
-                                <div className="flex justify-stretch sm:justify-end pt-4 border-t border-gray-200 dark:border-gray-700/50">
+                                <div className="flex justify-stretch sm:justify-end pt-4 border-t border-[var(--color-foreground)]/10">
                                     <button
                                         type="submit"
                                         disabled={saving}
@@ -296,10 +294,10 @@ export function Profile() {
                                     <div className="w-12 h-12 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
                                 </div>
                             ) : orders.length === 0 ? (
-                                <div className={`p-8 rounded-2xl text-center backdrop-blur-md ${isXbox ? "bg-[#1A1A1A]/95 border border-[#107C10]" : "bg-white/95 shadow-xl"}`}>
+                                <div className={`card p-8 text-center ${isXbox ? "bg-[#1A1A1A]/95 border border-[#107C10]" : ""}`}>
                                     <div className="text-5xl mb-4">📦</div>
-                                    <h3 className={`text-xl font-bold mb-2 ${isXbox ? "text-white" : "text-gray-900"}`}>Todavía no tenés pedidos</h3>
-                                    <p className={`mb-6 ${isXbox ? "text-gray-400" : "text-gray-500"}`}>¡Explorá el catálogo y hacé tu primera compra!</p>
+                                    <h3 className="text-xl font-bold mb-2 text-[var(--color-foreground)]">Todavía no tenés pedidos</h3>
+                                    <p className="mb-6 text-[var(--color-foreground)]/60">¡Explorá el catálogo y hacé tu primera compra!</p>
                                     <Link to="/catalogo" className="btn-primary inline-block px-6 py-2">Ir al catálogo</Link>
                                 </div>
                             ) : (
@@ -308,10 +306,10 @@ export function Profile() {
                                         <div key={order.id} className="card p-4 sm:p-6 animate-fade-in-up" style={{ animationDelay: `${idx * 0.1}s` }}>
                                             <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
                                                 <div className="min-w-0">
-                                                    <span className={`font-mono text-sm font-bold ${isXbox ? "text-gray-300" : "text-gray-500"}`}>
+                                                    <span className="font-mono text-sm font-bold text-[var(--color-foreground)]/80">
                                                         Pedido #{String(order.id).padStart(4, "0")}
                                                     </span>
-                                                    <p className={`text-xs mt-0.5 ${isXbox ? "text-gray-500" : "text-gray-400"}`}>
+                                                    <p className="text-xs mt-0.5 text-[var(--color-foreground)]/50">
                                                         {new Date(order.created_at).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
                                                     </p>
                                                 </div>
@@ -319,14 +317,14 @@ export function Profile() {
                                                     <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${ESTADO_COLORS[order.estado_visible ?? order.estado] ?? "bg-gray-100 text-gray-600"}`}>
                                                         {order.estado_visible ?? order.estado}
                                                     </span>
-                                                    <span className={`text-base sm:text-lg font-bold ${isXbox ? "text-[#107C10]" : "text-[var(--color-primary)]"}`}>
+                                                    <span className="text-base sm:text-lg font-bold text-[var(--color-primary)]">
                                                         {formatearPrecio(order.total)}
                                                     </span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
                                                 {order.productos.map((p, i) => (
-                                                    <div key={i} className={`flex items-center gap-3 text-sm ${isXbox ? "text-gray-300" : "text-gray-700"}`}>
+                                                    <div key={i} className="flex items-center gap-3 text-sm text-[var(--color-foreground)]/80">
                                                         {p.image && <img src={p.image} alt={p.nombre} className="w-10 h-10 rounded object-cover border border-gray-200/20" />}
                                                         <span className="flex-1 truncate">{p.nombre}</span>
                                                         <span className="text-xs opacity-60">×{p.cantidad}</span>

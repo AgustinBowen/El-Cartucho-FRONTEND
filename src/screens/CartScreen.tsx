@@ -358,14 +358,17 @@ export const CartScreen = () => {
           </Link>
 
           {stockWarnings.length > 0 && (
-            <div className="mb-6 p-4 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-200 animate-fade-in-up">
-              <h4 className="font-bold mb-2 flex items-center">
-                <AlertTriangle className="mr-2 text-orange-400" size={20} />
+            <div className="mb-6 p-4 rounded-xl border-2 border-orange-500 bg-orange-950/90 backdrop-blur-md shadow-lg shadow-orange-900/30 animate-fade-in-up">
+              <h4 className="font-bold mb-3 flex items-center gap-2 text-white text-base">
+                <AlertTriangle className="text-orange-400 flex-shrink-0" size={22} />
                 Ajustes de stock en tu carrito:
               </h4>
-              <ul className="list-disc list-inside space-y-1 text-sm">
+              <ul className="space-y-1.5 pl-1">
                 {stockWarnings.map((warning, index) => (
-                  <li key={index}>{warning}</li>
+                  <li key={index} className="flex items-start gap-2 text-sm text-orange-100">
+                    <span className="text-orange-400 mt-0.5 flex-shrink-0">•</span>
+                    {warning}
+                  </li>
                 ))}
               </ul>
             </div>

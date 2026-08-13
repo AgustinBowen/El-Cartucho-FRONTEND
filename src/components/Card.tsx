@@ -89,19 +89,32 @@ export const CardComponent: React.FC<CardProps> = ({ producto_id, imgSrc, imgAlt
               <span className="text-sm font-bold text-[var(--color-primary)]">{formatearPrecio(price)}</span>
             </div>
 
-            <button
-              onClick={handleAdd}
-              disabled={isLoading || sinStock}
-              aria-disabled={sinStock ? "true" : undefined}
-              title={sinStock ? "Producto sin stock disponible" : "Agregar al carrito"}
-              className={`btn-primary text-xs px-2 py-1 ${isLoading || sinStock ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {isLoading ? (
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <ShoppingCart size={13} />
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleWishlist}
+                disabled={wishlistLoading}
+                className={`cursor-pointer p-1.5 rounded-full transition-all duration-300 ${inWishlist
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "bg-[var(--color-foreground)]/10 text-[var(--color-foreground)]/60 hover:bg-red-50 hover:text-red-500"
+                  } ${wishlistLoading ? "animate-pulse" : ""}`}
+                title={inWishlist ? "Quitar de deseados" : "Agregar a deseados"}
+              >
+                <Heart size={13} fill={inWishlist ? "currentColor" : "none"} />
+              </button>
+              <button
+                onClick={handleAdd}
+                disabled={isLoading || sinStock}
+                aria-disabled={sinStock ? "true" : undefined}
+                title={sinStock ? "Producto sin stock disponible" : "Agregar al carrito"}
+                className={`btn-primary text-xs px-2 py-1 ${isLoading || sinStock ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {isLoading ? (
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <ShoppingCart size={13} />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

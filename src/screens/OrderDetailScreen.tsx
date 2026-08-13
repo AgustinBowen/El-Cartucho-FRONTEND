@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { ArrowLeft, Package, Truck, MapPin, Mail, Clock, AlertCircle, Copy, Check } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
 import { formatearPrecio } from "../utils/formatearPrecio"
 
 interface OrderDetail {
@@ -42,11 +43,23 @@ export const OrderDetailScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { isXbox } = useTheme()
 
+  const backgroundImage = isXbox
+    ? "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750461496/latest_howx98.png"
+    : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif"
+
+  const [backgroundLoaded, setBackgroundLoaded] = useState(false)
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copiedTracking, setCopiedTracking] = useState(false)
+
+  useEffect(() => {
+    const img = new Image()
+    img.onload = () => setBackgroundLoaded(true)
+    img.src = backgroundImage
+  }, [backgroundImage])
 
   useEffect(() => {
     const fetchOrderDetail = async () => {
@@ -93,8 +106,22 @@ export const OrderDetailScreen: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] pt-16 pb-12">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div
+      className={`min-h-screen pt-16 pb-12 relative transition-opacity duration-1000 ${backgroundLoaded ? "opacity-100" : "opacity-0"}`}
+      style={{
+        backgroundImage: backgroundLoaded ? `url('${backgroundImage}')` : "none",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Overlay */}
+      <div
+        className={`absolute inset-0 ${isXbox ? "bg-[#141414]" : "bg-[var(--color-background)]"}`}
+        style={{ opacity: isXbox ? 0.3 : 0.85 }}
+      />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
 
         {/* Botón Volver */}
         <Link
@@ -163,8 +190,8 @@ export const OrderDetailScreen: React.FC = () => {
                       <div key={idx} className="relative flex items-start gap-4">
                         <div
                           className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs ${isLast
-                              ? "bg-[var(--color-primary)] text-white shadow-md ring-4 ring-[var(--color-primary)]/20"
-                              : "bg-emerald-500 text-white"
+                            ? "bg-[var(--color-primary)] text-white shadow-md ring-4 ring-[var(--color-primary)]/20"
+                            : "bg-emerald-500 text-white"
                             }`}
                         >
                           <Check className="w-3 h-3" />
