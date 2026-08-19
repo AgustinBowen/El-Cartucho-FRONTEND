@@ -4,11 +4,12 @@ import type React from "react"
 
 import { useCart } from "../context/CartContext"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, MapPin, Mail, Loader2, AlertTriangle, Lock } from "lucide-react"
+import { ShoppingCart, Trash2, CreditCard, ArrowLeft, Plus, Minus, MapPin, Mail, Loader2, AlertTriangle, AlertCircle, Lock } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
 import { formatearPrecio } from "../utils/formatearPrecio"
 import { useAuth, isProfileIncomplete } from "../context/AuthContext"
+import { PedidoPendienteBanner, type PendingOrder } from "../components/PedidoPendienteBanner"
 
 export const CartScreen = () => {
   const { cartItems, updateQuantity, removeFromCart, total, updateCartItems } = useCart()
@@ -16,6 +17,12 @@ export const CartScreen = () => {
   const [error, setError] = useState<string | null>(null)
   const { isXbox } = useTheme()
   const { user, profile, updateProfileData } = useAuth()
+
+  // Estado para pedido pendiente activo
+  const [activePendingOrder, setActivePendingOrder] = useState<PendingOrder | null>(null)
+  const [showConflictModal, setShowConflictModal] = useState(false)
+  const [conflictActionLoading, setConflictActionLoading] = useState<"retry" | "cancel" | null>(null)
+  const [conflictError, setConflictError] = useState<string | null>(null)
   const [profileFormData, setProfileFormData] = useState({
     name: "",
     apellido: "",
@@ -159,7 +166,7 @@ export const CartScreen = () => {
     revalidateStock()
   }, [])
 
-  const handleConfirmPurchase = async () => {
+  const handleConfirmPurchase = async (skipPendingCheck = false) => {
     // Require login
     if (!user) {
       setError("Debes iniciar sesión para completar la compra.")
@@ -186,6 +193,13 @@ export const CartScreen = () => {
 
     if (costoEnvio === null) {
       setErrorCP("Debes validar el código postal")
+      return
+    }
+
+    // Si hay un pedido pendiente activo y no se salteó la verificación -> abrir modal de conflicto
+    if (!skipPendingCheck && activePendingOrder) {
+      setConflictError(null)
+      setShowConflictModal(true)
       return
     }
 
@@ -232,6 +246,89 @@ export const CartScreen = () => {
       setError(err instanceof Error ? err.message : "Error desconocido")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleConflictRetry = async () => {
+    if (!activePendingOrder || !user) return
+    setConflictActionLoading("retry")
+    setConflictError(null)
+
+    try {
+      const token = await user.getIdToken()
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/ed/pedido/${activePendingOrder.id}/reintentar-pago`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.init_point) {
+          window.location.href = data.init_point
+          return
+        }
+      }
+
+      if (res.status === 409) {
+        const errData = await res.json()
+        if (errData.code === "RESERVA_EXPIRADA") {
+          setConflictError("La reserva expiró. Armá el pedido de nuevo.")
+          setActivePendingOrder(null)
+        } else if (errData.code === "SIN_LINK_PAGO") {
+          setConflictError("No se puede retomar este pedido.")
+        } else if (errData.code === "ESTADO_NO_VALIDO") {
+          setConflictError("El estado del pedido cambió.")
+          setActivePendingOrder(null)
+        } else {
+          setConflictError(errData.error || "No se pudo reintentar el pago.")
+        }
+      } else {
+        setConflictError("Error al generar el link de pago.")
+      }
+    } catch (err) {
+      setConflictError("Error de conexión al reintentar el pago.")
+    } finally {
+      setConflictActionLoading(null)
+    }
+  }
+
+  const handleConflictCancelAndCreateNew = async () => {
+    if (!activePendingOrder || !user) return
+    setConflictActionLoading("cancel")
+    setConflictError(null)
+
+    try {
+      const token = await user.getIdToken()
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/ed/pedido/${activePendingOrder.id}/cancelar`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (res.ok) {
+        setShowConflictModal(false)
+        setActivePendingOrder(null)
+        // Proceder con la creación del nuevo pedido
+        await handleConfirmPurchase(true)
+        return
+      }
+
+      if (res.status === 409) {
+        const errData = await res.json()
+        if (errData.code === "PAGO_EN_CURSO") {
+          setConflictError("Detectamos un pago en proceso. Esperá unos segundos y volvé a intentar.")
+        } else if (errData.code === "ESTADO_NO_VALIDO") {
+          setConflictError("El estado del pedido cambió.")
+          setActivePendingOrder(null)
+        } else {
+          setConflictError(errData.error || "No se pudo cancelar el pedido anterior.")
+        }
+      } else {
+        setConflictError("Error al cancelar el pedido anterior.")
+      }
+    } catch (err) {
+      setConflictError("Error de conexión al cancelar el pedido anterior.")
+    } finally {
+      setConflictActionLoading(null)
     }
   }
 
@@ -356,6 +453,11 @@ export const CartScreen = () => {
             <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
             Continuar comprando
           </Link>
+
+          <PedidoPendienteBanner
+            onPendingOrderChange={setActivePendingOrder}
+            className="mb-6 animate-fade-in-up"
+          />
 
           {stockWarnings.length > 0 && (
             <div className="mb-6 p-4 rounded-xl border-2 border-orange-500 bg-orange-950/90 backdrop-blur-md shadow-lg shadow-orange-900/30 animate-fade-in-up">
@@ -660,7 +762,7 @@ export const CartScreen = () => {
                     </div>
                   ) : (
                     <button
-                      onClick={handleConfirmPurchase}
+                      onClick={() => handleConfirmPurchase(false)}
                       disabled={loading || !email.trim() || costoEnvio === null}
                       className={`w-full cursor-pointer btn-primary ${
                         loading || !email.trim() || costoEnvio === null ? "opacity-50 cursor-not-allowed" : ""
@@ -706,6 +808,67 @@ export const CartScreen = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de conflicto cuando existe un pedido pendiente activo al intentar comprar */}
+      {showConflictModal && activePendingOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className={`max-w-md w-full p-6 rounded-2xl shadow-2xl border ${isXbox ? "bg-[#1A1A1A] border-amber-500/40 text-white" : "bg-white border-amber-400 text-gray-900"}`}>
+            <div className="flex items-center gap-3 mb-4 text-amber-600 dark:text-amber-400">
+              <AlertTriangle size={28} />
+              <h3 className="text-xl font-bold">Tenés un pedido pendiente</h3>
+            </div>
+            <p className="text-sm opacity-80 mb-6">
+              Ya tenés un pedido esperando pago por <strong className="text-amber-600 dark:text-amber-400">{formatearPrecio(activePendingOrder.total)}</strong>. Para proceder con una nueva compra, elegí una opción:
+            </p>
+
+            {conflictError && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium flex items-center gap-2">
+                <AlertCircle size={15} />
+                <span>{conflictError}</span>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleConflictRetry}
+                disabled={conflictActionLoading !== null}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 cursor-pointer transition-all shadow-md"
+              >
+                {conflictActionLoading === "retry" ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <CreditCard size={16} />
+                )}
+                <span>Completar el pago pendiente</span>
+              </button>
+
+              <button
+                onClick={handleConflictCancelAndCreateNew}
+                disabled={conflictActionLoading !== null}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-sm text-red-700 dark:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 disabled:opacity-50 cursor-pointer transition-all"
+              >
+                {conflictActionLoading === "cancel" ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Trash2 size={16} />
+                )}
+                <span>Cancelar anterior y crear uno nuevo</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowConflictModal(false)
+                  setConflictError(null)
+                }}
+                disabled={conflictActionLoading !== null}
+                className="w-full py-2 rounded-xl text-xs font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer transition-colors"
+              >
+                Volver al carrito
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
