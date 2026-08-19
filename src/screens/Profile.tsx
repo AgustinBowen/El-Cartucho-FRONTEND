@@ -68,6 +68,7 @@ export function Profile() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
     const [nearExpiryMap, setNearExpiryMap] = useState<Record<number, boolean>>({});
+    const [expiredMap, setExpiredMap] = useState<Record<number, boolean>>({});
     const [retryLoadingMap, setRetryLoadingMap] = useState<Record<number, boolean>>({});
     const [retryErrorMap, setRetryErrorMap] = useState<Record<number, string | null>>({});
 
@@ -358,8 +359,9 @@ export function Profile() {
                             ) : (
                                 <div className="space-y-4">
                                     {orders.map((order, idx) => {
-                                        const isPendiente = order.estado_efectivo === "pendiente" || order.estado === "pendiente";
+                                        const isPendiente = order.estado_efectivo === "pendiente";
                                         const isNearExpiry = !!nearExpiryMap[order.id];
+                                        const isExpired = !!expiredMap[order.id];
                                         const isRetryLoading = !!retryLoadingMap[order.id];
                                         const retryError = retryErrorMap[order.id];
 
@@ -397,10 +399,10 @@ export function Profile() {
                                                         {isPendiente && order.expira_at && (
                                                             <CronometroReserva
                                                                 expiraAt={order.expira_at}
-                                                                pedidoId={order.id}
                                                                 onExpire={() => checkOrderStatus(order.id)}
-                                                                onNearExpiryChange={(near) => {
+                                                                onNearExpiryChange={(near, expired) => {
                                                                     setNearExpiryMap(prev => ({ ...prev, [order.id]: near }));
+                                                                    setExpiredMap(prev => ({ ...prev, [order.id]: expired }));
                                                                 }}
                                                             />
                                                         )}
@@ -413,27 +415,36 @@ export function Profile() {
                                                 {/* Retry button & warnings for pending orders */}
                                                 {isPendiente && (
                                                     <div className="mb-4 pt-3 pb-2 border-t border-amber-500/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                                        <div className="text-xs text-amber-700 dark:text-amber-300">
-                                                            {isNearExpiry ? (
-                                                                <span className="font-semibold flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                                                        <div className="text-xs">
+                                                            {isExpired ? (
+                                                                <span className="font-semibold flex items-center gap-1.5 text-red-600 dark:text-red-400">
                                                                     <AlertCircle size={15} />
-                                                                    La reserva está por vencer. Aguardá unos instantes.
+                                                                    La reserva expiró.
+                                                                </span>
+                                                            ) : isNearExpiry ? (
+                                                                <span className="font-semibold flex items-center gap-1.5 text-amber-600 dark:text-amber-400 animate-pulse">
+                                                                    <AlertCircle size={15} />
+                                                                    Quedan menos de 60 segundos, completá el pago ahora
                                                                 </span>
                                                             ) : (
-                                                                <span>Podés reintentar el pago antes de que expire la reserva.</span>
+                                                                <span className="text-amber-700 dark:text-amber-300">
+                                                                    Podés reintentar el pago antes de que expire la reserva.
+                                                                </span>
                                                             )}
                                                         </div>
 
                                                         {order.init_point_disponible && (
                                                             <button
                                                                 onClick={() => handleRetryPayment(order.id)}
-                                                                disabled={isNearExpiry || isRetryLoading}
+                                                                disabled={isExpired || isRetryLoading}
                                                                 className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs text-white transition-all cursor-pointer shadow-sm ${
-                                                                    isNearExpiry || isRetryLoading
+                                                                    isExpired || isRetryLoading
                                                                         ? "bg-gray-400 dark:bg-gray-700 opacity-60 cursor-not-allowed"
-                                                                        : isXbox
-                                                                            ? "bg-[#107C10] hover:bg-[#0c5f0c] shadow-green-900/30"
-                                                                            : "bg-amber-600 hover:bg-amber-700 shadow-amber-600/20"
+                                                                        : isNearExpiry
+                                                                            ? "bg-amber-600 hover:bg-amber-700 font-bold animate-pulse shadow-amber-600/30"
+                                                                            : isXbox
+                                                                                ? "bg-[#107C10] hover:bg-[#0c5f0c] shadow-green-900/30"
+                                                                                : "bg-amber-600 hover:bg-amber-700 shadow-amber-600/20"
                                                                 }`}
                                                             >
                                                                 {isRetryLoading ? (
@@ -444,7 +455,7 @@ export function Profile() {
                                                                 ) : (
                                                                     <>
                                                                         <CreditCard size={15} />
-                                                                        <span>Completar pago</span>
+                                                                        <span>{isNearExpiry ? "Completar pago ahora" : "Completar pago"}</span>
                                                                     </>
                                                                 )}
                                                             </button>

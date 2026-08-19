@@ -3,9 +3,8 @@ import { Clock, AlertTriangle } from "lucide-react";
 
 interface CronometroReservaProps {
   expiraAt: string | null | undefined;
-  pedidoId: number;
   onExpire?: () => void;
-  onNearExpiryChange?: (isNearExpiry: boolean) => void;
+  onNearExpiryChange?: (isNearExpiry: boolean, isExpired: boolean) => void;
 }
 
 export const CronometroReserva: React.FC<CronometroReservaProps> = ({
@@ -35,20 +34,21 @@ export const CronometroReserva: React.FC<CronometroReservaProps> = ({
     setSecondsLeft(diff);
 
     if (diff <= 0) {
-      onNearExpiryChangeRef.current?.(false);
+      onNearExpiryChangeRef.current?.(false, true);
       return;
     }
 
-    onNearExpiryChangeRef.current?.(diff <= 60);
+    onNearExpiryChangeRef.current?.(diff <= 60, false);
 
     const interval = setInterval(() => {
       const remaining = calculateSecondsLeft();
       setSecondsLeft(remaining);
 
+      const isExpired = remaining <= 0;
       const nearExpiry = remaining <= 60 && remaining > 0;
-      onNearExpiryChangeRef.current?.(nearExpiry);
+      onNearExpiryChangeRef.current?.(nearExpiry, isExpired);
 
-      if (remaining <= 0) {
+      if (isExpired) {
         clearInterval(interval);
         onExpireRef.current?.();
       }

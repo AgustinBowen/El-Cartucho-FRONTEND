@@ -47,6 +47,10 @@ export const SuccessScreen: React.FC = () => {
                 }
 
                 const res = await fetch(`${API_URL}/ed/pedido/${extRef}/estado`, { headers })
+                if (res.status === 403 || res.status === 404) {
+                    setStatus("timeout")
+                    return true
+                }
                 if (res.ok) {
                     const data = await res.json()
                     const estado = data.estado_efectivo || data.estado_pago
@@ -89,7 +93,7 @@ export const SuccessScreen: React.FC = () => {
         return () => {
             if (timer) clearInterval(timer)
         }
-    }, [searchParams, user, authLoading])
+    }, [searchParams, user?.uid, authLoading])
 
     return (
         <div className="min-h-screen bg-[var(--color-background)] pt-24 px-4 pb-12">
