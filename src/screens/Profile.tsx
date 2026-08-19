@@ -1,15 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { FormEvent } from "react";
 import { useAuth, isProfileIncomplete } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigate, Link } from "react-router-dom";
 import { formatearPrecio } from "../utils/formatearPrecio";
+import { CronometroReserva } from "../components/CronometroReserva";
+import { CreditCard, Loader2, AlertCircle } from "lucide-react";
 
 type Order = {
     id: number;
     estado: "pendiente" | "pagado" | "cancelado";
+    estado_pago: string;
+    estado_efectivo: string;
+    estado_envio?: string | null;
+    estado_visible?: string | null;
     total: number;
     created_at: string;
+    expira_at?: string | null;
+    init_point_disponible?: boolean;
     productos: {
         nombre: string;
         cantidad: number;
@@ -21,9 +29,11 @@ type Order = {
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const ESTADO_COLORS: Record<string, string> = {
-    pagado: "bg-green-100 text-green-700",
-    pendiente: "bg-yellow-100 text-yellow-700",
-    cancelado: "bg-red-100 text-red-600",
+    pagado: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    pendiente: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
+    expirado: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    cancelado: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
+    reembolsado: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
 };
 
 export function Profile() {
@@ -57,6 +67,9 @@ export function Profile() {
     // Orders
     const [orders, setOrders] = useState<Order[]>([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
+    const [nearExpiryMap, setNearExpiryMap] = useState<Record<number, boolean>>({});
+    const [retryLoadingMap, setRetryLoadingMap] = useState<Record<number, boolean>>({});
+    const [retryErrorMap, setRetryErrorMap] = useState<Record<number, string | null>>({});
 
     useEffect(() => {
         if (!loading && !user) navigate("/");
@@ -74,29 +87,94 @@ export function Profile() {
         }
     }, [profile]);
 
+    const loadOrders = useCallback(async () => {
+        if (!user) return;
+        setOrdersLoading(true);
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch(`${API_URL}/ed/mis-pedidos`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.status === 401) {
+                await logout();
+                navigate("/");
+                return;
+            }
+            if (res.ok) setOrders(await res.json());
+        } catch (e) {
+            console.error("Error loading orders", e);
+        } finally {
+            setOrdersLoading(false);
+        }
+    }, [user, logout, navigate]);
+
     useEffect(() => {
-        if (activeTab !== "pedidos" || !user) return;
-        const loadOrders = async () => {
-            setOrdersLoading(true);
-            try {
-                const token = await user.getIdToken();
-                const res = await fetch(`${API_URL}/ed/mis-pedidos`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (res.status === 401) {
-                    await logout();
-                    navigate("/");
+        if (activeTab === "pedidos" && user) {
+            loadOrders();
+        }
+    }, [activeTab, user, loadOrders]);
+
+    const handleRetryPayment = async (orderId: number) => {
+        if (!user) return;
+        setRetryLoadingMap(prev => ({ ...prev, [orderId]: true }));
+        setRetryErrorMap(prev => ({ ...prev, [orderId]: null }));
+
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch(`${API_URL}/ed/pedido/${orderId}/reintentar-pago`, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.init_point) {
+                    window.location.href = data.init_point;
                     return;
                 }
-                if (res.ok) setOrders(await res.json());
-            } catch (e) {
-                console.error("Error loading orders", e);
-            } finally {
-                setOrdersLoading(false);
             }
-        };
-        loadOrders();
-    }, [activeTab, user, logout, navigate]);
+
+            if (res.status === 409) {
+                const errorData = await res.json();
+                if (errorData.code === "RESERVA_EXPIRADA") {
+                    setRetryErrorMap(prev => ({ ...prev, [orderId]: "La reserva expiró. Armá el pedido de nuevo." }));
+                    await loadOrders();
+                } else if (errorData.code === "SIN_LINK_PAGO") {
+                    setRetryErrorMap(prev => ({ ...prev, [orderId]: "No se puede retomar este pedido." }));
+                } else if (errorData.code === "ESTADO_NO_VALIDO") {
+                    setRetryErrorMap(prev => ({ ...prev, [orderId]: "El estado del pedido cambió." }));
+                    await loadOrders();
+                } else {
+                    setRetryErrorMap(prev => ({ ...prev, [orderId]: errorData.error || "No se pudo reintentar el pago." }));
+                }
+            } else {
+                setRetryErrorMap(prev => ({ ...prev, [orderId]: "Error al procesar la solicitud de reintento." }));
+            }
+        } catch (e) {
+            console.error("Error retrying payment", e);
+            setRetryErrorMap(prev => ({ ...prev, [orderId]: "Error de conexión al reintentar el pago." }));
+        } finally {
+            setRetryLoadingMap(prev => ({ ...prev, [orderId]: false }));
+        }
+    };
+
+    const checkOrderStatus = async (orderId: number) => {
+        if (!user) return;
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch(`${API_URL}/ed/pedido/${orderId}/estado`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.estado_efectivo === "expirado" || data.estado_pago === "pagado") {
+                    await loadOrders();
+                }
+            }
+        } catch (e) {
+            console.error("Error checking order status", e);
+        }
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -279,38 +357,123 @@ export function Profile() {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {orders.map((order, idx) => (
-                                        <div key={order.id} className={`p-6 rounded-2xl backdrop-blur-md animate-fade-in-up ${isXbox ? "bg-[#1A1A1A]/95 border border-[#222]" : "bg-white/95 shadow-lg"}`} style={{ animationDelay: `${idx * 0.1}s` }}>
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div>
-                                                    <span className={`font-mono text-sm font-bold ${isXbox ? "text-gray-300" : "text-gray-500"}`}>
-                                                        Pedido #{String(order.id).padStart(4, "0")}
-                                                    </span>
-                                                    <p className={`text-xs mt-0.5 ${isXbox ? "text-gray-500" : "text-gray-400"}`}>
-                                                        {new Date(order.created_at).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${ESTADO_COLORS[order.estado] ?? "bg-gray-100 text-gray-600"}`}>
-                                                        {order.estado}
-                                                    </span>
-                                                    <span className={`text-lg font-bold ${isXbox ? "text-[#107C10]" : "text-[var(--color-primary)]"}`}>
-                                                        {formatearPrecio(order.total)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                {order.productos.map((p, i) => (
-                                                    <div key={i} className={`flex items-center gap-3 text-sm ${isXbox ? "text-gray-300" : "text-gray-700"}`}>
-                                                        {p.image && <img src={p.image} alt={p.nombre} className="w-10 h-10 rounded object-cover border border-gray-200/20" />}
-                                                        <span className="flex-1 truncate">{p.nombre}</span>
-                                                        <span className="text-xs opacity-60">×{p.cantidad}</span>
-                                                        <span className="font-medium">{formatearPrecio(p.precio_unitario)}</span>
+                                    {orders.map((order, idx) => {
+                                        const isPendiente = order.estado_efectivo === "pendiente" || order.estado === "pendiente";
+                                        const isNearExpiry = !!nearExpiryMap[order.id];
+                                        const isRetryLoading = !!retryLoadingMap[order.id];
+                                        const retryError = retryErrorMap[order.id];
+
+                                        return (
+                                            <div
+                                                key={order.id}
+                                                className={`p-6 rounded-2xl backdrop-blur-md animate-fade-in-up transition-all ${
+                                                    isPendiente
+                                                        ? isXbox
+                                                            ? "bg-[#1F1C12]/95 border-2 border-amber-500/40 shadow-lg shadow-amber-500/5"
+                                                            : "bg-amber-50/70 dark:bg-[#1C1A14]/95 border-2 border-amber-400/50 shadow-md"
+                                                        : isXbox
+                                                            ? "bg-[#1A1A1A]/95 border border-[#222]"
+                                                            : "bg-white/95 shadow-lg"
+                                                }`}
+                                                style={{ animationDelay: `${idx * 0.1}s` }}
+                                            >
+                                                {/* Header info */}
+                                                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`font-mono text-sm font-bold ${isXbox ? "text-gray-300" : "text-gray-500"}`}>
+                                                                Pedido #{String(order.id).padStart(4, "0")}
+                                                            </span>
+                                                            <span className={`px-3 py-0.5 rounded-full text-xs font-semibold capitalize ${ESTADO_COLORS[order.estado_efectivo || order.estado] ?? "bg-gray-100 text-gray-600"}`}>
+                                                                {order.estado_efectivo === "pendiente" ? "Esperando pago" : (order.estado_efectivo || order.estado)}
+                                                            </span>
+                                                        </div>
+                                                        <p className={`text-xs mt-0.5 ${isXbox ? "text-gray-500" : "text-gray-400"}`}>
+                                                            {new Date(order.created_at).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
+                                                        </p>
                                                     </div>
-                                                ))}
+
+                                                    <div className="flex items-center gap-4">
+                                                        {isPendiente && order.expira_at && (
+                                                            <CronometroReserva
+                                                                expiraAt={order.expira_at}
+                                                                pedidoId={order.id}
+                                                                onExpire={() => checkOrderStatus(order.id)}
+                                                                onNearExpiryChange={(near) => {
+                                                                    setNearExpiryMap(prev => ({ ...prev, [order.id]: near }));
+                                                                }}
+                                                            />
+                                                        )}
+                                                        <span className={`text-lg font-bold ${isXbox ? "text-[#107C10]" : "text-[var(--color-primary)]"}`}>
+                                                            {formatearPrecio(order.total)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Retry button & warnings for pending orders */}
+                                                {isPendiente && (
+                                                    <div className="mb-4 pt-3 pb-2 border-t border-amber-500/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                        <div className="text-xs text-amber-700 dark:text-amber-300">
+                                                            {isNearExpiry ? (
+                                                                <span className="font-semibold flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                                                                    <AlertCircle size={15} />
+                                                                    La reserva está por vencer. Aguardá unos instantes.
+                                                                </span>
+                                                            ) : (
+                                                                <span>Podés reintentar el pago antes de que expire la reserva.</span>
+                                                            )}
+                                                        </div>
+
+                                                        {order.init_point_disponible && (
+                                                            <button
+                                                                onClick={() => handleRetryPayment(order.id)}
+                                                                disabled={isNearExpiry || isRetryLoading}
+                                                                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs text-white transition-all cursor-pointer shadow-sm ${
+                                                                    isNearExpiry || isRetryLoading
+                                                                        ? "bg-gray-400 dark:bg-gray-700 opacity-60 cursor-not-allowed"
+                                                                        : isXbox
+                                                                            ? "bg-[#107C10] hover:bg-[#0c5f0c] shadow-green-900/30"
+                                                                            : "bg-amber-600 hover:bg-amber-700 shadow-amber-600/20"
+                                                                }`}
+                                                            >
+                                                                {isRetryLoading ? (
+                                                                    <>
+                                                                        <Loader2 size={15} className="animate-spin" />
+                                                                        <span>Generando link...</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <CreditCard size={15} />
+                                                                        <span>Completar pago</span>
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Retry error message */}
+                                                {retryError && (
+                                                    <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium flex items-center gap-2">
+                                                        <AlertCircle size={15} />
+                                                        <span>{retryError}</span>
+                                                    </div>
+                                                )}
+
+                                                {/* Product list */}
+                                                <div className="space-y-2">
+                                                    {order.productos.map((p, i) => (
+                                                        <div key={i} className={`flex items-center gap-3 text-sm ${isXbox ? "text-gray-300" : "text-gray-700"}`}>
+                                                            {p.image && <img src={p.image} alt={p.nombre} className="w-10 h-10 rounded object-cover border border-gray-200/20" />}
+                                                            <span className="flex-1 truncate">{p.nombre}</span>
+                                                            <span className="text-xs opacity-60">×{p.cantidad}</span>
+                                                            <span className="font-medium">{formatearPrecio(p.precio_unitario)}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -320,3 +483,4 @@ export function Profile() {
         </div>
     );
 }
+
