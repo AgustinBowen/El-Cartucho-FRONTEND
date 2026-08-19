@@ -244,3 +244,138 @@ body {
   @apply w-2 h-2 bg-current rounded-full animate-pulse;
   animation-delay: calc(var(--i) * 0.1s);
 }
+
+/* Oculta scrollbar visualmente pero mantiene scroll funcional */
+.no-scrollbar {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / Edge */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;               /* Chrome / Safari */
+}
+
+/* ─── Filter Bar Layout ──────────────────────────────────────────────────── */
+
+/*
+  Estructura: flex-wrap en el contenedor raíz.
+  - .filter-bar__actions   → crece hasta llenar el espacio sobrante (flex: 1 1 auto)
+  - .filter-bar__filters   → toma el espacio que necesitan sus controles
+  En tablet ambas zonas pasan a 100% de ancho (wrap).
+  En mobile cada control ocupa el ancho completo.
+*/
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  /* Evita que el contenedor se expanda más allá de su padre */
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Zona izquierda: buscador + limpiar */
+.filter-bar__actions {
+  flex: 1 1 220px;  /* crece, se encoge, mínimo preferido 220px */
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-bar__actions .input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.filter-bar__clear-btn {
+  flex-shrink: 0;
+}
+
+/* Zona derecha: stock | ordenar | precio */
+.filter-bar__filters {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+/* Grupo individual (label + control) */
+.filter-bar__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.filter-bar__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0.7;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Inputs de precio con ancho fijo razonable */
+.filter-bar__price-input {
+  width: 88px;
+  min-width: 0;
+}
+
+/* ─── Tablet (≤ 1023px): ambas zonas pasan a fila completa ──────────────── */
+@media (max-width: 1023px) {
+  .filter-bar__actions {
+    flex: 1 1 100%;
+  }
+
+  .filter-bar__filters {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* ─── Mobile (≤ 639px): todo en columna, ancho completo ─────────────────── */
+@media (max-width: 639px) {
+  .filter-bar {
+    gap: 14px;
+  }
+
+  .filter-bar__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar__clear-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .filter-bar__filters {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .filter-bar__group {
+    width: 100%;
+  }
+
+  /* Selects y wrappers también a ancho completo */
+  .filter-bar__group .relative,
+  .filter-bar__group select {
+    width: 100%;
+  }
+
+  /* Fila de precio: los dos inputs se reparten el ancho disponible */
+  .filter-bar__group .flex {
+    width: 100%;
+  }
+
+  .filter-bar__price-input {
+    flex: 1 1 0;
+    width: 0 !important; /* anula el ancho fijo; flex: 1 toma el control */
+    min-width: 0;
+  }
+}

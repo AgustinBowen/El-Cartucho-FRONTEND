@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useCart } from "../context/CartContext"
+import { useWishlist } from "../context/WishlistContext"
 import { useTheme } from "../context/ThemeContext"
 import { useNavigate, Link, useLocation } from "react-router-dom"
 import { ShoppingCart, Menu, X, Sun, Moon, Search, User, Heart } from "lucide-react"
@@ -12,6 +13,7 @@ import { AuthModal } from "./AuthModal"
 
 function Navbar() {
   const { cartItems } = useCart()
+  const { wishlist } = useWishlist()
   const { theme, setTheme, isXbox } = useTheme()
   const { user, profile } = useAuth()
   const profileIncomplete = isProfileIncomplete(profile)
@@ -19,6 +21,7 @@ function Navbar() {
   const location = useLocation()
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
+  const wishlistCount = wishlist.length
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -67,21 +70,23 @@ function Navbar() {
         : "bg-[var(--color-background)]/90 border-b border-[var(--color-border)] ps2-glow"
         }`}>
         <div className="max-w-screen-xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover: ${isXbox ? "bg-[#107C10] xbox-glow " : "bg-[#4a7bc8] ps2-glow"
-                  }`}
-              >
-                <img src="/images/navbar.webp" alt="Icon" className="w-7 h-7" />
-              </div>
-              <span className="game-title text-xl font-bold text-[var(--color-primary)] hidden sm:block">
-                El Cartucho
-              </span>
-            </Link>
+          <div className="flex items-center h-16">
+            {/* Logo — flex-1 para ocupar el mismo espacio que las acciones */}
+            <div className="flex-1 flex items-center">
+              <Link to="/" className="flex items-center space-x-3 group">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover: ${isXbox ? "bg-[#107C10] xbox-glow " : "bg-[#4a7bc8] ps2-glow"
+                    }`}
+                >
+                  <img src="/images/navbar.webp" alt="Icon" className="w-7 h-7" />
+                </div>
+                <span className="game-title text-xl font-bold text-[var(--color-primary)] hidden sm:block">
+                  El Cartucho
+                </span>
+              </Link>
+            </div>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation — centrado */}
             <div className="hidden md:flex items-center space-x-1">
               {navItems.map((item) => (
                 <Link
@@ -97,8 +102,8 @@ function Navbar() {
               ))}
             </div>
 
-            {/* Right side actions */}
-            <div className="flex items-center space-x-2">
+            {/* Right side actions — flex-1 justify-end para equilibrar con el logo */}
+            <div className="flex-1 flex items-center justify-end gap-1">
               {/* Search */}
               <div className="hidden md:flex relative">
                 {searchOpen ? (
@@ -147,26 +152,34 @@ function Navbar() {
               {user && (
                 <Link
                   to="/wishlist"
-                  className="relative cursor-pointer p-2 rounded-lg text-[var(--color-foreground)] hover:text-red-500 hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+                  className="relative cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-lg text-[var(--color-foreground)] hover:text-red-500 hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
                   title="Lista de deseados"
                   aria-label="Lista de deseados"
                 >
-                  <Heart size={20} />
+                  <Heart size={18} className={wishlistCount > 0 ? "text-red-500 flex-shrink-0" : "flex-shrink-0"} fill={wishlistCount > 0 ? "currentColor" : "none"} />
+                  <span className="hidden md:inline text-sm font-medium">
+                    Deseados
+                  </span>
+                  {wishlistCount > 0 && (
+                    <span className="flex items-center justify-center text-xs text-white rounded-full bg-red-500 min-w-[18px] h-[18px] px-1 leading-none">
+                      {wishlistCount > 99 ? "99+" : wishlistCount}
+                    </span>
+                  )}
                 </Link>
               )}
 
               {/* Cart */}
               <button
                 onClick={handleCartClick}
-                className="relative cursor-pointer p-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
+                className="relative cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-lg text-[var(--color-foreground)] hover:text-[var(--color-primary)] hover:bg-[var(--color-muted)] transition-all duration-300 focus-visible"
                 title="Carrito de compras"
                 aria-label="Abrir carrito"
               >
-                <ShoppingCart size={20} />
+                <ShoppingCart size={18} className="flex-shrink-0" />
+                <span className="hidden md:inline text-sm font-medium">Carrito</span>
                 {cartCount > 0 && (
                   <span
-                    className={`absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center text-xs text-white rounded-full animate-pulse ${isXbox ? "bg-[#107C10]" : "bg-[#4a7bc8]"
-                      }`}
+                    className={`flex items-center justify-center text-xs text-white rounded-full animate-pulse min-w-[18px] h-[18px] px-1 leading-none ${isXbox ? "bg-[#107C10]" : "bg-[#4a7bc8]"}`}
                   >
                     {cartCount}
                   </span>
