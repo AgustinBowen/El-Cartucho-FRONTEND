@@ -817,8 +817,8 @@ export const CartScreen = () => {
 
       {/* Modal de conflicto cuando existe un pedido pendiente activo al intentar comprar */}
       {showConflictModal && activePendingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-scale">
-          <div className="card max-w-md w-full p-6 rounded-2xl shadow-2xl border-2 border-[var(--color-warning)]/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="card max-w-md w-full p-6 rounded-2xl shadow-2xl border-2 border-[var(--color-warning)]/40 animate-fade-in-scale">
             <div className="flex items-center gap-3 mb-4" style={{ color: "var(--color-warning)" }}>
               <AlertTriangle size={28} />
               <h3 className="text-xl font-bold text-[var(--color-foreground)]">Tenés un pedido pendiente</h3>
