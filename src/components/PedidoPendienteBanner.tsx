@@ -25,6 +25,7 @@ export type PendingOrder = {
 interface PedidoPendienteBannerProps {
     onPendingOrderChange?: (order: PendingOrder | null) => void
     className?: string
+    compacto?: boolean
 }
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
@@ -32,6 +33,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
     onPendingOrderChange,
     className = "",
+    compacto = false,
 }) => {
     const { user, loading: authLoading } = useAuth()
     const { refreshCart } = useCart()
@@ -189,14 +191,101 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
 
     if (successMsg) {
         return (
-            <div className={`p-4 rounded-2xl bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-300 flex items-center gap-3 text-sm font-medium ${className}`}>
-                <CheckCircle2 size={18} />
+            <div className={`p-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-300 flex items-center gap-2 text-xs font-medium ${className}`}>
+                <CheckCircle2 size={16} />
                 <span>{successMsg}</span>
             </div>
         )
     }
 
     if (!pendingOrder) return null
+
+    if (compacto) {
+        return (
+            <div className={`p-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/40 shadow-sm ${className}`}>
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-0.5 min-w-0 flex-1">
+                            <span className="font-bold text-amber-900 dark:text-amber-200 text-xs block leading-snug">
+                                Pedido pendiente: {formatearPrecio(pendingOrder.total)}
+                            </span>
+                            {pendingOrder.expira_at && (
+                                <CronometroReserva
+                                    expiraAt={pendingOrder.expira_at}
+                                    onExpire={fetchPendingOrder}
+                                />
+                            )}
+                        </div>
+
+                        <button
+                            onClick={handleRetry}
+                            disabled={actionLoading !== null}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 cursor-pointer transition-all shadow-sm flex-shrink-0"
+                        >
+                            {actionLoading === "retry" ? (
+                                <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                                <CreditCard size={12} />
+                            )}
+                            <span>Pagar</span>
+                        </button>
+                    </div>
+
+                    {pendingOrder.productos && pendingOrder.productos.length > 0 && (
+                        <div className="mt-1 pt-1.5 border-t border-amber-500/20 max-h-28 overflow-y-auto space-y-1">
+                            {pendingOrder.productos.map((prod) => (
+                                <div key={prod.producto_id} className="flex items-center justify-between gap-2 p-1 rounded bg-amber-500/10 dark:bg-amber-900/20 text-[11px]">
+                                    <span className="font-medium text-amber-950 dark:text-amber-100 truncate flex-1">{prod.nombre}</span>
+                                    <span className="text-amber-800 dark:text-amber-300 font-semibold whitespace-nowrap">
+                                        {prod.cantidad} × {formatearPrecio(prod.precio_unitario)}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="flex justify-end pt-1">
+                        <button
+                            onClick={() => setShowCancelConfirm(true)}
+                            disabled={actionLoading !== null}
+                            className="text-xs text-red-600 dark:text-red-400 hover:underline cursor-pointer font-medium disabled:opacity-50 transition-all bg-transparent border-none p-0"
+                        >
+                            {actionLoading === "cancel" ? "Cancelando..." : "Cancelar pedido"}
+                        </button>
+                    </div>
+                </div>
+
+                {showCancelConfirm && (
+                    <div className="mt-2 pt-2 border-t border-amber-500/20 flex flex-col gap-2 text-xs">
+                        <span className="text-amber-800 dark:text-amber-300 font-medium text-[11px]">
+                            ¿Cancelar pedido y liberar productos?
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleCancel}
+                                className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer"
+                            >
+                                Sí, cancelar
+                            </button>
+                            <button
+                                onClick={() => setShowCancelConfirm(false)}
+                                className="px-2.5 py-1 rounded bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium text-xs cursor-pointer"
+                            >
+                                No, mantener
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {errorMsg && (
+                    <div className="mt-2 p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-[11px] font-medium flex items-center gap-1.5">
+                        <AlertCircle size={13} />
+                        <span>{errorMsg}</span>
+                    </div>
+                )}
+            </div>
+        )
+    }
 
     return (
         <div className={`p-5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border-2 border-amber-500/40 shadow-lg ${className}`}>

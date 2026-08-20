@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"
 import { ShoppingCart, X, Plus, Minus, Trash2, CreditCard } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
 import { formatearPrecio } from "@/utils/formatearPrecio"
+import { PedidoPendienteBanner } from "./PedidoPendienteBanner"
 
 interface OffcanvasCartProps {
   isOpen: boolean
@@ -150,6 +151,11 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                 <X size={20} />
               </button>
             </div>
+          </div>
+
+          {/* Banner de pedido pendiente */}
+          <div className="px-4 pt-3">
+            <PedidoPendienteBanner compacto={true} />
           </div>
 
           {/* Content */}
