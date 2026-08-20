@@ -36,7 +36,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
     compacto = false,
 }) => {
     const { user, loading: authLoading } = useAuth()
-    const cart = useCart() as ReturnType<typeof useCart> & { refreshCart?: () => Promise<void> }
+    const { refreshCart } = useCart()
     const [pendingOrder, setPendingOrder] = useState<PendingOrder | null>(null)
     const [loading, setLoading] = useState(false)
     const [actionLoading, setActionLoading] = useState<"retry" | "cancel" | null>(null)
@@ -144,7 +144,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
 
             if (res.ok) {
                 const data = await res.json()
-                await cart.refreshCart?.()
+                await refreshCart()
 
                 let noticeMsg = "Pedido cancelado correctamente."
                 if (data.ajustes && Array.isArray(data.ajustes) && data.ajustes.length > 0) {
