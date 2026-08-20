@@ -1,15 +1,25 @@
 import type React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../context/AuthContext"
+import { useCart } from "../context/CartContext"
 import { CronometroReserva } from "./CronometroReserva"
 import { formatearPrecio } from "../utils/formatearPrecio"
 import { AlertCircle, CreditCard, XCircle, Loader2, CheckCircle2 } from "lucide-react"
+
+export type PendingOrderProduct = {
+    producto_id: number
+    nombre: string
+    cantidad: number
+    precio_unitario: number
+    imagen?: string | null
+}
 
 export type PendingOrder = {
     id: number
     total: number
     expira_at: string | null
     init_point_disponible: boolean
+    productos?: PendingOrderProduct[]
 }
 
 interface PedidoPendienteBannerProps {
@@ -24,6 +34,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
     className = "",
 }) => {
     const { user, loading: authLoading } = useAuth()
+    const { refreshCart } = useCart()
     const [pendingOrder, setPendingOrder] = useState<PendingOrder | null>(null)
     const [loading, setLoading] = useState(false)
     const [actionLoading, setActionLoading] = useState<"retry" | "cancel" | null>(null)
@@ -130,10 +141,26 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
             })
 
             if (res.ok) {
-                setSuccessMsg("Pedido cancelado correctamente.")
+                const data = await res.json()
+                await refreshCart()
+
+                let noticeMsg = "Pedido cancelado correctamente."
+                if (data.ajustes && Array.isArray(data.ajustes) && data.ajustes.length > 0) {
+                    const avisos = data.ajustes.map(
+                        (a: { nombre: string; cantidad_final: number }) =>
+                            `Agregamos ${a.nombre} pero solo había ${a.cantidad_final} disponible`
+                    ).join(". ")
+                    noticeMsg += ` ${avisos}.`
+                }
+
+                if (data.reposicion_carrito_ok === false) {
+                    noticeMsg += " Algunos productos pueden no haber vuelto al carrito."
+                }
+
+                setSuccessMsg(noticeMsg)
                 setPendingOrder(null)
                 onPendingOrderChange?.(null)
-                setTimeout(() => setSuccessMsg(null), 4000)
+                setTimeout(() => setSuccessMsg(null), 6000)
                 return
             }
 
@@ -218,6 +245,31 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
                     </button>
                 </div>
             </div>
+
+            {pendingOrder.productos && pendingOrder.productos.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-amber-500/20 space-y-2">
+                    <span className="text-xs font-semibold text-amber-900 dark:text-amber-200 block">
+                        Productos en este pedido:
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {pendingOrder.productos.map((prod) => (
+                            <div key={prod.producto_id} className="flex items-center gap-2 p-1.5 rounded-lg bg-amber-500/10 dark:bg-amber-900/20">
+                                {prod.imagen ? (
+                                    <img src={prod.imagen} alt={prod.nombre} className="w-8 h-8 object-cover rounded flex-shrink-0" />
+                                ) : (
+                                    <div className="w-8 h-8 rounded bg-amber-200 dark:bg-amber-800 flex items-center justify-center text-xs flex-shrink-0">🎮</div>
+                                )}
+                                <div className="min-w-0 flex-1 text-xs">
+                                    <p className="font-bold text-amber-950 dark:text-amber-100 truncate">{prod.nombre}</p>
+                                    <p className="text-amber-800 dark:text-amber-300">
+                                        {prod.cantidad} x {formatearPrecio(prod.precio_unitario)}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {showCancelConfirm && (
                 <div className="mt-4 pt-3 border-t border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">

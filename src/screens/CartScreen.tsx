@@ -12,7 +12,7 @@ import { useAuth, isProfileIncomplete } from "../context/AuthContext"
 import { PedidoPendienteBanner, type PendingOrder } from "../components/PedidoPendienteBanner"
 
 export const CartScreen = () => {
-  const { cartItems, updateQuantity, removeFromCart, total, updateCartItems } = useCart()
+  const { cartItems, updateQuantity, removeFromCart, total, updateCartItems, refreshCart } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { isXbox } = useTheme()
@@ -235,12 +235,23 @@ export const CartScreen = () => {
       if (!response.ok) {
         if (response.status === 409) {
           const errorData = await response.json()
-          throw new Error(errorData.message || "Stock insuficiente para completar la compra.")
+          if (errorData.code === "PEDIDO_PENDIENTE_EXISTENTE") {
+            setActivePendingOrder({
+              id: errorData.pedido_id,
+              total: 0,
+              expira_at: null,
+              init_point_disponible: true,
+            })
+            setShowConflictModal(true)
+            return
+          }
+          throw new Error(errorData.error || errorData.message || "Stock insuficiente para completar la compra.")
         }
         throw new Error(`Error al crear pedido: ${response.statusText}`)
       }
 
       const data = await response.json()
+      await refreshCart()
       window.location.href = data.mercado_pago_url
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido")
@@ -305,6 +316,7 @@ export const CartScreen = () => {
       })
 
       if (res.ok) {
+        await refreshCart()
         setShowConflictModal(false)
         setActivePendingOrder(null)
         // Proceder con la creación del nuevo pedido
@@ -315,7 +327,7 @@ export const CartScreen = () => {
       if (res.status === 409) {
         const errData = await res.json()
         if (errData.code === "PAGO_EN_CURSO") {
-          setConflictError("Detectamos un pago en proceso. Esperá unos segundos y volvé a intentar.")
+          setConflictError("Detectamos un pago en proceso, esperá unos segundos")
         } else if (errData.code === "ESTADO_NO_VALIDO") {
           setConflictError("El estado del pedido cambió.")
           setActivePendingOrder(null)
