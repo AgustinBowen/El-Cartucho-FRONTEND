@@ -21,6 +21,7 @@ type CartContextType = {
   total: number
   updateCartItems: (items: CartItem[]) => void
   clearCart: () => void
+  refreshCart: () => Promise<void>
   isLoading: boolean
 }
 
@@ -180,6 +181,27 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const refreshCart = useCallback(async () => {
+    if (!user) return
+    setIsLoading(true)
+    try {
+      const headers = await getAuthHeaders()
+      const res = await fetch(`${API_URL}/ed/carrito`, { headers })
+      if (res.status === 401) {
+        await logout()
+        return
+      }
+      if (res.ok) {
+        const backendItems: CartItem[] = await res.json()
+        setCartItems(backendItems)
+      }
+    } catch (e) {
+      console.error("Error refreshing cart from backend", e)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [user, getAuthHeaders, logout])
+
   const updateCartItems = (items: CartItem[]) => {
     setCartItems(items)
   }
@@ -187,7 +209,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeFromCart, total, updateCartItems, clearCart, isLoading }}>
+    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeFromCart, total, updateCartItems, clearCart, refreshCart, isLoading }}>
       {children}
     </CartContext.Provider>
   )
