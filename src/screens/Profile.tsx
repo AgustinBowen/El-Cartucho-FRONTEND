@@ -32,21 +32,21 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const ESTADO_COLORS: Record<string, string> = {
     // Etiquetas legibles (estado_visible)
-    "Pago confirmado": "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20",
-    "Preparando tu pedido": "bg-blue-500/10 text-blue-600 border border-blue-500/20",
-    "En camino": "bg-purple-500/10 text-purple-600 border border-purple-500/20",
-    "Entregado": "bg-green-500/10 text-green-600 border border-green-500/20",
-    "Esperando pago": "bg-amber-500/10 text-amber-600 border border-amber-500/20",
-    "Pago rechazado": "bg-rose-500/10 text-rose-600 border border-rose-500/20",
-    "Expirado": "bg-gray-500/10 text-gray-600 border border-gray-500/20",
-    "Reembolsado": "bg-rose-500/10 text-rose-600 border border-rose-500/20",
+    "Pago confirmado": "bg-[var(--color-success)]/15 text-[var(--color-success)] border border-[var(--color-success)]/30",
+    "Preparando tu pedido": "bg-[var(--color-secondary)]/15 text-[var(--color-secondary)] border border-[var(--color-secondary)]/30",
+    "En camino": "bg-purple-500/15 text-purple-600 border border-purple-500/20",
+    "Entregado": "bg-[var(--color-success)]/15 text-[var(--color-success)] border border-[var(--color-success)]/30",
+    "Esperando pago": "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border border-[var(--color-warning)]/30",
+    "Pago rechazado": "bg-[var(--color-error)]/15 text-[var(--color-error)] border border-[var(--color-error)]/30",
+    "Expirado": "bg-[var(--color-foreground)]/10 text-[var(--color-foreground)]/60 border border-[var(--color-border)]",
+    "Reembolsado": "bg-[var(--color-error)]/15 text-[var(--color-error)] border border-[var(--color-error)]/30",
 
     // Estados técnicos (estado_pago / estado_efectivo)
-    pagado: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    pendiente: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
-    expirado: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    cancelado: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
-    reembolsado: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    pagado: "bg-[var(--color-success)]/15 text-[var(--color-success)] border border-[var(--color-success)]/30",
+    pendiente: "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border border-[var(--color-warning)]/30",
+    expirado: "bg-[var(--color-error)]/15 text-[var(--color-error)] border border-[var(--color-error)]/30",
+    cancelado: "bg-[var(--color-error)]/15 text-[var(--color-error)] border border-[var(--color-error)]/30",
+    reembolsado: "bg-purple-500/15 text-purple-600 border border-purple-500/20",
 };
 
 export function Profile() {
@@ -225,11 +225,6 @@ export function Profile() {
         );
     }
 
-    const inputClass = `w-full px-4 py-3 rounded-lg border ${isXbox
-        ? "bg-[#2A2A2A] border-gray-600 text-white focus:border-[#107C10]"
-        : "bg-[var(--color-foreground)]/5 border-[var(--color-foreground)]/15 text-[var(--color-foreground)] focus:border-[var(--color-primary)]"
-        } focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none transition-colors placeholder:text-[var(--color-foreground)]/40`;
-
     const profileIncomplete = isProfileIncomplete(profile);
 
     return (
@@ -283,7 +278,7 @@ export function Profile() {
 
                     {/* Alert banner for incomplete profile */}
                     {profileIncomplete && (
-                        <div className="mb-6 p-4 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 flex items-center gap-3">
+                        <div className="mb-6 p-4 rounded-xl bg-[var(--color-warning)]/15 border border-[var(--color-warning)]/40 text-[var(--color-warning)] flex items-center gap-3">
                             <span className="text-xl">⚠️</span>
                             <p className="text-sm font-medium">
                                 Tu perfil está incompleto. Completá tu apellido, domicilio, ciudad y código postal (4 dígitos) para realizar compras.
@@ -321,37 +316,37 @@ export function Profile() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label htmlFor="profile_name" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Nombre</label>
-                                        <input id="profile_name" type="text" name="name" value={formData.name} onChange={handleChange} className={inputClass} required />
+                                        <input id="profile_name" type="text" name="name" value={formData.name} onChange={handleChange} className="input" required />
                                     </div>
                                     <div>
                                         <label htmlFor="profile_apellido" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Apellido</label>
-                                        <input id="profile_apellido" type="text" name="apellido" value={formData.apellido} onChange={handleChange} className={inputClass} required />
+                                        <input id="profile_apellido" type="text" name="apellido" value={formData.apellido} onChange={handleChange} className="input" required />
                                     </div>
                                 </div>
                                 <div>
                                     <label htmlFor="profile_email" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Email (No modificable)</label>
-                                    <input id="profile_email" type="email" value={user.email || ""} disabled className={`${inputClass} opacity-70 cursor-not-allowed`} />
+                                    <input id="profile_email" type="email" value={user.email || ""} disabled className="input opacity-70 cursor-not-allowed" />
                                 </div>
                                 <div>
                                     <label htmlFor="profile_domicilio" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Domicilio</label>
-                                    <input id="profile_domicilio" type="text" name="domicilio" value={formData.domicilio} onChange={handleChange} className={inputClass} required />
+                                    <input id="profile_domicilio" type="text" name="domicilio" value={formData.domicilio} onChange={handleChange} className="input" required />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label htmlFor="profile_ciudad" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Ciudad</label>
-                                        <input id="profile_ciudad" type="text" name="ciudad" value={formData.ciudad} onChange={handleChange} className={inputClass} required />
+                                        <input id="profile_ciudad" type="text" name="ciudad" value={formData.ciudad} onChange={handleChange} className="input" required />
                                     </div>
                                     <div>
                                         <label htmlFor="profile_codigo_postal" className="block mb-2 text-sm font-medium text-[var(--color-foreground)]/80">Código Postal (4 dígitos)</label>
-                                        <input id="profile_codigo_postal" type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleChange} maxLength={4} className={`${inputClass} ${cpError ? "border-red-500" : ""}`} required />
-                                        {cpError && <p className="text-red-500 text-xs mt-1">{cpError}</p>}
+                                        <input id="profile_codigo_postal" type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleChange} maxLength={4} className={`input ${cpError ? "border-[var(--color-error)]" : ""}`} required />
+                                        {cpError && <p className="text-[var(--color-error)] text-xs mt-1">{cpError}</p>}
                                     </div>
                                 </div>
-                                <div className="flex justify-stretch sm:justify-end pt-4 border-t border-[var(--color-foreground)]/10">
+                                <div className="flex justify-stretch sm:justify-end pt-4 border-t border-[var(--color-border)]">
                                     <button
                                         type="submit"
                                         disabled={saving}
-                                        className={`w-full sm:w-auto px-8 py-3 rounded-lg font-medium text-white transition-colors cursor-pointer ${isXbox ? "bg-[#107C10] hover:bg-[#0c5f0c]" : "bg-[#4a7bc8] hover:bg-[#3a5ba8]"} ${saving ? "opacity-70 cursor-not-allowed" : ""}`}
+                                        className={`btn-primary w-full sm:w-auto ${saving ? "opacity-70 cursor-not-allowed" : ""}`}
                                     >
                                         {saving ? "Guardando..." : "Guardar cambios"}
                                     </button>
@@ -429,20 +424,21 @@ export function Profile() {
 
                                                 {/* Reintento de pago */}
                                                 {isPendiente && (
-                                                    <div className="mb-4 pt-3 pb-2 border-t border-amber-500/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                    <div className="mb-4 pt-3 pb-2 border-t border-[var(--color-warning)]/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                                         <div className="text-xs">
                                                             {isExpired ? (
-                                                                <span className="font-semibold flex items-center gap-1.5 text-red-600 dark:text-red-400">
+                                                                <span className="font-semibold flex items-center gap-1.5 text-[var(--color-error)]">
                                                                     <AlertCircle size={15} />
                                                                     La reserva expiró.
                                                                 </span>
                                                             ) : isNearExpiry ? (
-                                                                <span className="font-semibold flex items-center gap-1.5 text-amber-600 dark:text-amber-400 animate-pulse">
+                                                                <span className="font-semibold flex items-center gap-1.5 text-[var(--color-warning)] animate-pulse">
                                                                     <AlertCircle size={15} />
                                                                     Quedan menos de 60 segundos, completá el pago ahora
                                                                 </span>
                                                             ) : (
-                                                                <span className="text-amber-700 dark:text-amber-300">
+                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--color-warning)]/15 border border-[var(--color-warning)]/30 text-[var(--color-warning)] font-semibold">
+                                                                    <AlertCircle size={13} />
                                                                     Podés reintentar el pago antes de que expire la reserva.
                                                                 </span>
                                                             )}
@@ -452,14 +448,8 @@ export function Profile() {
                                                             <button
                                                                 onClick={() => handleRetryPayment(order.id)}
                                                                 disabled={isExpired || isRetryLoading}
-                                                                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs text-white transition-all cursor-pointer shadow-sm ${
-                                                                    isExpired || isRetryLoading
-                                                                        ? "bg-gray-400 dark:bg-gray-700 opacity-60 cursor-not-allowed"
-                                                                        : isNearExpiry
-                                                                            ? "bg-amber-600 hover:bg-amber-700 font-bold animate-pulse shadow-amber-600/30"
-                                                                            : isXbox
-                                                                                ? "bg-[#107C10] hover:bg-[#0c5f0c] shadow-green-900/30"
-                                                                                : "bg-amber-600 hover:bg-amber-700 shadow-amber-600/20"
+                                                                className={`btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+                                                                    isNearExpiry && !isExpired ? "animate-pulse" : ""
                                                                 }`}
                                                             >
                                                                 {isRetryLoading ? (

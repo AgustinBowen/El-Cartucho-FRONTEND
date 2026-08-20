@@ -632,13 +632,7 @@ export const CartScreen = () => {
                       <button
                         onClick={validarCodigoPostal}
                         disabled={validandoCP || !codigoPostal.trim()}
-                        className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${
-                          validandoCP || !codigoPostal.trim()
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            : isXbox
-                              ? "bg-green-500 hover:bg-green-600 text-white"
-                              : "bg-blue-500 hover:bg-blue-600 text-white"
-                        }`}
+                        className={`cursor-pointer px-4 py-2 rounded-xl font-semibold text-white transition-all bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         {validandoCP ? <Loader2 size={16} className="animate-spin" /> : "Calcular Envío"}
                       </button>
@@ -823,18 +817,20 @@ export const CartScreen = () => {
 
       {/* Modal de conflicto cuando existe un pedido pendiente activo al intentar comprar */}
       {showConflictModal && activePendingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className={`max-w-md w-full p-6 rounded-2xl shadow-2xl border ${isXbox ? "bg-[#1A1A1A] border-amber-500/40 text-white" : "bg-white border-amber-400 text-gray-900"}`}>
-            <div className="flex items-center gap-3 mb-4 text-amber-600 dark:text-amber-400">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-scale">
+          <div className="card max-w-md w-full p-6 rounded-2xl shadow-2xl border-2 border-[var(--color-warning)]/40">
+            <div className="flex items-center gap-3 mb-4" style={{ color: "var(--color-warning)" }}>
               <AlertTriangle size={28} />
-              <h3 className="text-xl font-bold">Tenés un pedido pendiente</h3>
+              <h3 className="text-xl font-bold text-[var(--color-foreground)]">Tenés un pedido pendiente</h3>
             </div>
-            <p className="text-sm opacity-80 mb-6">
-              Ya tenés un pedido esperando pago por <strong className="text-amber-600 dark:text-amber-400">{formatearPrecio(activePendingOrder.total)}</strong>. Para proceder con una nueva compra, elegí una opción:
+            <p className="text-sm text-[var(--color-foreground)]/75 mb-6">
+              Ya tenés un pedido esperando pago por{" "}
+              <strong style={{ color: "var(--color-warning)" }}>{formatearPrecio(activePendingOrder.total)}</strong>
+              . Para proceder con una nueva compra, elegí una opción:
             </p>
 
             {conflictError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium flex items-center gap-2">
+              <div className="mb-4 p-3 rounded-xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/30 text-[var(--color-error)] text-xs font-medium flex items-center gap-2">
                 <AlertCircle size={15} />
                 <span>{conflictError}</span>
               </div>
@@ -844,7 +840,7 @@ export const CartScreen = () => {
               <button
                 onClick={handleConflictRetry}
                 disabled={conflictActionLoading !== null}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 cursor-pointer transition-all shadow-md"
+                className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {conflictActionLoading === "retry" ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -857,7 +853,7 @@ export const CartScreen = () => {
               <button
                 onClick={handleConflictCancelAndCreateNew}
                 disabled={conflictActionLoading !== null}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-sm text-red-700 dark:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 disabled:opacity-50 cursor-pointer transition-all"
+                className="btn-secondary w-full flex items-center justify-center gap-2 text-[var(--color-error)] border-[var(--color-error)]/30 hover:border-[var(--color-error)]/60 hover:bg-[var(--color-error)]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {conflictActionLoading === "cancel" ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -873,7 +869,7 @@ export const CartScreen = () => {
                   setConflictError(null)
                 }}
                 disabled={conflictActionLoading !== null}
-                className="w-full py-2 rounded-xl text-xs font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer transition-colors"
+                className="w-full py-2 rounded-xl text-xs font-medium text-[var(--color-foreground)]/50 hover:text-[var(--color-foreground)]/80 cursor-pointer transition-colors bg-transparent border-none"
               >
                 Volver al carrito
               </button>

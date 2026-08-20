@@ -59,7 +59,7 @@ export const CronometroReserva: React.FC<CronometroReservaProps> = ({
 
   if (!expiraAt || secondsLeft <= 0) {
     return (
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--color-accent)] text-[var(--color-error)] border border-[var(--color-error)]/40 shadow-sm">
         <Clock size={14} />
         <span>Reserva vencida (00:00)</span>
       </div>
@@ -73,10 +73,10 @@ export const CronometroReserva: React.FC<CronometroReservaProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all shadow-sm ${
         isNearExpiry
-          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse"
-          : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+          ? "bg-[var(--color-warning)] text-white border border-[var(--color-warning)] animate-pulse"
+          : "bg-[var(--color-accent)] text-[var(--color-secondary)] border border-[var(--color-secondary)]/40"
       }`}
     >
       {isNearExpiry ? <AlertTriangle size={14} /> : <Clock size={14} />}

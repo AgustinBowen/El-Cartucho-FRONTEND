@@ -127,11 +127,7 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
         <div className="relative z-10 h-full flex flex-col">
           {/* Header */}
           <div
-            className={`p-6 border-b border-[var(--color-border)] ${
-              isXbox
-                ? "bg-gradient-to-r from-green-50 to-green-100"
-                : "bg-gradient-to-r from-blue-900/10 to-blue-800/10"
-            }`}
+            className="p-6 border-b border-[var(--color-border)] bg-gradient-to-r from-[var(--color-primary)]/10 to-[var(--color-primary)]/5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -162,21 +158,15 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
           {cartItems.length === 0 ? (
             /* Empty Cart */
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-              <div
-                className={`w-20 h-20 rounded-full ${
-                  isXbox ? "bg-gray-100" : "bg-gray-800"
-                } flex items-center justify-center mb-4`}
-              >
-                <ShoppingCart size={40} className="text-gray-400" />
+              <div className="w-20 h-20 rounded-full bg-[var(--color-muted)] flex items-center justify-center mb-4">
+                <ShoppingCart size={40} className="text-[var(--color-foreground)]/40" />
               </div>
               <h3 className="text-lg font-bold mb-2">Tu carrito está vacío</h3>
               <p className="text-[var(--color-foreground)]/70 mb-4">¡Agrega algunos juegos increíbles!</p>
               <button
                 onClick={onClose}
-                className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-                } text-white`}
-                aria-label="Eliminar item de carrito"
+                className="cursor-pointer btn-primary"
+                aria-label="Continuar comprando"
               >
                 Continuar comprando
               </button>
@@ -282,23 +272,19 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                 </div>
 
                 {/* Action Buttons */}
-                <div className="space-y-6">
+                <div className="space-y-3">
                   <button
                     onClick={handleCheckout}
-                    className={`cursor-pointer w-full py-3 px-4 rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 ${
-                      isXbox ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-                    }`}
+                    className="cursor-pointer btn-primary w-full flex items-center justify-center"
                     aria-label="Proceder al pago"
                   >
-                    <div className="flex items-center justify-center">
-                      <CreditCard size={20} className="mr-2" />
-                      Proceder al pago
-                    </div>
+                    <CreditCard size={20} className="mr-2" />
+                    Proceder al pago
                   </button>
 
                   <button
                     onClick={onClose}
-                    className="cursor-pointer w-full py-2 px-4 rounded-lg font-medium border border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+                    className="cursor-pointer btn-secondary w-full"
                     aria-label="Continuar comprando"
                   >
                     Continuar comprando

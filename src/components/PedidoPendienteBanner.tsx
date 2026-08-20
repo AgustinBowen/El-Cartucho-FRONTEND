@@ -191,7 +191,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
 
     if (successMsg) {
         return (
-            <div className={`p-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-300 flex items-center gap-2 text-xs font-medium ${className}`}>
+            <div className={`p-3 rounded-xl bg-[var(--color-success)]/10 border border-[var(--color-success)]/30 text-[var(--color-success)] flex items-center gap-2 text-xs font-medium ${className}`}>
                 <CheckCircle2 size={16} />
                 <span>{successMsg}</span>
             </div>
@@ -202,11 +202,11 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
 
     if (compacto) {
         return (
-            <div className={`p-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/40 shadow-sm ${className}`}>
+            <div className={`p-3 rounded-xl bg-[var(--color-background)]/92 backdrop-blur-md border border-[var(--color-warning)]/60 shadow-md ${className}`}>
                 <div className="flex flex-col gap-2">
                     <div className="flex items-start justify-between gap-2">
                         <div className="space-y-0.5 min-w-0 flex-1">
-                            <span className="font-bold text-amber-900 dark:text-amber-200 text-xs block leading-snug">
+                            <span className="font-bold text-[var(--color-warning)] text-xs block leading-snug">
                                 Pedido pendiente: {formatearPrecio(pendingOrder.total)}
                             </span>
                             {pendingOrder.expira_at && (
@@ -220,7 +220,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
                         <button
                             onClick={handleRetry}
                             disabled={actionLoading !== null}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 cursor-pointer transition-all shadow-sm flex-shrink-0"
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-white bg-[var(--color-warning)] hover:opacity-80 disabled:opacity-50 cursor-pointer transition-all shadow-sm flex-shrink-0"
                         >
                             {actionLoading === "retry" ? (
                                 <Loader2 size={12} className="animate-spin" />
@@ -232,11 +232,11 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
                     </div>
 
                     {pendingOrder.productos && pendingOrder.productos.length > 0 && (
-                        <div className="mt-1 pt-1.5 border-t border-amber-500/20 max-h-28 overflow-y-auto space-y-1">
+                        <div className="mt-1 pt-1.5 border-t border-[var(--color-warning)]/20 max-h-28 overflow-y-auto space-y-1">
                             {pendingOrder.productos.map((prod) => (
-                                <div key={prod.producto_id} className="flex items-center justify-between gap-2 p-1 rounded bg-amber-500/10 dark:bg-amber-900/20 text-[11px]">
-                                    <span className="font-medium text-amber-950 dark:text-amber-100 truncate flex-1">{prod.nombre}</span>
-                                    <span className="text-amber-800 dark:text-amber-300 font-semibold whitespace-nowrap">
+                                <div key={prod.producto_id} className="flex items-center justify-between gap-2 p-1 rounded bg-[var(--color-warning)]/10 text-[11px]">
+                                    <span className="font-medium text-[var(--color-foreground)] truncate flex-1">{prod.nombre}</span>
+                                    <span className="text-[var(--color-foreground)]/70 font-semibold whitespace-nowrap">
                                         {prod.cantidad} × {formatearPrecio(prod.precio_unitario)}
                                     </span>
                                 </div>
@@ -248,7 +248,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
                         <button
                             onClick={() => setShowCancelConfirm(true)}
                             disabled={actionLoading !== null}
-                            className="text-xs text-red-600 dark:text-red-400 hover:underline cursor-pointer font-medium disabled:opacity-50 transition-all bg-transparent border-none p-0"
+                            className="text-xs text-[var(--color-error)] hover:underline cursor-pointer font-medium disabled:opacity-50 transition-all bg-transparent border-none p-0"
                         >
                             {actionLoading === "cancel" ? "Cancelando..." : "Cancelar pedido"}
                         </button>
@@ -256,20 +256,20 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
                 </div>
 
                 {showCancelConfirm && (
-                    <div className="mt-2 pt-2 border-t border-amber-500/20 flex flex-col gap-2 text-xs">
-                        <span className="text-amber-800 dark:text-amber-300 font-medium text-[11px]">
+                    <div className="mt-2 pt-2 border-t border-[var(--color-warning)]/20 flex flex-col gap-2 text-xs">
+                        <span className="text-[var(--color-foreground)]/80 font-medium text-[11px]">
                             ¿Cancelar pedido y liberar productos?
                         </span>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={handleCancel}
-                                className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer"
+                                className="px-2.5 py-1 rounded bg-[var(--color-error)] hover:opacity-80 text-white font-bold text-xs cursor-pointer"
                             >
                                 Sí, cancelar
                             </button>
                             <button
                                 onClick={() => setShowCancelConfirm(false)}
-                                className="px-2.5 py-1 rounded bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium text-xs cursor-pointer"
+                                className="px-2.5 py-1 rounded bg-[var(--color-muted)] text-[var(--color-foreground)]/70 font-medium text-xs cursor-pointer border border-[var(--color-border)]"
                             >
                                 No, mantener
                             </button>
@@ -278,7 +278,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
                 )}
 
                 {errorMsg && (
-                    <div className="mt-2 p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-[11px] font-medium flex items-center gap-1.5">
+                    <div className="mt-2 p-2 rounded-lg bg-[var(--color-error)]/10 border border-[var(--color-error)]/30 text-[var(--color-error)] text-[11px] font-medium flex items-center gap-1.5">
                         <AlertCircle size={13} />
                         <span>{errorMsg}</span>
                     </div>
@@ -288,11 +288,11 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
     }
 
     return (
-        <div className={`p-5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border-2 border-amber-500/40 shadow-lg ${className}`}>
+        <div className={`p-5 rounded-2xl bg-[var(--color-background)]/92 backdrop-blur-md border-2 border-[var(--color-warning)]/60 shadow-lg ${className}`}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-amber-900 dark:text-amber-200 text-base">
+                        <span className="font-bold text-[var(--color-warning)] text-base">
                             Tenés un pedido esperando pago por {formatearPrecio(pendingOrder.total)}
                         </span>
                     </div>
@@ -310,7 +310,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
                     <button
                         onClick={handleRetry}
                         disabled={actionLoading !== null}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 cursor-pointer transition-all shadow-sm"
+                        className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
                         {actionLoading === "retry" ? (
                             <Loader2 size={14} className="animate-spin" />
@@ -323,7 +323,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
                     <button
                         onClick={() => setShowCancelConfirm(true)}
                         disabled={actionLoading !== null}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-red-700 dark:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 disabled:opacity-50 cursor-pointer transition-all"
+                        className="btn-secondary flex items-center gap-2 text-[var(--color-error)] border-[var(--color-error)]/30 hover:border-[var(--color-error)]/60 hover:bg-[var(--color-error)]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
                         {actionLoading === "cancel" ? (
                             <Loader2 size={14} className="animate-spin" />
@@ -336,21 +336,21 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
             </div>
 
             {pendingOrder.productos && pendingOrder.productos.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-amber-500/20 space-y-2">
-                    <span className="text-xs font-semibold text-amber-900 dark:text-amber-200 block">
+                <div className="mt-3 pt-3 border-t border-[var(--color-warning)]/20 space-y-2">
+                    <span className="text-xs font-semibold text-[var(--color-foreground)]/80 block">
                         Productos en este pedido:
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {pendingOrder.productos.map((prod) => (
-                            <div key={prod.producto_id} className="flex items-center gap-2 p-1.5 rounded-lg bg-amber-500/10 dark:bg-amber-900/20">
+                            <div key={prod.producto_id} className="flex items-center gap-2 p-1.5 rounded-lg bg-[var(--color-warning)]/10">
                                 {prod.imagen ? (
                                     <img src={prod.imagen} alt={prod.nombre} className="w-8 h-8 object-cover rounded flex-shrink-0" />
                                 ) : (
-                                    <div className="w-8 h-8 rounded bg-amber-200 dark:bg-amber-800 flex items-center justify-center text-xs flex-shrink-0">🎮</div>
+                                    <div className="w-8 h-8 rounded bg-[var(--color-muted)] flex items-center justify-center text-xs flex-shrink-0">🎮</div>
                                 )}
                                 <div className="min-w-0 flex-1 text-xs">
-                                    <p className="font-bold text-amber-950 dark:text-amber-100 truncate">{prod.nombre}</p>
-                                    <p className="text-amber-800 dark:text-amber-300">
+                                    <p className="font-bold text-[var(--color-foreground)] truncate">{prod.nombre}</p>
+                                    <p className="text-[var(--color-foreground)]/60">
                                         {prod.cantidad} x {formatearPrecio(prod.precio_unitario)}
                                     </p>
                                 </div>
@@ -361,20 +361,20 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
             )}
 
             {showCancelConfirm && (
-                <div className="mt-4 pt-3 border-t border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <span className="text-amber-800 dark:text-amber-300 font-medium">
+                <div className="mt-4 pt-3 border-t border-[var(--color-warning)]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <span className="text-[var(--color-foreground)]/80 font-medium">
                         ¿Cancelar el pedido pendiente? Se liberarán los productos reservados.
                     </span>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleCancel}
-                            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg bg-[var(--color-error)] hover:opacity-80 text-white font-bold cursor-pointer"
                         >
                             Sí, cancelar
                         </button>
                         <button
                             onClick={() => setShowCancelConfirm(false)}
-                            className="px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg bg-[var(--color-muted)] text-[var(--color-foreground)]/70 font-medium cursor-pointer border border-[var(--color-border)]"
                         >
                             No, mantener
                         </button>
@@ -383,7 +383,7 @@ export const PedidoPendienteBanner: React.FC<PedidoPendienteBannerProps> = ({
             )}
 
             {errorMsg && (
-                <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium flex items-center gap-2">
+                <div className="mt-3 p-3 rounded-xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/30 text-[var(--color-error)] text-xs font-medium flex items-center gap-2">
                     <AlertCircle size={15} />
                     <span>{errorMsg}</span>
                 </div>
