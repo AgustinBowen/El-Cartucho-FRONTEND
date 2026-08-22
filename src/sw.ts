@@ -8,10 +8,8 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response'
 declare const self: ServiceWorkerGlobalScope
 
 // ─── Precache del manifest generado por Vite PWA ─────────────────────────────
-// En dev mode __WB_MANIFEST puede no estar inyectado; usamos [] como fallback
 // @ts-ignore __WB_MANIFEST es inyectado por VitePWA en build time
-const manifest = typeof self.__WB_MANIFEST !== 'undefined' ? self.__WB_MANIFEST : []
-precacheAndRoute(manifest)
+precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
 
 // ─── Tomar control de inmediato al actualizarse ───────────────────────────────
