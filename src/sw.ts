@@ -42,12 +42,20 @@ registerRoute(
 )
 
 // ─── Push Notifications ───────────────────────────────────────────────────────
+interface PushData {
+  title?: string
+  body?: string
+  icon?: string
+  badge?: string
+  url?: string
+}
+
 self.addEventListener('push', (event) => {
   if (!event.data) return
 
-  let data = {}
+  let data: PushData = {}
   try {
-    data = event.data.json()
+    data = event.data.json() as PushData
   } catch {
     data = { title: 'El Cartucho', body: event.data.text() }
   }
