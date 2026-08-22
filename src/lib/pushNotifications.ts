@@ -79,7 +79,7 @@ export async function subscribeToPush(): Promise<"ok" | "denied" | "error"> {
 
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
+      applicationServerKey: applicationServerKey as unknown as BufferSource,
     });
 
     const subJson = subscription.toJSON();
