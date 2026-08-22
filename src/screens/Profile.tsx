@@ -1,11 +1,18 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { FormEvent } from "react";
 import { useAuth, isProfileIncomplete } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigate, Link } from "react-router-dom";
 import { formatearPrecio } from "../utils/formatearPrecio";
 import { CronometroReserva } from "../components/CronometroReserva";
-import { CreditCard, Loader2, AlertCircle } from "lucide-react";
+import { CreditCard, Loader2, AlertCircle, Bell, BellOff, BellRing } from "lucide-react";
+import {
+    isPushSupported,
+    getPermissionState,
+    subscribeToPush,
+    unsubscribeFromPush,
+    checkSubscriptionStatus,
+} from "../lib/pushNotifications";
 
 type Order = {
     id: number;
@@ -217,12 +224,54 @@ export function Profile() {
         }
     };
 
+    // ─── Push Notifications state (¡siempre antes de cualquier return!) ───
+    const [pushSupported, setPushSupported] = useState(false);
+    const [pushSubscribed, setPushSubscribed] = useState(false);
+    const [pushLoading, setPushLoading] = useState(true);
+    const [pushError, setPushError] = useState<string | null>(null);
+    const pushChecked = useRef(false);
+
+    useEffect(() => {
+        if (pushChecked.current) return;
+        pushChecked.current = true;
+        const supported = isPushSupported();
+        setPushSupported(supported);
+        if (supported && getPermissionState() === "granted") {
+            checkSubscriptionStatus().then((subscribed) => {
+                setPushSubscribed(subscribed);
+                setPushLoading(false);
+            });
+        } else {
+            setPushLoading(false);
+        }
+    }, []);
+
     if (loading || !user) {
         return (
             <div className="pt-24 min-h-screen flex items-center justify-center bg-[var(--color-background)]">
                 <div className="w-16 h-16 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
             </div>
         );
+    }
+
+    async function handleTogglePush() {
+        setPushError(null);
+        setPushLoading(true);
+        if (pushSubscribed) {
+            const ok = await unsubscribeFromPush();
+            setPushSubscribed(!ok);
+            if (!ok) setPushError("No se pudo desactivar. Intentá de nuevo.");
+        } else {
+            const result = await subscribeToPush();
+            if (result === "ok") {
+                setPushSubscribed(true);
+            } else if (result === "denied") {
+                setPushError("Permiso denegado. Habílitalo desde la configuración de tu navegador.");
+            } else {
+                setPushError("No se pudo activar. Intentá de nuevo.");
+            }
+        }
+        setPushLoading(false);
     }
 
     const profileIncomplete = isProfileIncomplete(profile);
@@ -306,6 +355,7 @@ export function Profile() {
 
                     {/* TAB: PERFIL */}
                     {activeTab === "perfil" && (
+                        <>
                         <div className={`card p-4 sm:p-8 ${isXbox ? "bg-[#1A1A1A]/95 border border-[#107C10]" : ""}`}>
                             {message && (
                                 <div className={`p-4 mb-6 rounded-lg ${message.includes("error") ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
@@ -353,6 +403,89 @@ export function Profile() {
                                 </div>
                             </form>
                         </div>
+
+                        {/* ─── Notificaciones Push ─── */}
+                        <div className={`card p-5 mt-4 ${isXbox ? "bg-[#1A1A1A]/95 border border-[#107C10]" : ""}`}>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
+                                    <BellRing size={18} className="text-[var(--color-primary)]" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-[var(--color-foreground)] text-sm">Notificaciones Push</h3>
+                                    <p className="text-xs text-[var(--color-foreground)]/60">
+                                        Recibí alertas de nuevos productos y promociones exclusivas
+                                    </p>
+                                </div>
+                            </div>
+
+                            {!pushSupported ? (
+                                <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--color-foreground)]/5 text-[var(--color-foreground)]/60 text-xs">
+                                    <BellOff size={15} />
+                                    <span>Tu navegador no soporta notificaciones push. Instalá la PWA en Chrome o Edge para usarlas.</span>
+                                </div>
+                            ) : getPermissionState() === "denied" ? (
+                                <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-xs">
+                                    <AlertCircle size={15} />
+                                    <span>Permiso denegado. Para activarlas, habílitálas en la configuración de tu navegador (îcono de candado en la barra de dirección).</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                                            pushSubscribed
+                                                ? "bg-[var(--color-success)]/15"
+                                                : "bg-[var(--color-foreground)]/8"
+                                        }`}>
+                                            {pushSubscribed
+                                                ? <Bell size={18} className="text-[var(--color-success)]" />
+                                                : <BellOff size={18} className="text-[var(--color-foreground)]/40" />
+                                            }
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-[var(--color-foreground)]">
+                                                {pushSubscribed ? "Notificaciones activadas" : "Notificaciones desactivadas"}
+                                            </p>
+                                            <p className="text-xs text-[var(--color-foreground)]/60">
+                                                {pushSubscribed
+                                                    ? "Te llegaran alertas de nuevos productos y ofertas"
+                                                    : "Activálas para no perderte ningún lanzamiento"
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Toggle switch */}
+                                    <button
+                                        id="push-toggle"
+                                        onClick={handleTogglePush}
+                                        disabled={pushLoading}
+                                        aria-label={pushSubscribed ? "Desactivar notificaciones" : "Activar notificaciones"}
+                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
+                                            pushSubscribed
+                                                ? "bg-[var(--color-success)]"
+                                                : "bg-[var(--color-foreground)]/20"
+                                        }`}
+                                    >
+                                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
+                                            pushSubscribed ? "translate-x-6" : "translate-x-1"
+                                        }`}>
+                                            {pushLoading && (
+                                                <Loader2 size={12} className="animate-spin text-[var(--color-primary)] absolute inset-0 m-auto" />
+                                            )}
+                                        </span>
+                                    </button>
+                                </div>
+                            )}
+
+                            {pushError && (
+                                <div className="mt-3 flex items-center gap-2 p-2.5 rounded-lg bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-xs">
+                                    <AlertCircle size={13} />
+                                    <span>{pushError}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        </>
                     )}
 
                     {/* TAB: PEDIDOS */}
