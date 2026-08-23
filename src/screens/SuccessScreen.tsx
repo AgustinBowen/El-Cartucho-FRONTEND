@@ -5,6 +5,7 @@ import { CheckCircle2, Clock, XCircle, HelpCircle, ArrowLeft, ShoppingBag, Loade
 import { useTheme } from "../context/ThemeContext"
 import { useCart } from "../context/CartContext"
 import { useAuth } from "../context/AuthContext"
+import { PushPermissionBanner } from "../components/PushPermissionBanner"
 
 type PollingStatus = "loading" | "success" | "timeout" | "expired" | "rejected" | "desconocido"
 
@@ -282,6 +283,8 @@ export const SuccessScreen: React.FC = () => {
                     <div className="card p-8 text-center mb-8 animate-fade-in-scale">
                         {renderContent()}
                     </div>
+                    {/* Banner de notificaciones push — solo visible en éxito */}
+                    {status === "success" && <PushPermissionBanner />}
                 </div>
             </div>
         </div>
