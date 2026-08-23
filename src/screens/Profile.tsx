@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import type { FormEvent } from "react";
 import { useAuth, isProfileIncomplete } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+
 import { formatearPrecio } from "../utils/formatearPrecio";
 import { CronometroReserva } from "../components/CronometroReserva";
 import { CreditCard, Loader2, AlertCircle, Bell, BellOff, BellRing } from "lucide-react";
@@ -85,7 +86,18 @@ export function Profile() {
     }, [backgroundImage]);
 
 
-    const [activeTab, setActiveTab] = useState<"perfil" | "pedidos">("perfil");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tabParam = searchParams.get("tab");
+    const activeTab = tabParam === "pedidos" ? "pedidos" : "perfil";
+
+    const handleTabChange = (tab: "perfil" | "pedidos") => {
+        if (tab === "pedidos") {
+            setSearchParams({ tab: "pedidos" }, { replace: true });
+        } else {
+            setSearchParams({}, { replace: true });
+        }
+    };
+
     const [formData, setFormData] = useState({
         name: "",
         apellido: "",
@@ -353,8 +365,9 @@ export function Profile() {
                         {(["perfil", "pedidos"] as const).map(tab => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab)}
+                                onClick={() => handleTabChange(tab)}
                                 className={`flex-1 py-2.5 rounded-lg font-medium text-sm capitalize transition-all cursor-pointer ${activeTab === tab
+
                                     ? isXbox
                                         ? "bg-[#107C10] text-white shadow"
                                         : "bg-[var(--color-primary)] text-white shadow"
