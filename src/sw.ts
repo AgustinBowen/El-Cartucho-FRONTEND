@@ -93,3 +93,27 @@ self.addEventListener('notificationclick', (event) => {
     })
   )
 })
+
+// ─── Cambio/rotación de suscripción push ──────────────────────────────────────
+self.addEventListener('pushsubscriptionchange', (event: any) => {
+  event.waitUntil((async () => {
+    // Best-effort: re-suscribir usando la applicationServerKey de la suscripción vieja
+    try {
+      const appServerKey = event.oldSubscription?.options?.applicationServerKey
+      if (appServerKey) {
+        await self.registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: appServerKey,
+        })
+      }
+    } catch (e) {
+      // ignorar; la Capa A reparará al abrir la app
+    }
+    // Avisar a las pestañas abiertas para que re-registren con el token de Firebase
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+    for (const client of clients) {
+      client.postMessage({ type: 'PUSH_SUBSCRIPTION_CHANGED' })
+    }
+  })())
+})
+
