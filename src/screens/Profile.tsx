@@ -67,10 +67,22 @@ export function Profile() {
       : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif";
 
     useEffect(() => {
+      let isMounted = true;
       const img = new Image();
-      img.onload = () => setBackgroundLoaded(true);
+      img.onload = () => { if (isMounted) setBackgroundLoaded(true); };
+      img.onerror = () => { if (isMounted) setBackgroundLoaded(true); };
       img.src = backgroundImage;
+
+      const timer = setTimeout(() => {
+        if (isMounted) setBackgroundLoaded(true);
+      }, 800);
+
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+      };
     }, [backgroundImage]);
+
 
     const [activeTab, setActiveTab] = useState<"perfil" | "pedidos">("perfil");
     const [formData, setFormData] = useState({
