@@ -163,3 +163,29 @@ export async function checkSubscriptionStatus(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Verifica si las notificaciones push están autorizadas pero desincronizadas
+ * (falta suscripción en el browser o el backend borró la fila por pruning)
+ * y re-suscribe silenciosamente en segundo plano. Best-effort.
+ */
+export async function repairSubscriptionIfNeeded(): Promise<void> {
+  if (!isPushSupported()) return;
+  if (Notification.permission !== "granted") return;
+
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const browserSub = await reg.pushManager.getSubscription();
+
+    const isSubscribedInBackend = browserSub ? await checkSubscriptionStatus() : false;
+    const needsRepair = !browserSub || !isSubscribedInBackend;
+
+    if (needsRepair) {
+      console.debug("[Push] Detectada suscripción desincronizada o faltante. Reparando...");
+      await subscribeToPush();
+    }
+  } catch (err) {
+    console.error("[Push] Error durante auto-reparación de suscripción:", err);
+  }
+}
+

@@ -1,9 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import type { ReactNode } from "react";
 import { auth } from "../firebase";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import type { User as FirebaseUser } from "firebase/auth";
 import { AuthModal } from "../components/AuthModal";
+import { repairSubscriptionIfNeeded, subscribeToPush } from "../lib/pushNotifications";
 
 interface UserProfile {
     id: number;
@@ -48,6 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const pushRepairedRef = useRef(false);
 
     const openAuthModal = () => setIsAuthModalOpen(true);
     const closeAuthModal = () => setIsAuthModalOpen(false);
@@ -124,6 +126,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return () => unsubscribe();
     }, []);
 
+    // ─── Capa A: Auto-reparar suscripción push al quedar autenticado ────────────
+    useEffect(() => {
+        if (user) {
+            if (!pushRepairedRef.current) {
+                pushRepairedRef.current = true;
+                repairSubscriptionIfNeeded();
+            }
+        } else {
+            pushRepairedRef.current = false;
+        }
+    }, [user]);
+
+    // ─── Capa B1: Escuchar notificación de rotación enviada por el SW ───────────
+    useEffect(() => {
+        if (!("serviceWorker" in navigator)) return;
+
+        const handleMessage = (e: MessageEvent) => {
+            if (e.data?.type === "PUSH_SUBSCRIPTION_CHANGED") {
+                subscribeToPush().catch(() => {});
+            }
+        };
+
+        navigator.serviceWorker.addEventListener("message", handleMessage);
+        return () => {
+            navigator.serviceWorker.removeEventListener("message", handleMessage);
+        };
+    }, []);
+
     const signInWithGoogle = async () => {
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
@@ -141,3 +171,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         </AuthContext.Provider>
     );
 };
+
