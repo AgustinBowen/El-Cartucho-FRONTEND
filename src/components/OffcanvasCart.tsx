@@ -238,8 +238,9 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                               <Plus size={10} />
                             </button>
                             {item.quantity >= item.stock && (
-                              <span className="text-[10px] text-orange-400 font-medium">Límite reached</span>
+                              <span className="text-[10px] text-orange-400 font-medium">Límite de stock alcanzado</span>
                             )}
+
                           </div>
 
                           {/* Price */}
