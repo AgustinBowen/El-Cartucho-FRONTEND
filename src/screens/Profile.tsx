@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
+
 import type { FormEvent } from "react";
 import { useAuth, isProfileIncomplete } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+
 import { formatearPrecio } from "../utils/formatearPrecio";
 import { CronometroReserva } from "../components/CronometroReserva";
 import { CreditCard, Loader2, AlertCircle, Bell, BellOff, BellRing } from "lucide-react";
@@ -67,12 +69,35 @@ export function Profile() {
       : "https://res.cloudinary.com/dud5m1ltq/image/upload/v1750302558/3fd4849288fe473940092cc5d5a9bb0b_tuhurb.gif";
 
     useEffect(() => {
+      let isMounted = true;
       const img = new Image();
-      img.onload = () => setBackgroundLoaded(true);
+      img.onload = () => { if (isMounted) setBackgroundLoaded(true); };
+      img.onerror = () => { if (isMounted) setBackgroundLoaded(true); };
       img.src = backgroundImage;
+
+      const timer = setTimeout(() => {
+        if (isMounted) setBackgroundLoaded(true);
+      }, 800);
+
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+      };
     }, [backgroundImage]);
 
-    const [activeTab, setActiveTab] = useState<"perfil" | "pedidos">("perfil");
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tabParam = searchParams.get("tab");
+    const activeTab = tabParam === "pedidos" ? "pedidos" : "perfil";
+
+    const handleTabChange = (tab: "perfil" | "pedidos") => {
+        if (tab === "pedidos") {
+            setSearchParams({ tab: "pedidos" }, { replace: true });
+        } else {
+            setSearchParams({}, { replace: true });
+        }
+    };
+
     const [formData, setFormData] = useState({
         name: "",
         apellido: "",
@@ -229,11 +254,10 @@ export function Profile() {
     const [pushSubscribed, setPushSubscribed] = useState(false);
     const [pushLoading, setPushLoading] = useState(true);
     const [pushError, setPushError] = useState<string | null>(null);
-    const pushChecked = useRef(false);
 
     useEffect(() => {
-        if (pushChecked.current) return;
-        pushChecked.current = true;
+
+        if (loading || !user) return;
         const supported = isPushSupported();
         setPushSupported(supported);
         if (supported && getPermissionState() === "granted") {
@@ -244,7 +268,8 @@ export function Profile() {
         } else {
             setPushLoading(false);
         }
-    }, []);
+    }, [user, loading]);
+
 
     if (loading || !user) {
         return (
@@ -340,8 +365,9 @@ export function Profile() {
                         {(["perfil", "pedidos"] as const).map(tab => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab)}
+                                onClick={() => handleTabChange(tab)}
                                 className={`flex-1 py-2.5 rounded-lg font-medium text-sm capitalize transition-all cursor-pointer ${activeTab === tab
+
                                     ? isXbox
                                         ? "bg-[#107C10] text-white shadow"
                                         : "bg-[var(--color-primary)] text-white shadow"
@@ -613,7 +639,12 @@ export function Profile() {
                                                 <div className="space-y-2">
                                                     {order.productos.map((p, i) => (
                                                         <div key={i} className="flex items-center gap-3 text-sm text-[var(--color-foreground)]/80">
-                                                            {p.image && <img src={p.image} alt={p.nombre} className="w-10 h-10 rounded object-cover border border-gray-200/20" />}
+                                                            {p.image ? (
+                                                                <img src={p.image} alt={p.nombre} className="w-10 h-10 rounded object-cover border border-gray-200/20" />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded bg-[var(--color-foreground)]/10 flex items-center justify-center text-xs flex-shrink-0">🎮</div>
+                                                            )}
+
                                                             <span className="flex-1 truncate">{p.nombre}</span>
                                                             <span className="text-xs opacity-60">×{p.cantidad}</span>
                                                             <span className="font-medium">{formatearPrecio(p.precio_unitario)}</span>

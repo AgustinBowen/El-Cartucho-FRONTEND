@@ -42,13 +42,14 @@ function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchTerm.trim()) {
-      navigate(`/catalogo?search=${encodeURIComponent(searchTerm)}`)
+      navigate(`/catalogo?q=${encodeURIComponent(searchTerm.trim())}`)
       setSearchOpen(false)
       setMenuOpen(false)
     } else {
       setSearchOpen(false)
     }
   }
+
 
   const handleCartClick = () => {
     setCartOpen(true)

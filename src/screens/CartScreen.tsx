@@ -450,8 +450,8 @@ export const CartScreen = () => {
                 />
               )}
               <div>
-                <h1 className="game-title text-4xl md:text-5xl text-white mb-2">Tu Carrito</h1>
-                <p className="text-white/90 text-lg">Revisa tus productos y completa tu compra</p>
+                <h1 className="game-title text-4xl md:text-5xl text-[var(--color-foreground)] mb-2">Tu Carrito</h1>
+                <p className="text-[var(--color-foreground)]/80 text-lg">Revisa tus productos y completa tu compra</p>
               </div>
             </div>
           </div>
@@ -460,7 +460,7 @@ export const CartScreen = () => {
         <div className="max-w-screen-xl flex flex-col mx-auto px-4 py-8">
           <Link
             to="/catalogo"
-            className="inline-flex items-center justify-end text-white hover:text-white/80 mb-8 group transition-colors animate-fade-in-up"
+            className="inline-flex items-center justify-end text-[var(--color-foreground)] hover:text-[var(--color-primary)] mb-8 group transition-colors animate-fade-in-up"
           >
             <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
             Continuar comprando
@@ -495,10 +495,10 @@ export const CartScreen = () => {
                   isXbox ? "bg-gray-100/10" : "bg-gray-800/20"
                 } flex items-center justify-center mb-8 mx-auto backdrop-blur-sm`}
               >
-                <ShoppingCart size={64} className="text-white/60" />
+                <ShoppingCart size={64} className="text-[var(--color-foreground)]/60" />
               </div>
-              <h2 className="game-title text-3xl font-bold mb-4 text-white">Tu carrito está vacío</h2>
-              <p className="text-white/70 mb-8 max-w-md mx-auto text-lg">
+              <h2 className="game-title text-3xl font-bold mb-4 text-[var(--color-foreground)]">Tu carrito está vacío</h2>
+              <p className="text-[var(--color-foreground)]/70 mb-8 max-w-md mx-auto text-lg">
                 ¿No sabes qué comprar? ¡Cientos de juegos increíbles te esperan!
               </p>
               <Link to="/catalogo" className="btn-primary">
@@ -509,9 +509,10 @@ export const CartScreen = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Cart Items */}
               <div className="lg:col-span-2 space-y-4">
-                <h2 className="text-2xl font-bold mb-6 animate-fade-in-up text-white">
+                <h2 className="text-2xl font-bold mb-6 animate-fade-in-up text-[var(--color-foreground)]">
                   Productos ({cartItems.length})
                 </h2>
+
 
                 {cartItems.map((item, index) => (
                   <div
@@ -523,17 +524,20 @@ export const CartScreen = () => {
                       {/* Product Image */}
                       <div className="w-full sm:w-24 h-24 bg-[var(--color-muted)] rounded-lg overflow-hidden flex-shrink-0">
                         <img
-                          src={item.image || "/placeholder.svg"}
+                          src={item.image || "/images/navbar.webp"}
                           alt={item.title}
                           className="w-full h-full object-cover"
                           loading="lazy"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
                             target.style.display = "none"
-                            target.parentElement!.innerHTML =
-                              '<div class="w-full h-full flex items-center justify-center text-2xl">🎮</div>'
+                            if (target.parentElement) {
+                              target.parentElement.innerHTML =
+                                '<div class="w-full h-full flex items-center justify-center text-2xl">🎮</div>'
+                            }
                           }}
                         />
+
                       </div>
 
                       {/* Product Info */}
