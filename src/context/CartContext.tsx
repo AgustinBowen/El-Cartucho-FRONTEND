@@ -32,7 +32,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const { user, logout } = useAuth()
+  const { user, logout, loading: authLoading } = useAuth()
 
   const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
     if (!user) return {}
@@ -42,12 +42,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Load cart from backend when user logs in
   useEffect(() => {
+    if (authLoading) return   // Esperar a que el AuthContext termine de inicializar
     if (!user) return
 
     const loadCart = async () => {
       setIsLoading(true)
       try {
-        const headers = await getAuthHeaders()
+        // forceRefresh=true evita el 401 de race condition en login reciente
+        const token = await user.getIdToken(true)
+        const headers = { "Authorization": `Bearer ${token}` }
         const res = await fetch(`${API_URL}/ed/carrito`, { headers })
         if (res.status === 401) {
           await logout()
@@ -85,7 +88,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
 
     loadCart()
-  }, [user?.uid])
+  }, [user?.uid, authLoading])
 
   // Clear cart items when user logs out
   useEffect(() => {

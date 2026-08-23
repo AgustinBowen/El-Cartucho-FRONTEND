@@ -56,7 +56,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const fetchProfile = async (firebaseUser: FirebaseUser) => {
         try {
-            const token = await firebaseUser.getIdToken();
+            // forceRefresh=true en el primer fetch garantiza que el token
+            // ya está propagado en Firebase antes de golpear el backend.
+            // Resuelve el 401 de race condition en logins nuevos.
+            const token = await firebaseUser.getIdToken(true);
             const res = await fetch(`${API_URL}/profile`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,

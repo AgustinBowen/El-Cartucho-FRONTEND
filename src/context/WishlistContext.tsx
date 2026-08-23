@@ -32,7 +32,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [wishlistIds, setWishlistIds] = useState<Set<number>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
   const [pendingProductId, setPendingProductId] = useState<number | null>(null)
-  const { user, openAuthModal, logout } = useAuth()
+  const { user, openAuthModal, logout, loading: authLoading } = useAuth()
 
   const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
     if (!user) return {}
@@ -41,6 +41,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   }, [user])
 
   useEffect(() => {
+    if (authLoading) return   // Esperar a que el AuthContext termine de inicializar
     if (!user) {
       setWishlist([])
       setWishlistIds(new Set())
@@ -49,7 +50,9 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     const loadWishlist = async () => {
       setIsLoading(true)
       try {
-        const headers = await getAuthHeaders()
+        // forceRefresh=true evita el 401 de race condition en login reciente
+        const token = await user.getIdToken(true)
+        const headers = { "Authorization": `Bearer ${token}` }
         const res = await fetch(`${API_URL}/ed/wishlist`, { headers })
         if (res.status === 401) {
           await logout()
@@ -67,7 +70,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     loadWishlist()
-  }, [user?.uid])
+  }, [user?.uid, authLoading])
 
   useEffect(() => {
     if (user && pendingProductId) {
