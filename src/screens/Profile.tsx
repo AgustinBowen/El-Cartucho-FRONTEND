@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
+
 import type { FormEvent } from "react";
 import { useAuth, isProfileIncomplete } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -241,11 +242,10 @@ export function Profile() {
     const [pushSubscribed, setPushSubscribed] = useState(false);
     const [pushLoading, setPushLoading] = useState(true);
     const [pushError, setPushError] = useState<string | null>(null);
-    const pushChecked = useRef(false);
 
     useEffect(() => {
-        if (pushChecked.current) return;
-        pushChecked.current = true;
+
+        if (loading || !user) return;
         const supported = isPushSupported();
         setPushSupported(supported);
         if (supported && getPermissionState() === "granted") {
@@ -256,7 +256,8 @@ export function Profile() {
         } else {
             setPushLoading(false);
         }
-    }, []);
+    }, [user, loading]);
+
 
     if (loading || !user) {
         return (
