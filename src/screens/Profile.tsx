@@ -639,7 +639,12 @@ export function Profile() {
                                                 <div className="space-y-2">
                                                     {order.productos.map((p, i) => (
                                                         <div key={i} className="flex items-center gap-3 text-sm text-[var(--color-foreground)]/80">
-                                                            {p.image && <img src={p.image} alt={p.nombre} className="w-10 h-10 rounded object-cover border border-gray-200/20" />}
+                                                            {p.image ? (
+                                                                <img src={p.image} alt={p.nombre} className="w-10 h-10 rounded object-cover border border-gray-200/20" />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded bg-[var(--color-foreground)]/10 flex items-center justify-center text-xs flex-shrink-0">🎮</div>
+                                                            )}
+
                                                             <span className="flex-1 truncate">{p.nombre}</span>
                                                             <span className="text-xs opacity-60">×{p.cantidad}</span>
                                                             <span className="font-medium">{formatearPrecio(p.precio_unitario)}</span>

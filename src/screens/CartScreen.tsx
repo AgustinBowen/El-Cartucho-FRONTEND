@@ -524,17 +524,20 @@ export const CartScreen = () => {
                       {/* Product Image */}
                       <div className="w-full sm:w-24 h-24 bg-[var(--color-muted)] rounded-lg overflow-hidden flex-shrink-0">
                         <img
-                          src={item.image || "/placeholder.svg"}
+                          src={item.image || "/images/navbar.webp"}
                           alt={item.title}
                           className="w-full h-full object-cover"
                           loading="lazy"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
                             target.style.display = "none"
-                            target.parentElement!.innerHTML =
-                              '<div class="w-full h-full flex items-center justify-center text-2xl">🎮</div>'
+                            if (target.parentElement) {
+                              target.parentElement.innerHTML =
+                                '<div class="w-full h-full flex items-center justify-center text-2xl">🎮</div>'
+                            }
                           }}
                         />
+
                       </div>
 
                       {/* Product Info */}

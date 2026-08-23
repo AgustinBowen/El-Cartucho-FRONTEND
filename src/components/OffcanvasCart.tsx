@@ -185,17 +185,20 @@ export const OffcanvasCart: React.FC<OffcanvasCartProps> = ({ isOpen, onClose })
                       {/* Product Image */}
                       <div className="w-16 h-16 bg-[var(--color-muted)] rounded-lg overflow-hidden flex-shrink-0">
                         <img
-                          src={item.image || "/placeholder.svg"}
+                          src={item.image || "/images/navbar.webp"}
                           alt={item.title}
                           className="w-full h-full object-cover"
                           loading="lazy"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
                             target.style.display = "none"
-                            target.parentElement!.innerHTML =
-                              '<div class="w-full h-full flex items-center justify-center text-lg">🎮</div>'
+                            if (target.parentElement) {
+                              target.parentElement.innerHTML =
+                                '<div class="w-full h-full flex items-center justify-center text-lg">🎮</div>'
+                            }
                           }}
                         />
+
                       </div>
 
                       {/* Product Info */}
